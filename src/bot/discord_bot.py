@@ -282,15 +282,25 @@ async def cmd_status(interaction: discord.Interaction):
     router = get_router()
     mode = "Lite ⚡" if router.force_lite else "Pro 🧠"
     
+    # Active AI/LLM model resolution
+    active_model = router.litellm.model if router.force_lite else router.pro_llm.model
+    if active_model and "/" in active_model:
+        active_model = active_model.split("/")[-1]
+    active_model_str = active_model.upper() if active_model else "UNKNOWN"
+    
     from ui.faces import get_all_faces
     faces = get_all_faces()
     smart_faces = faces.get("smart", ["(✜‿‿✜)"])
     face_str = random.choice(smart_faces) if isinstance(smart_faces, list) else smart_faces
-    msg_count = get_message_count(interaction.channel_id) if interaction.channel_id else 0
     
-    msg = (f"`{face_str}` **{BOT_NAME.upper()} — STATUS**\n🎮 Level: {gotchi_stats['level']} ({gotchi_stats.get('title', 'Newborn')})\n"
-           f"⭐ XP: {gotchi_stats['xp']}\n💬 Messages: {msg_count}\n🌡️ Temperature: {stats.temp}\n💾 RAM Free: {stats.memory}\n👤 Owner: {OWNER_NAME}\n"
-           f"🤝 Brother: @{SIBLING_BOT_NAME or 'None'}\n🧠 Mode: {mode}")
+    msg = (f"`{face_str}` **{BOT_NAME.upper()} — STATUS**\n"
+           f"🎮 Level: {gotchi_stats['level']} ({gotchi_stats.get('title', 'Newborn')})\n"
+           f"⭐ XP: {gotchi_stats['xp_in_level']}/{gotchi_stats['xp_needed_this_level']}\n"
+           f"💬 Messages: {gotchi_stats['messages']}\n"
+           f"🌡️ Temperature: {stats.temp}\n"
+           f"💾 RAM Free: {stats.memory}\n"
+           f"🤖 AI/LLM Model: {active_model_str}\n"
+           f"🧠 Mode: {mode}")
     
     # Slow hardware update
     show_face("smart", f"SAY:Status check! | STATUS:{mode}")
