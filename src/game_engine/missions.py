@@ -26,8 +26,9 @@ def load_progressive_missions():
             # Check if exists
             row = conn.execute("SELECT id FROM aipet_missions WHERE name = ?", (m["name"],)).fetchone()
             if not row:
-                # By default, only 'v1' missions are active initially. Others are 'pending'.
-                initial_status = "active" if m["name"].endswith("v1") else "pending"
+                # Active if it ends with "v1" or is a single-tier mission (base_name is null/empty or equals name)
+                is_progressive = bool(m.get("base_name") and m["base_name"] != m["name"])
+                initial_status = "active" if (not is_progressive or m["name"].endswith("v1")) else "pending"
                 
                 conn.execute('''
                     INSERT INTO aipet_missions (name, base_name, category, xp_reward, target, progress, status, source)

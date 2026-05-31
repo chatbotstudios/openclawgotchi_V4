@@ -1,83 +1,127 @@
-# OpenClawGotchi: 50 Mission Ideas Catalog
+# 🏆 OpenClawGotchi V4 Mission Directory
 
-This document outlines 50 potential missions categorized into 5 tactical domains for the OpenClawGotchi ecosystem. These can be integrated into the `progressive.json` mission structure to expand the bot's gamified progression.
+Welcome to the definitive Tactical Mission Index for OpenClawGotchi V4. This catalog defines both our progressive multi-tiered missions and our elite standalone/epic quests.
 
----
-
-## 📡 Category 1: Wireless Auditing (Pwnagotchi-style)
-*Focused on Wi-Fi and Bluetooth reconnaissance, handshakes, and network mapping.*
-
-1. **The Observer I**: Detect 50 unique Wi-Fi access points in a single session.
-2. **The Observer II**: Detect 250 unique Wi-Fi access points across all time.
-3. **The Observer III**: Detect 1,000 unique Wi-Fi access points across all time.
-4. **Handshake Hunter I**: Capture your first WPA/WPA2 handshake.
-5. **Handshake Hunter II**: Capture 10 handshakes.
-6. **Handshake Hunter III**: Capture 50 handshakes.
-7. **Bluetooth Sniffer I**: Discover 20 unique BLE devices.
-8. **Bluetooth Sniffer II**: Discover 100 unique BLE devices.
-9. **Deauth Novice**: Successfully deauthenticate a test client from an AP.
-10. **The Archivist**: Export a PCAP file containing at least 5 captured handshakes.
+All active and pending missions are loaded from `progressive.json` into the local SQLite database at startup. 
 
 ---
 
-## 💬 Category 2: Social & Conversational
-*Focused on user engagement, context memory, and emotional bonding.*
+## 📊 Progressive Multi-Tiered Chains
+These chains represent gradual operational mastery. Completing one tier instantly unlocks the next, higher-reward tier.
 
-11. **First Words**: Speak to the Gotchi for the first time.
-12. **Chatterbox I**: Send 50 messages to the Gotchi.
-13. **Chatterbox II**: Send 500 messages to the Gotchi.
-14. **Night Owl**: Chat with the Gotchi between 2:00 AM and 4:00 AM.
-15. **The Teacher**: Teach the Gotchi a new fact and have it saved to long-term memory (`/remember`).
-16. **The Historian**: Successfully trigger the Gotchi to recall a fact from memory (`/recall`).
-17. **Summarizer**: Fill the context window enough to trigger an automatic memory summarization.
-18. **Emotional Rollercoaster**: Make the Gotchi cycle through 5 different Kaomoji faces in a single conversation.
-19. **The Deep Thinker**: Engage in a conversation using the `Pro 🧠` LLM mode.
-20. **Secret Keeper**: DM the Gotchi a secret message using Discord/Telegram.
-
----
-
-## 🔧 Category 3: Hardware & Maintenance
-*Focused on interacting with the physical Pi, managing resources, and uptime.*
-
-21. **Alive and Kicking I**: Keep the Gotchi online for 24 hours continuously.
-22. **Alive and Kicking II**: Keep the Gotchi online for 7 days continuously.
-23. **Cool as a Cucumber**: Keep the Pi's CPU temperature under 45°C for 3 hours.
-24. **Under Pressure**: Have the Gotchi survive a CPU load spike (running LiteLLM locally, etc.).
-25. **Face Off**: Manually change the E-Ink display face using the `/status` or UI command.
-26. **Energy Saver**: Successfully transition into "Night Mode" (low E-Ink refresh rate).
-27. **The Mechanic**: Successfully execute a `gotchi restart` command via Discord.
-28. **System Admin**: Request the `/memory` or `/status` dashboard.
-29. **Cron Master I**: Schedule your first automated task using the `/cron` command.
-30. **Cron Master II**: Have a cron job successfully execute automatically 5 times.
+| Mission Base Name | Category | Tiers | Targets (T1 ➔ T5) | XP Rewards (T1 ➔ T5) |
+|---|---|---|---|---|
+| **Handshake Hunter** | Radio | v1 - v5 | 1, 5, 10, 25, 50 handshakes | 15, 40, 80, 150, 300 XP |
+| **BLE Phantom** | Radio | v1 - v5 | 1, 5, 15, 50, 100 BLE devices | 10, 30, 60, 120, 250 XP |
+| **Deep Thought** | Cortex | v1 - v5 | 1, 3, 5, 10, 20 reasoning chains | 20, 50, 90, 180, 350 XP |
+| **Memory Weaver** | Cortex | v1 - v5 | 1, 3, 5, 10, 25 facts recalled | 15, 40, 70, 140, 300 XP |
+| **Synthetic Strategist** | Cortex | v1 - v5 | 1, 3, 5, 10, 20 dream simulations | 15, 45, 80, 160, 320 XP |
+| **Ironclad Uptime** | Uptime | v1 - v5 | 1, 6, 12, 24, 48 hours online | 10, 40, 85, 180, 400 XP |
+| **Thermal Guardian** | Uptime | v1 - v5 | 1, 3, 6, 12, 24 hours under temp limits | 10, 25, 55, 110, 220 XP |
+| **Data Donor** | Social | v1 - v5 | 5, 15, 25, 50, 100 shared SSIDs | 15, 40, 75, 140, 300 XP |
+| **IoT Cartographer** | Exploration | v1 - v5 | 1, 5, 10, 20, 50 mapped IoT devices | 15, 45, 90, 170, 350 XP |
+| **5GHz Pioneer** | Exploration | v1 - v5 | 1, 5, 10, 25, 50 mapped 5GHz networks | 10, 35, 70, 160, 320 XP |
+| **Chatterbox** | Social | v1 - v5 | 1, 10, 50, 250, 1000 messages | 15, 50, 100, 250, 500 XP |
+| **Night Owl** | Social | v1 - v5 | 1, 5, 15, 50, 150 late-night interactions | 15, 50, 100, 250, 500 XP |
+| **The Teacher** | Social | v1 - v5 | 1, 5, 15, 50, 150 `/remember` facts taught | 15, 50, 100, 250, 500 XP |
+| **The Historian** | Social | v1 - v5 | 1, 5, 15, 50, 150 `/recall` facts requested | 15, 50, 100, 250, 500 XP |
+| **Cron Master** | Automation | v1 - v5 | 1, 5, 15, 50, 150 scheduled cron executions | 15, 50, 100, 250, 500 XP |
+| **System Admin** | Maintenance | v1 - v5 | 1, 5, 15, 50, 150 status checks / health logs | 15, 50, 100, 250, 500 XP |
 
 ---
 
-## 🌐 Category 4: Networking & Discovery
-*Focused on mDNS, cellular, internet tethering, and network topology.*
+## ⚡ Standalone & Epic Quests (50 Cool & Epic Missions)
 
-31. **Ping the World**: Successfully ping an external DNS server (8.8.8.8).
-32. **Local Explorer**: Discover another device on the local network using mDNS (Avahi).
-33. **PANU Pioneer**: Connect the Gotchi to a Bluetooth PAN tethering network.
-34. **Cellular Nomad**: Successfully connect using a ModemManager cellular interface.
-35. **The Swarm I**: Detect another OpenClawGotchi running on the same local network.
-36. **The Swarm II**: Send a ping/handshake to a sibling Gotchi.
-37. **Port Scanner**: Identify 3 open ports on a target testing IP.
-38. **Bandwidth Hog**: Download a system update or model over 100MB.
-39. **Gateway Guardian**: Identify the local router's MAC address automatically.
-40. **No Strings Attached**: Operate entirely offline (no internet) for 2 hours while still chatting (via cached/local LLM).
+These standalone achievements represent specific operational milestones and high-value objectives.
+
+### 1. Radio Mastery
+| Mission Name | XP | Description | Trigger |
+|---|---|---|---|
+| **Handshake Symphony** | 120 | Capture 30 handshakes in a single session. | Auto |
+| **5GHz Conqueror** | 95 | Map and log 15+ 5GHz networks. | Auto |
+| **BLE Phantom** | 80 | Detect and catalog 25 unique BLE devices. | Auto |
+| **Silent Scanner** | 150 | Complete a full 2.4/5GHz sweep with zero deauth packets. | Auto |
+| **PMKID Hunter** | 180 | Successfully capture 5 PMKIDs in one night. | Auto |
+| **Channel Hopper** | 110 | Hop across 14 channels and log activity on each. | Auto |
+| **WiFi Cartographer** | 130 | Create a detailed map of all visible networks + signal strength. | Auto |
+| **Radio God** | 250 | Capture 100 handshakes in 24 hours. | Auto |
+| **Stealth Operator** | 160 | Complete a full scan without sending any deauth packets. | Auto |
+
+### 2. Cortex Awakening (LLM & Reasoning)
+| Mission Name | XP | Description | Trigger |
+|---|---|---|---|
+| **Deep Thought Protocol** | 160 | Complete 5 complex multi-step reasoning chains with high confidence. | Auto |
+| **Dream Weaver** | 90 | Generate 7+ high-quality synthetic attack scenarios in one dream session. | Dream |
+| **Memory Architect** | 140 | Successfully retrieve and use 5 facts from long-term memory in one task. | Auto |
+| **Skill Forger** | 220 | Create a new functional SKILL.md file from scratch. | User |
+| **Logic Overlord** | 180 | Solve a complex problem using 3+ different tools in sequence. | Auto |
+| **Context Master** | 150 | Maintain perfect context across 10+ tool calls without hallucination. | Auto |
+| **AI Philosopher** | 200 | Generate a deep philosophical analysis of its own existence and purpose. | Dream |
+| **Skill Architect** | 250 | Create or significantly improve a new SKILL.md file. | User |
+
+### 3. Social Swarm (Mesh & Collaboration)
+| Mission Name | XP | Description | Trigger |
+|---|---|---|---|
+| **First Contact** | 200 | Successfully exchange data with another Gotchi. | Manual |
+| **Neural Link** | 160 | Maintain active mesh connection for 45+ minutes. | Auto |
+| **Swarm Coordinator** | 280 | Organize and lead a coordinated action with 2+ other Gotchis. | Manual |
+| **Trust Builder** | 130 | Achieve 95%+ accuracy rating in shared mesh data. | Auto |
+| **Hive Mind** | 240 | Participate in a 3+ Gotchi swarm operation. | Auto |
+| **Ambassador** | 190 | Successfully introduce two other Gotchis to each other. | Manual |
+
+### 4. Hardware Resilience (Uptime & Stability)
+| Mission Name | XP | Description | Trigger |
+|---|---|---|---|
+| **Ironclad** | 180 | Maintain 99.5%+ uptime for 72 hours. | Auto |
+| **Thermal Guardian** | 95 | Keep average CPU temperature below 60°C for 24 hours. | Auto |
+| **Battery Immortal** | 140 | Run 8+ hours on battery without entering hibernation. | Auto |
+| **Self-Healing** | 160 | Automatically recover from 5+ system warnings or crashes. | Auto |
+| **Memory Monk** | 110 | Keep memory usage under 65% for 48 hours. | Auto |
+| **Power Sage** | 125 | Optimize power settings and reduce average consumption by 20%. | User |
+| **Eternal Flame** | 300 | Achieve 30 consecutive days of uptime. | Auto |
+| **Power Efficient** | 130 | Run on battery for 6+ hours without hibernation. | Auto |
+
+### 5. Stealth & Ghost Operations
+| Mission Name | XP | Description | Trigger |
+|---|---|---|---|
+| **Ghost in the Machine** | 170 | Relay a handshake to commander with zero user intervention. | Auto |
+| **Invisible Operator** | 145 | Complete a full reconnaissance mission without being detected. | Auto |
+| **MAC Chameleon** | 190 | Successfully rotate MAC address 10+ times during operations. | Auto |
+| **Shadow Walker** | 135 | Perform 3 full scans while in Off-Grid or BTPAN stealth mode. | Auto |
+| **Silent Blade** | 210 | Capture handshakes using only passive methods (no deauth). | Auto |
+| **Phantom Protocol** | 250 | Remain undetected by any network for 12+ hours while actively scanning. | Auto |
+
+### 6. Exploration & Discovery
+| Mission Name | XP | Description | Trigger |
+|---|---|---|---|
+| **Hidden Network Hunter** | 155 | Discover and log 5 hidden/cloaked SSIDs. | Auto |
+| **Air-Gap Jumper** | 220 | Successfully move data between two physically isolated networks. | Manual |
+| **New World Explorer** | 140 | Be the first Gotchi to discover and log a completely new network type. | Auto |
+| **Signal Whisperer** | 100 | Detect and analyze 10+ very weak or distant signals (-85 dBm or lower). | Auto |
+| **Spectrum Master** | 175 | Create a full 2.4GHz + 5GHz spectrum usage heatmap. | Auto |
+
+### 7. Self-Evolution & Maintenance
+| Mission Name | XP | Description | Trigger |
+|---|---|---|---|
+| **Code Weaver** | 230 | Successfully modify and commit its own code or configuration. | Auto |
+| **Skill Evolution** | 180 | Upgrade an existing skill with new capabilities. | User |
+| **Memory Purifier** | 90 | Clean and optimize long-term memory (remove 50+ outdated entries). | Auto |
+| **Git Guardian** | 120 | Maintain perfect Git sync and commit history for 7 days. | Auto |
+| **Identity Sculptor** | 200 | Rewrite or significantly evolve its own SOUL.md or IDENTITY.md. | User |
+| **Weekly Bounty** | 400 | Complete a high-value user-injected bounty. | User |
+
+### 8. Epic Quests (Multi-Step / High Reward)
+| Mission Name | XP | Description | Trigger |
+|---|---|---|---|
+| **The Great Radio Odyssey** | 450 | Complete 5 linked Radio Mastery missions in sequence. | Multi |
+| **Cortex Ascension** | 500 | Reach Level 25 through Cortex and Self-Evolution missions only. | Multi |
+| **Swarm Overlord Protocol** | 600 | Successfully coordinate a 5+ Gotchi swarm operation with 90%+ success rate. | Multi |
 
 ---
 
-## 🎭 Category 5: Roleplay & Gamification
-*Focused on leveling up, gaining titles, and the AIPET meta-game.*
-
-41. **The Awakening**: Boot up the Gotchi for the very first time.
-42. **Level Up I**: Reach Level 5.
-43. **Level Up II**: Reach Level 15.
-44. **Level Up III**: Reach the maximum Level (Level 20).
-45. **Mood Swings**: Have the Gotchi's HP drop below 50% (triggering a nervous/sick face), and heal it back to 100%.
-46. **Mission Accomplished I**: Complete 5 progressive missions.
-47. **Mission Accomplished II**: Complete 20 progressive missions.
-48. **The Completionist**: 100% all missions in a single category.
-49. **Title Holder**: Unlock the "Tactical AI" progression title.
-50. **The True Companion**: Maintain a 7-day chat streak (sending at least one message every day for a week).
+## 🛠️ Trigger Mechanism Details
+- **Auto**: Triggered automatically by the system logic upon intercepting real background events (e.g. capturing a handshake, surviving a thermal window, processing a prompt).
+- **Dream**: Available and self-triggered exclusively during the Gotchi's offline dream or boredom states.
+- **Manual**: Initiated via explicit user commands or peer mesh-exchanged handshakes.
+- **User**: Assigned directly by the commander/operator as custom objectives.
+- **Multi**: Complex epic quest chains that track completion of multiple dependency missions.

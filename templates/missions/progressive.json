@@ -93,5 +93,62 @@
   {"name": "System Admin v2", "base_name": "System Admin", "category": "Maintenance", "target": 5, "xp_reward": 50, "source": "auto"},
   {"name": "System Admin v3", "base_name": "System Admin", "category": "Maintenance", "target": 15, "xp_reward": 100, "source": "auto"},
   {"name": "System Admin v4", "base_name": "System Admin", "category": "Maintenance", "target": 50, "xp_reward": 250, "source": "auto"},
-  {"name": "System Admin v5", "base_name": "System Admin", "category": "Maintenance", "target": 150, "xp_reward": 500, "source": "auto"}
+  {"name": "System Admin v5", "base_name": "System Admin", "category": "Maintenance", "target": 150, "xp_reward": 500, "source": "auto"},
+
+  {"name": "Handshake Symphony", "base_name": null, "category": "Radio", "target": 30, "xp_reward": 120, "source": "auto"},
+  {"name": "5GHz Conqueror", "base_name": null, "category": "Radio", "target": 15, "xp_reward": 95, "source": "auto"},
+  {"name": "Silent Scanner", "base_name": null, "category": "Radio", "target": 1, "xp_reward": 150, "source": "auto"},
+  {"name": "PMKID Hunter", "base_name": null, "category": "Radio", "target": 5, "xp_reward": 180, "source": "auto"},
+  {"name": "Channel Hopper", "base_name": null, "category": "Radio", "target": 14, "xp_reward": 110, "source": "auto"},
+  {"name": "WiFi Cartographer", "base_name": null, "category": "Radio", "target": 1, "xp_reward": 130, "source": "auto"},
+  {"name": "Radio God", "base_name": null, "category": "Radio", "target": 100, "xp_reward": 250, "source": "auto"},
+  {"name": "Stealth Operator", "base_name": null, "category": "Radio", "target": 1, "xp_reward": 160, "source": "auto"},
+
+  {"name": "Deep Thought Protocol", "base_name": null, "category": "Cortex", "target": 5, "xp_reward": 160, "source": "auto"},
+  {"name": "Dream Weaver", "base_name": null, "category": "Cortex", "target": 7, "xp_reward": 90, "source": "dream"},
+  {"name": "Memory Architect", "base_name": null, "category": "Cortex", "target": 5, "xp_reward": 140, "source": "auto"},
+  {"name": "Skill Forger", "base_name": null, "category": "Cortex", "target": 1, "xp_reward": 220, "source": "user"},
+  {"name": "Logic Overlord", "base_name": null, "category": "Cortex", "target": 3, "xp_reward": 180, "source": "auto"},
+  {"name": "Context Master", "base_name": null, "category": "Cortex", "target": 10, "xp_reward": 150, "source": "auto"},
+  {"name": "AI Philosopher", "base_name": null, "category": "Cortex", "target": 1, "xp_reward": 200, "source": "dream"},
+  {"name": "Skill Architect", "base_name": null, "category": "Cortex", "target": 1, "xp_reward": 250, "source": "user"},
+
+  {"name": "First Contact", "base_name": null, "category": "Social", "target": 1, "xp_reward": 200, "source": "manual"},
+  {"name": "Neural Link", "base_name": null, "category": "Social", "target": 45, "xp_reward": 160, "source": "auto"},
+  {"name": "Swarm Coordinator", "base_name": null, "category": "Social", "target": 2, "xp_reward": 280, "source": "manual"},
+  {"name": "Trust Builder", "base_name": null, "category": "Social", "target": 1, "xp_reward": 130, "source": "auto"},
+  {"name": "Hive Mind", "base_name": null, "category": "Social", "target": 3, "xp_reward": 240, "source": "auto"},
+  {"name": "Ambassador", "base_name": null, "category": "Social", "target": 2, "xp_reward": 190, "source": "manual"},
+
+  {"name": "Ironclad", "base_name": null, "category": "Uptime", "target": 72, "xp_reward": 180, "source": "auto"},
+  {"name": "Battery Immortal", "base_name": null, "category": "Uptime", "target": 8, "xp_reward": 140, "source": "auto"},
+  {"name": "Self-Healing", "base_name": null, "category": "Uptime", "target": 5, "xp_reward": 160, "source": "auto"},
+  {"name": "Memory Monk", "base_name": null, "category": "Uptime", "target": 48, "xp_reward": 110, "source": "auto"},
+  {"name": "Power Sage", "base_name": null, "category": "Uptime", "target": 1, "xp_reward": 125, "source": "user"},
+  {"name": "Eternal Flame", "base_name": null, "category": "Uptime", "target": 30, "xp_reward": 300, "source": "auto"},
+  {"name": "Power Efficient", "base_name": null, "category": "Uptime", "target": 6, "xp_reward": 130, "source": "auto"},
+
+  {"name": "Ghost in the Machine", "base_name": null, "category": "Stealth", "target": 1, "xp_reward": 170, "source": "auto"},
+  {"name": "Invisible Operator", "base_name": null, "category": "Stealth", "target": 1, "xp_reward": 145, "source": "auto"},
+  {"name": "MAC Chameleon", "base_name": null, "category": "Stealth", "target": 10, "xp_reward": 190, "source": "auto"},
+  {"name": "Shadow Walker", "base_name": null, "category": "Stealth", "target": 3, "xp_reward": 135, "source": "auto"},
+  {"name": "Silent Blade", "base_name": null, "category": "Stealth", "target": 1, "xp_reward": 210, "source": "auto"},
+  {"name": "Phantom Protocol", "base_name": null, "category": "Stealth", "target": 12, "xp_reward": 250, "source": "auto"},
+
+  {"name": "Hidden Network Hunter", "base_name": null, "category": "Exploration", "target": 5, "xp_reward": 155, "source": "auto"},
+  {"name": "Air-Gap Jumper", "base_name": null, "category": "Exploration", "target": 1, "xp_reward": 220, "source": "manual"},
+  {"name": "New World Explorer", "base_name": null, "category": "Exploration", "target": 1, "xp_reward": 140, "source": "auto"},
+  {"name": "Signal Whisperer", "base_name": null, "category": "Exploration", "target": 10, "xp_reward": 100, "source": "auto"},
+  {"name": "Spectrum Master", "base_name": null, "category": "Exploration", "target": 1, "xp_reward": 175, "source": "auto"},
+
+  {"name": "Code Weaver", "base_name": null, "category": "Maintenance", "target": 1, "xp_reward": 230, "source": "auto"},
+  {"name": "Skill Evolution", "base_name": null, "category": "Maintenance", "target": 1, "xp_reward": 180, "source": "user"},
+  {"name": "Memory Purifier", "base_name": null, "category": "Maintenance", "target": 50, "xp_reward": 90, "source": "auto"},
+  {"name": "Git Guardian", "base_name": null, "category": "Maintenance", "target": 7, "xp_reward": 120, "source": "auto"},
+  {"name": "Identity Sculptor", "base_name": null, "category": "Maintenance", "target": 1, "xp_reward": 200, "source": "user"},
+  {"name": "Weekly Bounty", "base_name": null, "category": "Bounty", "target": 1, "xp_reward": 400, "source": "user"},
+
+  {"name": "The Great Radio Odyssey", "base_name": null, "category": "Epic", "target": 5, "xp_reward": 450, "source": "multi"},
+  {"name": "Cortex Ascension", "base_name": null, "category": "Epic", "target": 25, "xp_reward": 500, "source": "multi"},
+  {"name": "Swarm Overlord Protocol", "base_name": null, "category": "Epic", "target": 5, "xp_reward": 600, "source": "multi"}
 ]
