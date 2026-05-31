@@ -84,15 +84,19 @@ def list_missions():
     table.add_column("Name", style="cyan")
     table.add_column("Category", style="magenta")
     table.add_column("Reward (XP)", justify="right", style="green")
+    table.add_column("Progress", style="white")
     table.add_column("Status")
 
     for m in missions:
-        status_color = "yellow" if m["status"] == "active" else "green" if m["status"] == "completed" else "white"
+        status_color = "yellow" if m["status"] == "active" else "green" if m["status"] == "completed" else "dim"
+        progress_str = f"{m.get('progress', 0)}/{m.get('target', 1)}" if m.get("target") else "N/A"
+        
         table.add_row(
             str(m["id"]),
             m["name"],
             m["category"],
             f"+{m['xp_reward']}",
+            progress_str,
             f"[{status_color}]{m['status']}[/{status_color}]"
         )
 
@@ -114,9 +118,9 @@ def inject(name, xp_reward, category):
     try:
         conn = sqlite3.connect(str(DB_PATH))
         conn.execute('''
-            INSERT INTO aipet_missions (name, category, xp_reward, status, source)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (name, category, xp_reward, 'active', 'user'))
+            INSERT INTO aipet_missions (name, base_name, category, xp_reward, target, progress, status, source)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (name, name, category, xp_reward, 1, 0, 'active', 'user'))
         conn.commit()
         conn.close()
         console.print(f"[bold green]Successfully injected bounty mission '{name}' for {xp_reward} XP![/bold green]")

@@ -1,62 +1,43 @@
 import sqlite3
 import logging
+import json
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
-from config import DB_PATH
+from config import DB_PATH, WORKSPACE_DIR
 from src.game_engine.vitals import add_xp
 from src.game_engine.state import load_state, save_state
 
 log = logging.getLogger(__name__)
 
-STARTER_MISSIONS = [
-    {
-        "name": "Cortex Calibration",
-        "category": "Cortex",
-        "xp_reward": 150,
-        "source": "auto"
-    },
-    {
-        "name": "Radio Collector",
-        "category": "Radio",
-        "xp_reward": 80,
-        "source": "auto"
-    },
-    {
-        "name": "Uptime Resilience",
-        "category": "Uptime",
-        "xp_reward": 120,
-        "source": "auto"
-    },
-    {
-        "name": "Social Sync",
-        "category": "Social",
-        "xp_reward": 200,
-        "source": "auto"
-    },
-    {
-        "name": "Dream Session",
-        "category": "Cortex",
-        "xp_reward": 60,
-        "source": "auto"
-    }
-]
+MISSIONS_FILE = WORKSPACE_DIR / "missions" / "progressive.json"
 
-def load_starter_missions():
-    """Injects starter missions into the database if they don't exist."""
+def load_progressive_missions():
+    """Injects progressive missions into the database from JSON if they don't exist."""
+    if not MISSIONS_FILE.exists():
+        log.warning(f"Missions file not found: {MISSIONS_FILE}")
+        return
+
     try:
+        with open(MISSIONS_FILE, "r") as f:
+            missions_data = json.load(f)
+
         conn = sqlite3.connect(str(DB_PATH))
-        for m in STARTER_MISSIONS:
+        for m in missions_data:
             # Check if exists
             row = conn.execute("SELECT id FROM aipet_missions WHERE name = ?", (m["name"],)).fetchone()
             if not row:
+                # By default, only 'v1' missions are active initially. Others are 'pending'.
+                initial_status = "active" if m["name"].endswith("v1") else "pending"
+                
                 conn.execute('''
-                    INSERT INTO aipet_missions (name, category, xp_reward, status, source)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', (m["name"], m["category"], m["xp_reward"], "active", m["source"]))
+                    INSERT INTO aipet_missions (name, base_name, category, xp_reward, target, progress, status, source)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (m["name"], m["base_name"], m["category"], m["xp_reward"], m["target"], 0, initial_status, m.get("source", "auto")))
         conn.commit()
         conn.close()
+        log.info("Progressive missions loaded.")
     except Exception as e:
-        log.error(f"Failed to load starter missions: {e}")
+        log.error(f"Failed to load progressive missions: {e}")
 
 def get_missions(status_filter: Optional[str] = None) -> List[Dict]:
     """Retrieves missions from the database, optionally filtered by status."""
@@ -64,9 +45,9 @@ def get_missions(status_filter: Optional[str] = None) -> List[Dict]:
         conn = sqlite3.connect(str(DB_PATH))
         conn.row_factory = sqlite3.Row
         if status_filter:
-            cursor = conn.execute("SELECT * FROM aipet_missions WHERE status = ?", (status_filter,))
+            cursor = conn.execute("SELECT * FROM aipet_missions WHERE status = ? ORDER BY id ASC", (status_filter,))
         else:
-            cursor = conn.execute("SELECT * FROM aipet_missions")
+            cursor = conn.execute("SELECT * FROM aipet_missions ORDER BY id ASC")
         missions = [dict(row) for row in cursor.fetchall()]
         conn.close()
         return missions
@@ -75,7 +56,7 @@ def get_missions(status_filter: Optional[str] = None) -> List[Dict]:
         return []
 
 def complete_mission(name: str) -> bool:
-    """Marks a mission as completed, awards XP, and updates state."""
+    """Marks a mission as completed, awards XP, and updates state. Unlocks the next tier if available."""
     try:
         conn = sqlite3.connect(str(DB_PATH))
         conn.row_factory = sqlite3.Row
@@ -91,9 +72,23 @@ def complete_mission(name: str) -> bool:
         # Update mission status
         conn.execute('''
             UPDATE aipet_missions 
-            SET status = 'completed', completed_at = ?
+            SET status = 'completed', completed_at = ?, progress = target
             WHERE id = ?
         ''', (now_str, mission["id"]))
+        
+        # Unlock next tier (e.g. if completed v1, unlock v2)
+        if mission["base_name"]:
+            # Find the next pending tier for this base_name
+            next_tier = conn.execute('''
+                SELECT id, name FROM aipet_missions 
+                WHERE base_name = ? AND status = 'pending' 
+                ORDER BY id ASC LIMIT 1
+            ''', (mission["base_name"],)).fetchone()
+            
+            if next_tier:
+                conn.execute("UPDATE aipet_missions SET status = 'active' WHERE id = ?", (next_tier["id"],))
+                log.info(f"🔓 Unlocked next mission tier: {next_tier['name']}")
+
         conn.commit()
         conn.close()
         
@@ -110,9 +105,42 @@ def complete_mission(name: str) -> bool:
         log.error(f"Failed to complete mission: {e}")
         return False
 
+def increment_mission_progress(base_name: str, amount: int = 1):
+    """Increments progress for the active tier of a specific mission base_name."""
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        conn.row_factory = sqlite3.Row
+        
+        # Find the currently active tier for this base_name
+        row = conn.execute('''
+            SELECT * FROM aipet_missions 
+            WHERE base_name = ? AND status = 'active'
+            ORDER BY id ASC LIMIT 1
+        ''', (base_name,)).fetchone()
+        
+        if not row:
+            conn.close()
+            return # No active mission for this base_name
+            
+        mission = dict(row)
+        new_progress = min(mission["progress"] + amount, mission["target"])
+        
+        conn.execute("UPDATE aipet_missions SET progress = ? WHERE id = ?", (new_progress, mission["id"]))
+        conn.commit()
+        conn.close()
+        
+        log.debug(f"Mission '{mission['name']}' progress: {new_progress}/{mission['target']}")
+        
+        if new_progress >= mission["target"]:
+            complete_mission(mission["name"])
+            
+    except Exception as e:
+        log.error(f"Failed to increment mission progress: {e}")
+
 def trigger_dream():
     """Manually invokes a dream session, awarding XP and altering mood."""
     add_xp(60, source="dream_session")
+    increment_mission_progress("Synthetic Strategist", 1)
     
     state = load_state()
     state.current_mood = "dreaming"
@@ -120,5 +148,5 @@ def trigger_dream():
     
     log.info("💭 AIPET entered Dream State.")
 
-# Initialize starter missions on module load
-load_starter_missions()
+# Initialize progressive missions on module load
+load_progressive_missions()

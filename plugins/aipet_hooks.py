@@ -2,7 +2,7 @@ import logging
 from hooks.runner import hook, HookEvent
 from src.game_engine.state import load_state, save_state
 from src.game_engine.vitals import calculate_hp, add_xp
-from src.game_engine.missions import complete_mission
+from src.game_engine.missions import increment_mission_progress
 
 log = logging.getLogger(__name__)
 
@@ -23,21 +23,21 @@ def aipet_heartbeat_hook(event: HookEvent):
         save_state(state)
         log.debug(f"AIPET HP updated to {new_hp:.1f}")
 
-    # Example: Completing 'Uptime Resilience' if uptime is good
-    if uptime_hours > 24.0:
-        complete_mission("Uptime Resilience")
+    # Example: Increment 'Ironclad Uptime' if uptime is good (in a real system, this increments by hours)
+    if uptime_hours >= 1.0:
+        increment_mission_progress("Ironclad Uptime", 1)
 
 @hook("pwn.handshake")
 def aipet_handshake_hook(event: HookEvent):
-    """Hook to capture XP for Radio Collector mission."""
+    """Hook to capture XP for Handshake Hunter mission."""
     # Award minor XP for each handshake
-    add_xp(10, source="handshake_capture")
+    add_xp(5, source="handshake_capture")
     
-    # Mark mission complete (in a real system this would track progress rather than immediate completion)
-    complete_mission("Radio Collector")
+    # Increment mission progress
+    increment_mission_progress("Handshake Hunter", 1)
 
 @hook("message")
 def aipet_message_hook(event: HookEvent):
-    """Hook to track reasoning or interactions for Cortex Calibration."""
+    """Hook to track reasoning or interactions for Deep Thought."""
     if event.user_id:  # Valid interaction
-        complete_mission("Cortex Calibration")
+        increment_mission_progress("Deep Thought", 1)
