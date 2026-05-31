@@ -289,7 +289,26 @@ async def cmd_status(interaction: discord.Interaction):
     await interaction.response.defer()
     
     stats = get_stats()
-    gotchi_stats = get_stats_summary()
+    
+    # Load actual autonomous AIPET game state
+    from src.game_engine.state import load_state
+    aipet_state = load_state()
+    level = aipet_state.level
+    xp = aipet_state.xp
+    
+    def xp_to_reach_level(n: int) -> int:
+        if n <= 10:
+            return n * 100
+        else:
+            return 1000 + (n - 10) * 1000
+            
+    xp_at_current_level_start = xp_to_reach_level(level) if level > 1 else 0
+    xp_needed_this_level = xp_to_reach_level(level + 1) - xp_at_current_level_start
+    xp_in_level = xp - xp_at_current_level_start
+    
+    from db.stats import LEVEL_TITLES
+    title = LEVEL_TITLES[min(len(LEVEL_TITLES) - 1, level - 1)] if LEVEL_TITLES else "Newborn"
+    
     router = get_router()
     mode = "Lite ⚡" if router.force_lite else "Pro 🧠"
     
@@ -304,10 +323,12 @@ async def cmd_status(interaction: discord.Interaction):
     smart_faces = faces.get("smart", ["(✜‿‿✜)"])
     face_str = random.choice(smart_faces) if isinstance(smart_faces, list) else smart_faces
     
+    msg_count = get_message_count(interaction.channel_id) if interaction.channel_id else 0
+    
     msg = (f"`{face_str}` **{BOT_NAME.upper()} — STATUS**\n"
-           f"🎮 Level: {gotchi_stats['level']} ({gotchi_stats.get('title', 'Newborn')})\n"
-           f"⭐ XP: {gotchi_stats['xp_in_level']}/{gotchi_stats['xp_needed_this_level']}\n"
-           f"💬 Messages: {gotchi_stats['messages']}\n"
+           f"🎮 Level: {level} ({title})\n"
+           f"⭐ XP: {xp_in_level}/{xp_needed_this_level}\n"
+           f"💬 Messages: {msg_count}\n"
            f"🌡️ Temperature: {stats.temp}\n"
            f"💾 RAM Free: {stats.memory}\n"
            f"🤖 AI/LLM MODEL: {active_model_str}\n"
