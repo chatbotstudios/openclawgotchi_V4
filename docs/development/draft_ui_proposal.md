@@ -8,9 +8,9 @@ The top row is dedicated to bot identity and essential connectivity/telemetry.
   - **WIFI Icon**: `▂▄▆█` (Full 4-bar signal)' where `▂▄▆_` (3-bar signal / slight drop), `▂▄__` (2-bar signal / weak), `▂___` (1-bar signal / very weak), `✖` (Offline)
   - **Bluetooth Icon**:
   `B` (BLE ON)
-  `✖` (BLE OFF)
-  `B»` (Bluetooth broadcasting/sending/scanning etc)
-  `«B»` (Bluetooth discoverable field)
+  `X` (BLE OFF)
+  `<<B>>` (Bluetooth broadcasting/sending/scanning etc)
+  `(B)` (Bluetooth discoverable field)
   `B✓` (Paired/Pairing successful)
   `B✕` (Pairing failed /disconnected)
  

@@ -115,6 +115,35 @@ def _load_all_faces() -> dict:
 
 _animation_tick = 0
 
+def get_bluetooth_icon() -> str:
+    if sys.platform != "linux":
+        return "B"  # Default for macOS/Windows development/testing
+    
+    try:
+        import subprocess
+        # 1. Check if adapter is present and UP
+        hci_check = subprocess.run(["hciconfig", "hci0"], capture_output=True, text=True, timeout=1)
+        if hci_check.returncode != 0 or "DOWN" in hci_check.stdout:
+            return "X"
+            
+        # 2. Check if discoverable (ISCAN active)
+        if "ISCAN" in hci_check.stdout:
+            return "(B)"
+            
+        # 3. Check if tethered / connected
+        bnep_check = subprocess.run(["ip", "link", "show", "bnep0"], capture_output=True, text=True, timeout=1)
+        if bnep_check.returncode == 0 and "state UP" in bnep_check.stdout:
+            return "B✓"
+            
+        # 4. Check if actively scanning / broadcasting
+        pgrep_scan = subprocess.run(["pgrep", "-f", "bluetoothctl|hcitool|bettercap"], capture_output=True, text=True, timeout=1)
+        if pgrep_scan.returncode == 0:
+            return "<<B>>"
+            
+        return "B"
+    except Exception:
+        return "B"
+
 def generate_canvas(mood="happy", status_text="") -> Image:
     stats = get_system_stats()
     
@@ -165,9 +194,9 @@ def generate_canvas(mood="happy", status_text="") -> Image:
     # ----------------------------------------------------
     mode_tag = " [L]" if "MODE: L" in status_text else " [P]" if "MODE: P" in status_text else ""
     
-    # WIFI & BLE Icons (Mocked for now, can be hooked to actual net stats later)
-    # ▂▃▅ is our 3-bar signal, B)) is our BLE broadcasting icon
-    left_header = f"{BOT_NAME}>{mode_tag}  ▂▃▅ B))"
+    # WIFI & BLE Icons
+    ble_icon = get_bluetooth_icon()
+    left_header = f"{BOT_NAME}>{mode_tag}  ▂▃▅ {ble_icon}"
     draw.text((2, 1), left_header, font=font_bold, fill=fg_color)
     
     # Condensed Stats: C:9 T:45 M:1.7G
