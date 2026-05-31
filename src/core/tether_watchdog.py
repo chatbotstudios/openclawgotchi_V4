@@ -74,11 +74,12 @@ class TetherWatchdog:
             # Determine interval based on elapsed time
             elapsed = time.time() - self.start_time
             
-            if elapsed < self.burst_duration:
-                current_interval = self.interval_burst
-            else:
-                current_interval = self.interval_steady
-                log.debug(f"🧲 Watchdog running in Stealth Mode (polling every {current_interval}s)")
+            if elapsed >= self.burst_duration:
+                log.info("🧲 Watchdog Burst complete. Turning OFF to save power.")
+                self.running = False
+                break
+                
+            current_interval = self.interval_burst
             
             # Sleep in small increments to allow for faster shutdown
             for _ in range(int(current_interval)):

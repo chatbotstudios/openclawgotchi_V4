@@ -16,10 +16,9 @@ To maintain a balance between **uplink availability** and **host battery preserv
 - **Duration**: Runs for **5 minutes** (300 seconds).
 - **Goal**: Rapidly re-establish connection if the user momentarily locked their phone or briefly walked out of range.
 
-### 2. 🥷 Stealth Mode (Long-Term Battery Saver)
-- **Trigger**: Automatically entered if the primary 5-minute Burst Mode fails to recover connection.
-- **Interval**: Polling relaxes to every **5 minutes** (300 seconds).
-- **Goal**: Prevents aggressive, repeating Bluetooth connection loops from draining the Pi Zero 2W or the operator's phone battery while keeping the background recovery mechanism alive indefinitely.
+### 2. 📴 Absolute Power-Off Fail-Safe
+- **Behavior**: If the primary 5-minute Burst Mode fails to recover the connection, the watchdog daemon thread terminates completely.
+- **Goal**: Ensures zero battery drain on either the Raspberry Pi or the operator's phone. To restart the recovery watchdog, the user can manually initiate a connection or restart the daemon.
 
 ---
 
@@ -62,4 +61,4 @@ execute("sudo nmcli con up iPhoneHotspot")
 ## ⚠️ Safeguards & Conflict Resolution
 
 - **Wi-Fi Precedence**: The watchdog will only attempt a Bluetooth tether activation if both primary Wi-Fi and Bluetooth connections are down. If a valid, trusted Wi-Fi Access Point is connected, the watchdog suspends itself.
-- **Stealth Polling Cap**: In Stealth Mode, the daemon restricts failed connection attempts to a maximum of 1 per 5 minutes to prevent the phone from blocking the Pi's MAC address due to connection flooding.
+- **Connection Rate Limiting**: The 30-second polling interval in Burst Mode is strictly rate-limited to a maximum of 5 minutes total to prevent connection flooding or MAC address blocking by the host operating system.
