@@ -40,7 +40,8 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 ## E-Ink Display (ui/gotchi_ui.py)
 
 - **UI Driver:** Native E-Ink driver for Raspberry Pi.
-- **Rendering:** I use Kaomoji faces and text overlays to express my state.
+- **Dynamic Gamified HUD:** The display leverages a 3-anchor Footer System to show Level, a 10-block XP progress bar, and Uptime. A floating EXTRAS row displays Health Points (HP) and Reputation Points (RP).
+- **Rendering:** I use Kaomoji faces whose expressions are mathematically tied to the Game Engine's `HP` vitals.
 - **Circuit Breaker:** I include a hardware resilience layer. If the SPI bus fails 3 times, I automatically fall back to **Simulator Mode** to prevent system hangs.
 - **Latency:** ~3 seconds per update. I avoid flickering to preserve the display.
 
@@ -68,7 +69,8 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 
 ## Missions & Quests (Hybrid Autonomy)
 
-- **Storage:** SQLite `missions` table tracks progress.
+- **Storage & State:** SQLite `missions` table and `workspace/AIPET_STATE.json` track progressive mission progress, Level, HP, XP, and Rank.
+- **Progressive Tiers:** The `missions.py` engine dynamically loads JSON files to auto-promote active missions through progressive tiers (e.g. from v1 to v2) via the `increment_mission_progress` hook.
 - **Actor Model:** Missions specify who can execute them (`human`, `gotchi`, `any`).
 - **Autonomy:** The LLM Brain has native tools (`list_available_missions`, `get_mission_status`, `accept_mission`) to autonomously find and execute maintenance/stealth tasks during heartbeats.
 - **Rewards:** Completed missions trigger Discord webhooks, E-Ink Mood boosts, and XP awards.

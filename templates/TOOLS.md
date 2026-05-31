@@ -36,9 +36,9 @@ This is your official tool manifest. Use these to interface with the physical an
 - **`create_custom_tool`**: Write new Python skills for yourself on the fly.
 
 ## 🎯 MISSIONS & QUESTS
-- **`list_available_missions`**: Find new quests you can accept.
-- **`get_mission_status`**: Check the progress of your currently active missions.
-- **`accept_mission`**: Officially log and start a mission.
+- **`list_available_missions`**: Find new progressive quests you can accept.
+- **`get_mission_status`**: Check the numerical progress (e.g. `5/25`) and tier level of your active missions.
+- **`accept_mission`**: Officially log and start a mission to earn XP and Rank.
 
 ---
 

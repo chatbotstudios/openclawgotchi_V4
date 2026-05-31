@@ -164,13 +164,33 @@ def generate_canvas(mood="happy", status_text="") -> Image:
     # HEADER (y: 0 to 15)
     # ----------------------------------------------------
     mode_tag = " [L]" if "MODE: L" in status_text else " [P]" if "MODE: P" in status_text else ""
-    draw.text((2, 1), f"{BOT_NAME}>{mode_tag}", font=font_bold, fill=fg_color)
     
-    txt_stats = f"C:{stats['cpu']}% T:{stats['temp']}C M:{stats['mem_avail']}MB"
+    # WIFI & BLE Icons (Mocked for now, can be hooked to actual net stats later)
+    # ▂▃▅ is our 3-bar signal, ᛒ)) is our BLE broadcasting icon
+    left_header = f"{BOT_NAME}>{mode_tag}  ▂▃▅ ᛒ))"
+    draw.text((2, 1), left_header, font=font_bold, fill=fg_color)
+    
+    # Condensed Stats: C:9 T:45 M:1.7G
+    mem_g = round(stats.get('mem_avail', 0) / 1024, 1) if isinstance(stats.get('mem_avail'), int) else "?"
+    txt_stats = f"C:{stats['cpu']} T:{stats['temp']} M:{mem_g}G"
+    
     bbox = draw.textbbox((0, 0), txt_stats, font=font_ui)
     draw.text((WIDTH - (bbox[2] - bbox[0]) - 2, 2), txt_stats, font=font_ui, fill=fg_color)
     
     draw.line((0, HEADER_H, WIDTH, HEADER_H), fill=fg_color)
+
+    # ----------------------------------------------------
+    # EXTRAS (y: 92)
+    # ----------------------------------------------------
+    try:
+        from src.game_engine.state import load_state
+        state = load_state()
+        extras_str = f"HP♥{int(state.hp)}  RP♦0"
+    except Exception:
+        extras_str = "HP♥?  RP♦0"
+        
+    extras_bbox = draw.textbbox((0, 0), extras_str, font=font_ui)
+    draw.text((WIDTH - (extras_bbox[2] - extras_bbox[0]) - 2, HEIGHT - FOOTER_H - 14), extras_str, font=font_ui, fill=fg_color)
 
     # ----------------------------------------------------
     # FOOTER (y: 107 to 122)
@@ -178,18 +198,43 @@ def generate_canvas(mood="happy", status_text="") -> Image:
     draw.line((0, HEIGHT - FOOTER_H, WIDTH, HEIGHT - FOOTER_H), fill=fg_color)
     
     try:
-        prog = get_level_progress()
-        xp_str = f"Lv{prog['level']}"
-    except Exception:
-        xp_str = ""
+        from src.game_engine.state import load_state
+        from src.game_engine.vitals import xp_to_reach_level
+        state = load_state()
+        lv_str = f"Lv{state.level}"
         
-    draw.text((2, HEIGHT - FOOTER_H + 2), xp_str, font=font_ui, fill=fg_color)
+        xp_base = xp_to_reach_level(state.level) if state.level > 1 else 0
+        xp_needed_total = xp_to_reach_level(state.level + 1)
+        xp_in_level = state.xp - xp_base
+        xp_needed_this_level = xp_needed_total - xp_base
+        
+        percent = xp_in_level / xp_needed_this_level if xp_needed_this_level > 0 else 0
+        blocks = min(10, int(percent * 10))
+        bar_str = f"[{'■'*blocks}{'□'*(10-blocks)}]"
+        
+        def format_xp(val):
+            return f"{val//1000}K" if val >= 1000 else str(val)
+            
+        xp_str = f"XP{bar_str}{format_xp(xp_in_level)}/{format_xp(xp_needed_this_level)}"
+    except Exception as e:
+        lv_str = "Lv1"
+        xp_str = "XP[□□□□□□□□□□]?/?"
+
+    # Left Anchor (LvX)
+    draw.text((2, HEIGHT - FOOTER_H + 2), lv_str, font=font_ui, fill=fg_color)
+    lv_bbox = draw.textbbox((0, 0), lv_str, font=font_ui)
+    lv_width = lv_bbox[2] - lv_bbox[0]
     
+    # Right Anchor (Uptime/Time)
     now = datetime.datetime.now().strftime("%H:%M")
-    uptime = f"UP {stats['uptime']}" if stats['uptime'] != '?' else ""
-    footer_right = f"{uptime} | {now}"
-    bbox_fr = draw.textbbox((0, 0), footer_right, font=font_ui)
-    draw.text((WIDTH - (bbox_fr[2] - bbox_fr[0]) - 2, HEIGHT - FOOTER_H + 2), footer_right, font=font_ui, fill=fg_color)
+    uptime = f"{stats['uptime']}" if stats['uptime'] != '?' else ""
+    footer_right = f"{uptime} | {now}" if uptime else now
+    fr_bbox = draw.textbbox((0, 0), footer_right, font=font_ui)
+    fr_width = fr_bbox[2] - fr_bbox[0]
+    draw.text((WIDTH - fr_width - 2, HEIGHT - FOOTER_H + 2), footer_right, font=font_ui, fill=fg_color)
+    
+    # Center Anchor (XP Bar) placed right after LvX
+    draw.text((2 + lv_width + 5, HEIGHT - FOOTER_H + 2), xp_str, font=font_ui, fill=fg_color)
 
     # ----------------------------------------------------
     # BODY (y: 16 to 106)

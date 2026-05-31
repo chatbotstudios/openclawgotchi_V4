@@ -117,7 +117,7 @@ OpenClawGotchi follows a **Workspace-First** philosophy. The agent's identity, b
 3. **New Plugins**: 
     - Create a Python file in `plugins/` (e.g., `plugins/my_plugin.py`) and use the `@hook` decorator to subscribe to events.
 4. **Core Logic**: Edit relevant modules in `src/`.
-5. **Missions / Quests**: You can use the Mission System to automate LLM chores. Check `docs/development/MISSIONS.md` for schema details. Missions exist in SQLite but are bootstrapped via `workspace/missions/default.json`.
+5. **Missions / Quests**: You can use the Mission System to automate tasks. We use a **Progressive Mission Architecture** (e.g., v1, v2, v3 tiers) to ensure steady evolution. The E-Ink UI is a fully gamified HUD tracking HP, Level, Rank, and an XP progress bar to visually represent this evolution. Missions exist in SQLite and are bootstrapped via JSON.
 
 ## Deployment
 
