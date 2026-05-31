@@ -299,7 +299,7 @@ async def cmd_status(interaction: discord.Interaction):
            f"💬 Messages: {gotchi_stats['messages']}\n"
            f"🌡️ Temperature: {stats.temp}\n"
            f"💾 RAM Free: {stats.memory}\n"
-           f"🤖 AI/LLM Model: {active_model_str}\n"
+           f"🤖 AI/LLM MODEL: {active_model_str}\n"
            f"🧠 Mode: {mode}")
     
     # Slow hardware update
