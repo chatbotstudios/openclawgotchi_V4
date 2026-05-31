@@ -8,6 +8,7 @@ from cli.dashboard.fetchers import (
     fetch_gotchi_stats,
     fetch_pwn_status,
     fetch_recent_logs,
+    fetch_missions_status,
     fetch_face
 )
 from cli.dashboard.layout import (
@@ -17,6 +18,7 @@ from cli.dashboard.layout import (
     render_vitals,
     render_radio,
     render_memory,
+    render_missions,
     render_logs,
     render_footer
 )
@@ -49,11 +51,12 @@ async def dashboard_loop(refresh_rate: float):
                 sys_task = asyncio.create_task(fetch_system_stats())
                 gotchi_task = asyncio.create_task(fetch_gotchi_stats())
                 pwn_task = asyncio.create_task(fetch_pwn_status())
-                logs_task = asyncio.create_task(fetch_recent_logs(5))
+                logs_task = asyncio.create_task(fetch_recent_logs(6))
                 face_task = asyncio.create_task(fetch_face())
+                missions_task = asyncio.create_task(fetch_missions_status())
                 
-                results = await asyncio.gather(sys_task, gotchi_task, pwn_task, logs_task, face_task)
-                sys_stats, gotchi_stats, pwn_stats, recent_logs, face_str = results
+                results = await asyncio.gather(sys_task, gotchi_task, pwn_task, logs_task, face_task, missions_task)
+                sys_stats, gotchi_stats, pwn_stats, recent_logs, face_str, missions_data = results
                 
                 sys_dict = sys_stats.to_dict() if hasattr(sys_stats, 'to_dict') else {}
                 
@@ -70,6 +73,7 @@ async def dashboard_loop(refresh_rate: float):
                 layout["vitals"].update(render_vitals(sys_dict))
                 layout["right_col"].update(render_radio(pwn_stats))
                 layout["memory"].update(render_memory(gotchi_stats))
+                layout["missions"].update(render_missions(missions_data))
                 layout["logs"].update(render_logs(recent_logs))
                 layout["footer"].update(render_footer())
                 

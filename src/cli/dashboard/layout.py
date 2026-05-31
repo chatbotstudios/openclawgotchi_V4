@@ -22,15 +22,16 @@ def generate_layout() -> Layout:
     )
     
     layout["bottom_row"].split_row(
-        Layout(name="memory", ratio=1),
-        Layout(name="logs", ratio=2)
+        Layout(name="memory", ratio=1.0),
+        Layout(name="missions", ratio=1.5),
+        Layout(name="logs", ratio=2.0)
     )
     
     return layout
 
 def render_header(uptime: str = "?", mode: str = "Pro 🧠") -> Panel:
     header_text = Text()
-    header_text.append("🦋 OPENCLAWGOTCHI V3", style="bold cyan")
+    header_text.append("🦋 OPENCLAWGOTCHI V4", style="bold cyan")
     header_text.append(f"  |  MODE: {mode}  |  UPTIME: {uptime}  |  ", style="white")
     header_text.append("[LIVE 🔴]", style="bold red blink")
     return Panel(header_text, style="white on black")
@@ -90,8 +91,33 @@ def render_memory(gotchi_stats: dict) -> Panel:
     text.append(f"• Msgs: {gotchi_stats.get('messages', '?')}")
     return Panel(text, title="🧠 BRAIN & XP", border_style="yellow")
 
+def render_missions(missions_data: dict) -> Panel:
+    text = Text()
+    active_list = missions_data.get("active", [])
+    completed_count = missions_data.get("completed_count", 0)
+    pending_count = missions_data.get("pending_count", 0)
+    
+    text.append("Active Targets:\n", style="bold cyan")
+    if not active_list:
+        text.append(" • No active missions!\n", style="italic white")
+    else:
+        for m in active_list:
+            name = m.get("name", "Unknown")
+            category = m.get("category", "General")
+            progress = m.get("progress", 0)
+            target = m.get("target", 1)
+            xp = m.get("xp", 0)
+            
+            text.append(f" • [{category}] {name} ({progress}/{target}) ", style="white")
+            text.append(f"+{xp}XP\n", style="bold yellow")
+            
+    text.append("\n")
+    text.append(f"🏆 Done: {completed_count}  |  ⏳ Pend: {pending_count}", style="bold green")
+    
+    return Panel(text, title="🎯 TARGET MISSIONS", border_style="cyan")
+
 def render_logs(logs: list) -> Panel:
-    text = Text("\n".join(logs))
+    text = Text.from_markup("\n".join(logs))
     return Panel(text, title="📜 RECENT ACTIVITY", border_style="blue")
 
 def render_footer() -> Panel:
