@@ -78,12 +78,10 @@ SERVICES="
     wayvnc wayvnc-control
     # Printing
     cups cups-browsed cups.path cups.socket
-    # Mobile/Network discovery
-    ModemManager avahi-daemon
     # Package manager background
     packagekit
-    # [PRESERVED] Bluetooth & Wi-Fi logic (Required for Pwning/BTPAN)
-    # bluetooth hciuart
+    # [PRESERVED] Bluetooth, Wi-Fi, Cellular & mDNS logic
+    # bluetooth hciuart ModemManager avahi-daemon
 "
 
 for svc in $SERVICES; do
@@ -91,8 +89,8 @@ for svc in $SERVICES; do
     sudo systemctl mask "$svc" 2>/dev/null || true
     sudo systemctl stop "$svc" 2>/dev/null || true
 done
-echo "  ✅ Disabled: audio, printing, vnc, avahi, and background updates."
-echo "  🛡️  Preserved: bluetooth, networking (Ready for Pwning/BTPAN)"
+echo "  ✅ Disabled: audio, printing, vnc, and background updates."
+echo "  🛡️  Preserved: bluetooth, networking, mDNS & cellular"
 
 # User-level audio services
 USER_SERVICES="pipewire pipewire-pulse wireplumber pipewire.socket pipewire-pulse.socket"

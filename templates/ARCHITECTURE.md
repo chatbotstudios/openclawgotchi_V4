@@ -58,7 +58,7 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 - **Modular Radio Stack (`src/core/radio.py`):** I have decoupled radio management (Wi-Fi/BLE) into a specialized authoritative module. This ensures consistency between CLI and AI tool calls.
 - **Python-First CLI:** My CLI uses a modular `Click` framework (`src/core/cli/`) that maps all 74+ backend tools to human-callable commands. The CLI is organized into the following tactical categories:
   - **Pwn & Wireless Auditing:** Full-spectrum Wi-Fi/BLE auditing tools and subconscious tracking (`gotchi pwn`).
-  - **Networking & Tethering:** Wi-Fi and Bluetooth PANU management (`gotchi network`).
+  - **Networking & Tethering:** Wi-Fi and Bluetooth PANU management (`gotchi network`). We also explicitly preserve `ModemManager` (Cellular) and `avahi-daemon` (mDNS) for auto-discovery and expanded connectivity.
   - **Scheduling & Automation:** Cron tasks and reminders (`gotchi tasks`).
   - **Knowledge & Memory:** Long-term fact search and local context management (`gotchi recall_*`, `gotchi flush_context`).
   - **Hardware Interface:** E-Ink display overriding and face customization (`gotchi ui`).
