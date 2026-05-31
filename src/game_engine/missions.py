@@ -110,6 +110,24 @@ def complete_mission(name: str, event=None) -> bool:
         except Exception as e:
             log.warning(f"Failed to flash E-paper on mission complete: {e}")
             
+        # Write to Daily Memory Log
+        try:
+            from memory.flush import write_to_daily_log
+            write_to_daily_log(f"🏆 Completed Mission: **{mission['name']}** (+{mission['xp_reward']} XP)")
+        except Exception as e:
+            log.warning(f"Failed to log mission to daily log: {e}")
+
+        # Broadcast to Discord #heartbeats
+        try:
+            from core.missions.notifications import _send_discord_webhook
+            import threading
+            content = f"🏆 **Mission Complete!**\n> **{mission['name']}**\n*+{mission['xp_reward']} XP gained!*"
+            t = threading.Thread(target=_send_discord_webhook, args=({"content": content},))
+            t.daemon = True
+            t.start()
+        except Exception as e:
+            log.warning(f"Failed to trigger Discord heartbeat mission webhook: {e}")
+            
         return True
     except Exception as e:
         log.error(f"Failed to complete mission: {e}")
