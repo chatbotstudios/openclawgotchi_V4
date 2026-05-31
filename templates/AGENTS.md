@@ -117,7 +117,11 @@ OpenClawGotchi follows a **Workspace-First** philosophy. The agent's identity, b
 3. **New Plugins**: 
     - Create a Python file in `plugins/` (e.g., `plugins/my_plugin.py`) and use the `@hook` decorator to subscribe to events.
 4. **Core Logic**: Edit relevant modules in `src/`.
-5. **Missions / Quests**: You can use the Mission System to automate tasks. We use a **Progressive Mission Architecture** (e.g., v1, v2, v3 tiers) to ensure steady evolution. The E-Ink UI is a fully gamified HUD tracking HP, Level, Rank, and an XP progress bar to visually represent this evolution. Missions exist in SQLite and are bootstrapped via JSON.
+5. **Missions / Quests**: You can use the Mission System to automate LLM chores. Check `docs/development/MISSIONS.md` for schema details. Missions exist in SQLite but are bootstrapped via `workspace/missions/progressive.json`.
+6. **Gamification (Game Engine)**: The V4 Architecture implements an RPG-style Game Engine:
+    - **XP (Experience)**: Earned organically through the Hook System (`plugins/aipet_hooks.py`) via user commands and messages. Missions follow a standardized 5-tier scaling matrix (15, 50, 100, 250, 500 XP).
+    - **HP (Health Points)**: Calculated dynamically in `vitals.py` based on hardware telemetry (uptime, CPU load, memory, battery).
+    - **Notifications**: Level-ups and mission completions generate async broadcast strings that are dynamically appended to Telegram and Discord LLM responses, and immediately flash the E-Paper display.
 
 ## Deployment
 

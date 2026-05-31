@@ -40,8 +40,7 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 ## E-Ink Display (ui/gotchi_ui.py)
 
 - **UI Driver:** Native E-Ink driver for Raspberry Pi.
-- **Dynamic Gamified HUD:** The display leverages a 3-anchor Footer System to show Level, a 10-block XP progress bar, and Uptime. A floating EXTRAS row displays Health Points (HP) and Reputation Points (RP).
-- **Rendering:** I use Kaomoji faces whose expressions are mathematically tied to the Game Engine's `HP` vitals.
+- **Rendering:** I use Kaomoji faces and text overlays to express my state.
 - **Circuit Breaker:** I include a hardware resilience layer. If the SPI bus fails 3 times, I automatically fall back to **Simulator Mode** to prevent system hangs.
 - **Latency:** ~3 seconds per update. I avoid flickering to preserve the display.
 
@@ -58,7 +57,7 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 - **Modular Radio Stack (`src/core/radio.py`):** I have decoupled radio management (Wi-Fi/BLE) into a specialized authoritative module. This ensures consistency between CLI and AI tool calls.
 - **Python-First CLI:** My CLI uses a modular `Click` framework (`src/core/cli/`) that maps all 74+ backend tools to human-callable commands. The CLI is organized into the following tactical categories:
   - **Pwn & Wireless Auditing:** Full-spectrum Wi-Fi/BLE auditing tools and subconscious tracking (`gotchi pwn`).
-  - **Networking & Tethering:** Wi-Fi and Bluetooth PANU management (`gotchi network`). We also explicitly preserve `ModemManager` (Cellular) and `avahi-daemon` (mDNS) for auto-discovery and expanded connectivity.
+  - **Networking & Tethering:** Wi-Fi and Bluetooth PANU management (`gotchi network`).
   - **Scheduling & Automation:** Cron tasks and reminders (`gotchi tasks`).
   - **Knowledge & Memory:** Long-term fact search and local context management (`gotchi recall_*`, `gotchi flush_context`).
   - **Hardware Interface:** E-Ink display overriding and face customization (`gotchi ui`).
@@ -67,13 +66,15 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 - **Tactical Resilience:** My radio tools are uptime-aware. On cold boots, I report a `[WARMING UP]` state instead of noisy errors while waiting for hardware synchronization.
 - **Jobs Monitor:** I have a live tactical dashboard (`gotchi dash`) for monitoring CPU, RAM, and background service health in real-time.
 
-## Missions & Quests (Hybrid Autonomy)
+## Game Engine (XP, HP & Missions)
 
-- **Storage & State:** SQLite `missions` table and `workspace/AIPET_STATE.json` track progressive mission progress, Level, HP, XP, and Rank.
-- **Progressive Tiers:** The `missions.py` engine dynamically loads JSON files to auto-promote active missions through progressive tiers (e.g. from v1 to v2) via the `increment_mission_progress` hook.
-- **Actor Model:** Missions specify who can execute them (`human`, `gotchi`, `any`).
-- **Autonomy:** The LLM Brain has native tools (`list_available_missions`, `get_mission_status`, `accept_mission`) to autonomously find and execute maintenance/stealth tasks during heartbeats.
-- **Rewards:** Completed missions trigger Discord webhooks, E-Ink Mood boosts, and XP awards.
+The V4 Architecture implements a deeply integrated RPG-style Game Engine:
+
+- **Vitals (XP/HP)**: The `vitals.py` engine manages the Gotchi's health and experience. HP is calculated directly from hardware telemetry (uptime, CPU, RAM). XP is gained through interaction, triggering automatic Level-Ups with scaling thresholds.
+- **Hook-Driven Progression**: Mission tracking is decoupled from core bot logic. `plugins/aipet_hooks.py` listens to event hooks (`message`, `command`, `pwn.handshake`) and silently increments SQLite trackers in the background.
+- **5-Tier Scaling Matrix**: All 50+ gamified missions use a strict escalating XP curve (v1 = 15 XP, v2 = 50 XP, v3 = 100 XP, v4 = 250 XP, v5 = 500 XP).
+- **Asynchronous Broadcasting**: When a mission completes or a Level Up occurs, the engine generates notification strings (`"🎉 LEVEL UP!"`). These are instantly flashed to the E-Paper display via `show_face`, and appended seamlessly to the bottom of the next LLM response on Discord and Telegram.
+- **Autonomy:** The LLM Brain has native tools (`list_available_missions`, `get_mission_status`, `accept_mission`) to autonomously find and execute maintenance tasks.
 
 ## Safety, Hardening & Hardware Safety
 
