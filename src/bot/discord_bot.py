@@ -20,7 +20,7 @@ from db.memory import (
 from hardware.display import parse_and_execute_commands, error_screen, show_face
 from hardware.system import get_stats
 from core.router import get_router
-from db.stats import get_stats_summary
+from db.stats import get_stats_summary, on_message_answered
 from memory.summarize import optimize_history
 from hooks.runner import run_hook, HookEvent
 
@@ -245,6 +245,17 @@ class OpenClawDiscord(commands.Bot):
                 debug_footer = f"\n\n```\n{debug_block}\n```"
             if not cmds.get("face"): show_face(mood="happy", text=clean_text[:50] if clean_text else "...")
             save_message(conv_id, "assistant", response)
+            on_message_answered()
+            
+            # Award tool-use XP
+            from db.stats import on_tool_use
+            import re
+            tool_source = tool_footer or response
+            tool_match = re.search(r'Tool usage \((\d+)\):', tool_source)
+            if tool_match:
+                on_tool_use(int(tool_match.group(1)))
+            elif cmds.get("mail") or cmds.get("remember"):
+                on_tool_use(sum(1 for k in ("mail", "remember") if cmds.get(k)))
             status_block = ""
             status_header = f"{BOT_NAME.upper()} — STATUS"
             if status_header in clean_text:
