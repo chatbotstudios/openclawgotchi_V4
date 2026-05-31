@@ -14,6 +14,7 @@ PROJECT_DIR = Path(__file__).parent.parent.resolve()
 load_dotenv(PROJECT_DIR / ".env", override=True)
 SRC_DIR = PROJECT_DIR / "src"
 WORKSPACE_DIR = PROJECT_DIR / "workspace"
+MISSIONS_DIR = PROJECT_DIR / "missions"   # git-tracked; not under workspace/
 DB_PATH = PROJECT_DIR / "gotchi.db"
 UI_SCRIPT = SRC_DIR / "ui" / "gotchi_ui.py"
 DATA_DIR = PROJECT_DIR / "data"

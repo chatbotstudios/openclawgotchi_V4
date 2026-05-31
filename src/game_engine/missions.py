@@ -3,13 +3,13 @@ import logging
 import json
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
-from config import DB_PATH, WORKSPACE_DIR
+from config import DB_PATH, WORKSPACE_DIR, MISSIONS_DIR
 from src.game_engine.vitals import add_xp
 from src.game_engine.state import load_state, save_state
 
 log = logging.getLogger(__name__)
 
-MISSIONS_FILE = WORKSPACE_DIR / "missions" / "progressive.json"
+MISSIONS_FILE = MISSIONS_DIR / "progressive.json"
 
 def load_progressive_missions():
     """Injects progressive missions into the database from JSON if they don't exist."""
