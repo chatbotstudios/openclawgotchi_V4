@@ -98,16 +98,13 @@ if [[ "$(uname)" == "Darwin" ]]; then
     echo "  [###       ] (1/4) System Libraries: Skipping APT packages on macOS"
 else
     if ! command -v bettercap &> /dev/null; then
-        echo -n "  [###       ] (1/4) System Libraries & Upgrades..."
+        echo -n "  [###       ] (1/4) System Libraries..."
         sudo apt-get update -y -qq
-        sudo apt-get upgrade -y -qq
         sudo apt-get install -y -qq bettercap aircrack-ng libopenjp2-7 libopenblas-dev libtiff-dev 2>/dev/null || \
         sudo apt-get install -y -qq bettercap aircrack-ng libopenjp2-7 libatlas-base-dev libtiff5 2>/dev/null
-        echo -e "\r  [###       ] (1/4) System Libraries & Upgrades: OK"
+        echo -e "\r  [###       ] (1/4) System Libraries: OK               "
     else
-        echo "  [###       ] (1/4) System Libraries: ALREADY INSTALLED (Checking for updates...)"
-        sudo apt-get update -y -qq
-        sudo apt-get upgrade -y -qq
+        echo "  [###       ] (1/4) System Libraries: ALREADY INSTALLED"
     fi
 fi
 
