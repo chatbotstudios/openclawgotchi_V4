@@ -18,7 +18,7 @@ def calculate_hp(cpu: float, mem: float, uptime_hours: float, battery: float = 1
     hp = (uptime_hours * 1.5) + ((100 - cpu) * 0.4) + ((100 - mem) * 0.3) + (battery * 0.2)
     return max(0.0, min(100.0, hp))
 
-def add_xp(amount: int, source: str = "mission") -> int:
+def add_xp(amount: int, source: str = "mission", event=None) -> int:
     """Awards XP to the AIPET, checks for level up, and logs to SQLite."""
     state = load_state()
     state.xp += amount
@@ -34,6 +34,16 @@ def add_xp(amount: int, source: str = "mission") -> int:
         state.level += 1
         leveled_up = True
         log.info(f"🎉 AIPET LEVELED UP to Level {state.level}!")
+        
+        if event is not None:
+            event.messages.append(f"🎉 **LEVEL UP!** Gotchi reached Level {state.level}! 🚀")
+            
+        try:
+            from hardware.display import show_face
+            show_face("excited", f"SAY:Level {state.level}! | STATUS: LEVEL UP", full_refresh=False)
+        except Exception as e:
+            log.warning(f"Failed to flash E-paper on level up: {e}")
+            
         next_level_xp = xp_to_reach_level(state.level + 1)
         
     save_state(state)

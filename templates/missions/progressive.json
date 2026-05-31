@@ -57,5 +57,41 @@
   {"name": "5GHz Pioneer v2", "base_name": "5GHz Pioneer", "category": "Exploration", "target": 5, "xp_reward": 35, "source": "auto"},
   {"name": "5GHz Pioneer v3", "base_name": "5GHz Pioneer", "category": "Exploration", "target": 10, "xp_reward": 70, "source": "auto"},
   {"name": "5GHz Pioneer v4", "base_name": "5GHz Pioneer", "category": "Exploration", "target": 25, "xp_reward": 160, "source": "auto"},
-  {"name": "5GHz Pioneer v5", "base_name": "5GHz Pioneer", "category": "Exploration", "target": 50, "xp_reward": 320, "source": "auto"}
+  {"name": "5GHz Pioneer v5", "base_name": "5GHz Pioneer", "category": "Exploration", "target": 50, "xp_reward": 320, "source": "auto"},
+
+  {"name": "Chatterbox v1", "base_name": "Chatterbox", "category": "Social", "target": 1, "xp_reward": 15, "source": "auto"},
+  {"name": "Chatterbox v2", "base_name": "Chatterbox", "category": "Social", "target": 10, "xp_reward": 50, "source": "auto"},
+  {"name": "Chatterbox v3", "base_name": "Chatterbox", "category": "Social", "target": 50, "xp_reward": 100, "source": "auto"},
+  {"name": "Chatterbox v4", "base_name": "Chatterbox", "category": "Social", "target": 250, "xp_reward": 250, "source": "auto"},
+  {"name": "Chatterbox v5", "base_name": "Chatterbox", "category": "Social", "target": 1000, "xp_reward": 500, "source": "auto"},
+
+  {"name": "Night Owl v1", "base_name": "Night Owl", "category": "Social", "target": 1, "xp_reward": 15, "source": "auto"},
+  {"name": "Night Owl v2", "base_name": "Night Owl", "category": "Social", "target": 5, "xp_reward": 50, "source": "auto"},
+  {"name": "Night Owl v3", "base_name": "Night Owl", "category": "Social", "target": 15, "xp_reward": 100, "source": "auto"},
+  {"name": "Night Owl v4", "base_name": "Night Owl", "category": "Social", "target": 50, "xp_reward": 250, "source": "auto"},
+  {"name": "Night Owl v5", "base_name": "Night Owl", "category": "Social", "target": 150, "xp_reward": 500, "source": "auto"},
+
+  {"name": "The Teacher v1", "base_name": "The Teacher", "category": "Social", "target": 1, "xp_reward": 15, "source": "auto"},
+  {"name": "The Teacher v2", "base_name": "The Teacher", "category": "Social", "target": 5, "xp_reward": 50, "source": "auto"},
+  {"name": "The Teacher v3", "base_name": "The Teacher", "category": "Social", "target": 15, "xp_reward": 100, "source": "auto"},
+  {"name": "The Teacher v4", "base_name": "The Teacher", "category": "Social", "target": 50, "xp_reward": 250, "source": "auto"},
+  {"name": "The Teacher v5", "base_name": "The Teacher", "category": "Social", "target": 150, "xp_reward": 500, "source": "auto"},
+
+  {"name": "The Historian v1", "base_name": "The Historian", "category": "Social", "target": 1, "xp_reward": 15, "source": "auto"},
+  {"name": "The Historian v2", "base_name": "The Historian", "category": "Social", "target": 5, "xp_reward": 50, "source": "auto"},
+  {"name": "The Historian v3", "base_name": "The Historian", "category": "Social", "target": 15, "xp_reward": 100, "source": "auto"},
+  {"name": "The Historian v4", "base_name": "The Historian", "category": "Social", "target": 50, "xp_reward": 250, "source": "auto"},
+  {"name": "The Historian v5", "base_name": "The Historian", "category": "Social", "target": 150, "xp_reward": 500, "source": "auto"},
+
+  {"name": "Cron Master v1", "base_name": "Cron Master", "category": "Automation", "target": 1, "xp_reward": 15, "source": "auto"},
+  {"name": "Cron Master v2", "base_name": "Cron Master", "category": "Automation", "target": 5, "xp_reward": 50, "source": "auto"},
+  {"name": "Cron Master v3", "base_name": "Cron Master", "category": "Automation", "target": 15, "xp_reward": 100, "source": "auto"},
+  {"name": "Cron Master v4", "base_name": "Cron Master", "category": "Automation", "target": 50, "xp_reward": 250, "source": "auto"},
+  {"name": "Cron Master v5", "base_name": "Cron Master", "category": "Automation", "target": 150, "xp_reward": 500, "source": "auto"},
+
+  {"name": "System Admin v1", "base_name": "System Admin", "category": "Maintenance", "target": 1, "xp_reward": 15, "source": "auto"},
+  {"name": "System Admin v2", "base_name": "System Admin", "category": "Maintenance", "target": 5, "xp_reward": 50, "source": "auto"},
+  {"name": "System Admin v3", "base_name": "System Admin", "category": "Maintenance", "target": 15, "xp_reward": 100, "source": "auto"},
+  {"name": "System Admin v4", "base_name": "System Admin", "category": "Maintenance", "target": 50, "xp_reward": 250, "source": "auto"},
+  {"name": "System Admin v5", "base_name": "System Admin", "category": "Maintenance", "target": 150, "xp_reward": 500, "source": "auto"}
 ]

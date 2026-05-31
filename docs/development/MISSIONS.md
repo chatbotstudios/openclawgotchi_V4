@@ -1,127 +1,83 @@
-# OpenClawGotchi V3: Mission & Quest System Implementation Plan
+# OpenClawGotchi: 50 Mission Ideas Catalog
 
-## 1. Feature Goals & Value
-**Purpose**: The Mission/Quest system transforms the OpenClawGotchi V3 from a passive logging tool into an engaging, gamified tactical companion. By assigning specific objectives, it guides users to explore the hardware's capabilities, encourages consistent interaction with the LLM "Soul", and provides a structured way to learn wireless auditing.
-**Value**: 
-- **Retention**: Gamification loop (Action -> Reward -> Progression).
-- **Education**: Missions act as an interactive tutorial for networking and security concepts.
-- **Identity**: Reinforces the "Cyber-Pet" persona.
+This document outlines 50 potential missions categorized into 5 tactical domains for the OpenClawGotchi ecosystem. These can be integrated into the `progressive.json` mission structure to expand the bot's gamified progression.
 
-## 2. Mission Types & Categories
-### Categories
-1. **Daily**: Quick, easy tasks resetting every 24h (e.g., "Take a 10-minute power nap").
-2. **Tactical**: Pentesting & network auditing (e.g., "Capture 5 handshakes").
-3. **Exploration**: Wardriving and discovering new APs (e.g., "Map 10 unique networks").
-4. **Learning & Soul**: Interacting with the AI (e.g., "Have a 5-minute therapy session").
-5. **Stealth**: Evasion and defensive tasks (e.g., "Rotate MAC 10 times in one session").
+---
 
-### Difficulty Tiers
-- **Rookie** (10-50 XP): Simple, low-effort.
-- **Agent** (100-250 XP): Requires specific tool usage or moderate time.
-- **Elite** (500-1000 XP): Complex, multi-step, or requires travel.
-- **Legendary** (Custom Badges): Extremely rare or difficult achievements.
+## 📡 Category 1: Wireless Auditing (Pwnagotchi-style)
+*Focused on Wi-Fi and Bluetooth reconnaissance, handshakes, and network mapping.*
 
-## 3. User Interface & Commands
-The interface will be accessible via the `gotchi missions` command group.
+1. **The Observer I**: Detect 50 unique Wi-Fi access points in a single session.
+2. **The Observer II**: Detect 250 unique Wi-Fi access points across all time.
+3. **The Observer III**: Detect 1,000 unique Wi-Fi access points across all time.
+4. **Handshake Hunter I**: Capture your first WPA/WPA2 handshake.
+5. **Handshake Hunter II**: Capture 10 handshakes.
+6. **Handshake Hunter III**: Capture 50 handshakes.
+7. **Bluetooth Sniffer I**: Discover 20 unique BLE devices.
+8. **Bluetooth Sniffer II**: Discover 100 unique BLE devices.
+9. **Deauth Novice**: Successfully deauthenticate a test client from an AP.
+10. **The Archivist**: Export a PCAP file containing at least 5 captured handshakes.
 
-```bash
-# List all active and available missions
-gotchi missions list [--category tactical] [--status active]
+---
 
-# Accept a new mission from the available pool
-gotchi missions accept <mission_id>
+## 💬 Category 2: Social & Conversational
+*Focused on user engagement, context memory, and emotional bonding.*
 
-# Generate a new random or themed mission via LLM
-gotchi missions generate [--theme stealth]
+11. **First Words**: Speak to the Gotchi for the first time.
+12. **Chatterbox I**: Send 50 messages to the Gotchi.
+13. **Chatterbox II**: Send 500 messages to the Gotchi.
+14. **Night Owl**: Chat with the Gotchi between 2:00 AM and 4:00 AM.
+15. **The Teacher**: Teach the Gotchi a new fact and have it saved to long-term memory (`/remember`).
+16. **The Historian**: Successfully trigger the Gotchi to recall a fact from memory (`/recall`).
+17. **Summarizer**: Fill the context window enough to trigger an automatic memory summarization.
+18. **Emotional Rollercoaster**: Make the Gotchi cycle through 5 different Kaomoji faces in a single conversation.
+19. **The Deep Thinker**: Engage in a conversation using the `Pro 🧠` LLM mode.
+20. **Secret Keeper**: DM the Gotchi a secret message using Discord/Telegram.
 
-# Check progress on active missions
-gotchi missions progress
+---
 
-# View completed missions and rewards history
-gotchi missions history
-```
-**Interactive TUI Mode**: Running `gotchi missions` without arguments will launch a `rich`-based dashboard displaying active quests with ASCII progress bars.
+## 🔧 Category 3: Hardware & Maintenance
+*Focused on interacting with the physical Pi, managing resources, and uptime.*
 
-## 4. Data Model & Storage
-Missions will be stored in the existing SQLite database (`gotchi.db`) to ensure atomic updates and portability.
+21. **Alive and Kicking I**: Keep the Gotchi online for 24 hours continuously.
+22. **Alive and Kicking II**: Keep the Gotchi online for 7 days continuously.
+23. **Cool as a Cucumber**: Keep the Pi's CPU temperature under 45°C for 3 hours.
+24. **Under Pressure**: Have the Gotchi survive a CPU load spike (running LiteLLM locally, etc.).
+25. **Face Off**: Manually change the E-Ink display face using the `/status` or UI command.
+26. **Energy Saver**: Successfully transition into "Night Mode" (low E-Ink refresh rate).
+27. **The Mechanic**: Successfully execute a `gotchi restart` command via Discord.
+28. **System Admin**: Request the `/memory` or `/status` dashboard.
+29. **Cron Master I**: Schedule your first automated task using the `/cron` command.
+30. **Cron Master II**: Have a cron job successfully execute automatically 5 times.
 
-**Table `missions`**:
-- `id` (TEXT, PK): UUID or slug (e.g., `daily_handshake_1`).
-- `title` (TEXT): "Capture 3 Handshakes"
-- `description` (TEXT): Flavor text and requirements.
-- `category` (TEXT): 'tactical', 'daily', etc.
-- `tier` (TEXT): 'rookie', 'elite'.
-- `status` (TEXT): 'available', 'active', 'completed', 'abandoned'.
-- `progress` (INTEGER): Current count.
-- `target` (INTEGER): Target count (e.g., 3).
-- `reward_xp` (INTEGER): XP payload on completion.
-- `actor` (TEXT): Determines who can execute the mission ('gotchi', 'human', 'any').
+---
 
-## 5. Rewards System
-Completing missions directly influences both the Python Body and LLM Soul:
-- **XP / Leveling**: Added to `stats.db`. Higher levels unlock Pro LLM features or advanced UI themes.
-- **Mood Boost**: Triggers the `pulse_buddy` UI to celebrate, physically changing the E-Ink display to a happy state.
-- **Discord Broadcast**: Synchronously pushes a rich notification to the `DISCORD_HEARTBEATS_CHANNEL` via REST API so all feats are logged socially.
-- **Memory Injection**: Completed "Elite" missions are injected into the core LLM context as permanent "Lore/Memories".
-- **Hardware Unlocks**: Specific missions could unlock new Custom Faces.
+## 🌐 Category 4: Networking & Discovery
+*Focused on mDNS, cellular, internet tethering, and network topology.*
 
-## 6. Technical Architecture
-**Folder Structure**:
-```text
-src/
-└── core/
-    └── missions/
-        ├── __init__.py
-        ├── manager.py       # CRUD operations for SQLite missions table
-        ├── models.py        # Pydantic/Dataclass definitions
-        ├── rewards.py       # Logic for dispensing XP and mood changes
-        ├── generator.py     # LLM integration for dynamic quest creation
-        └── listeners.py     # Event hooks for auto-progressing tasks
-```
+31. **Ping the World**: Successfully ping an external DNS server (8.8.8.8).
+32. **Local Explorer**: Discover another device on the local network using mDNS (Avahi).
+33. **PANU Pioneer**: Connect the Gotchi to a Bluetooth PAN tethering network.
+34. **Cellular Nomad**: Successfully connect using a ModemManager cellular interface.
+35. **The Swarm I**: Detect another OpenClawGotchi running on the same local network.
+36. **The Swarm II**: Send a ping/handshake to a sibling Gotchi.
+37. **Port Scanner**: Identify 3 open ports on a target testing IP.
+38. **Bandwidth Hog**: Download a system update or model over 100MB.
+39. **Gateway Guardian**: Identify the local router's MAC address automatically.
+40. **No Strings Attached**: Operate entirely offline (no internet) for 2 hours while still chatting (via cached/local LLM).
 
-**Integration Points**:
-- **Python Body**: `listeners.py` will subscribe to Bettercap events (e.g., `wifi.handshake.captured`) and increment the progress of any active handshake missions.
-- **LLM Brain**: The `generator.py` uses LiteLLM to dynamically spin up flavor text for quests based on the user's current location or recent DB history.
+---
 
-## 7. Execution & Autonomy (Hybrid Model)
-The system employs a dual-execution strategy using the **Actor** model:
+## 🎭 Category 5: Roleplay & Gamification
+*Focused on leveling up, gaining titles, and the AIPET meta-game.*
 
-1. **User-Selected (Human)**: The human uses the CLI to browse the list and accept physical or location-based missions (e.g., Wardriving).
-2. **Autonomous (Gotchi)**: The LLM Brain is provided native Python tools (`list_available_missions`, `accept_mission`). During a `heartbeat` cronjob or idle time, Gotchi can autonomously query the database and decide to accept and execute its own maintenance or background networking tasks.
-3. **Co-op (Any)**: Either party can initiate the task.
-
-**Dynamic Generation**: When the user runs `gotchi missions generate`, the LLM receives the static JSON blueprints as examples and outputs a novel JSON schema.
-
-## 8. Progress Tracking & Events
-We will utilize the existing `@hook` decorator architecture.
-Example:
-```python
-@hook("on_handshake")
-def track_handshake_mission(event_data):
-    active_missions = db.get_active_missions(type="handshake")
-    for m in active_missions:
-        m.progress += 1
-        if m.progress >= m.target:
-            trigger_completion(m)
-        db.save(m)
-```
-
-## 9. Implementation Phases
-- **Phase 1**: Database schema (`missions` table) and core CLI commands (`list`, `accept`, `abandon`).
-- **Phase 2**: Static JSON mission blueprints and simple manual progression.
-- **Phase 3**: Event hooks for automatic tracking (Handshakes, Bluetooth pings, Uptime).
-- **Phase 4**: Rewards integration (XP, Mood, E-Ink UI alerts).
-- **Phase 5**: LLM Dynamic Generation and Interactive TUI Dashboard.
-
-## 10. Performance & Edge Considerations
-- **SQLite Locking**: Update mission progress asynchronously or use WAL mode to prevent `OperationalError` when the Bettercap thread and LLM thread clash.
-- **Memory Footprint**: The mission hooks must be `O(1)` or fast `O(N)`. Iterating through 5 active missions on a handshake event takes negligible CPU cycles, perfectly safe for the Pi Zero 2W.
-
-## 11. Extensibility
-Community developers can drop `.json` mission packs into the `workspace/missions/` directory. The `manager.py` will ingest these on boot, instantly expanding the game world without touching Python code.
-
-## 12. Challenges & Mitigations
-- **Challenge**: Spamming/Cheating (e.g., user runs `wifi.deauth` repeatedly on their own network to farm XP).
-  **Mitigation**: Implement a 24-hour cooldown on repeatable quests and cap daily XP from specific categories.
-- **Challenge**: LLM generating impossible missions.
-  **Mitigation**: Force the LLM to output Pydantic-validated JSON adhering to strict `target` bounds and supported `action_types` only.
+41. **The Awakening**: Boot up the Gotchi for the very first time.
+42. **Level Up I**: Reach Level 5.
+43. **Level Up II**: Reach Level 15.
+44. **Level Up III**: Reach the maximum Level (Level 20).
+45. **Mood Swings**: Have the Gotchi's HP drop below 50% (triggering a nervous/sick face), and heal it back to 100%.
+46. **Mission Accomplished I**: Complete 5 progressive missions.
+47. **Mission Accomplished II**: Complete 20 progressive missions.
+48. **The Completionist**: 100% all missions in a single category.
+49. **Title Holder**: Unlock the "Tactical AI" progression title.
+50. **The True Companion**: Maintain a 7-day chat streak (sending at least one message every day for a week).

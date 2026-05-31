@@ -55,7 +55,7 @@ def get_missions(status_filter: Optional[str] = None) -> List[Dict]:
         log.error(f"Failed to retrieve missions: {e}")
         return []
 
-def complete_mission(name: str) -> bool:
+def complete_mission(name: str, event=None) -> bool:
     """Marks a mission as completed, awards XP, and updates state. Unlocks the next tier if available."""
     try:
         conn = sqlite3.connect(str(DB_PATH))
@@ -93,19 +93,29 @@ def complete_mission(name: str) -> bool:
         conn.close()
         
         # Award XP and update state
-        add_xp(mission["xp_reward"], source=f"mission:{mission['name']}")
+        add_xp(mission["xp_reward"], source=f"mission:{mission['name']}", event=event)
         
         state = load_state()
         state.missions_completed += 1
         save_state(state)
         
         log.info(f"✅ Mission Completed: {mission['name']} (+{mission['xp_reward']} XP)")
+        
+        if event is not None:
+            event.messages.append(f"🎉 You completed mission **{mission['name']}**! +{mission['xp_reward']} XP 🚀")
+            
+        try:
+            from hardware.display import show_face
+            show_face("excited", f"SAY:Mission Done! | STATUS: +{mission['xp_reward']} XP", full_refresh=False)
+        except Exception as e:
+            log.warning(f"Failed to flash E-paper on mission complete: {e}")
+            
         return True
     except Exception as e:
         log.error(f"Failed to complete mission: {e}")
         return False
 
-def increment_mission_progress(base_name: str, amount: int = 1):
+def increment_mission_progress(base_name: str, amount: int = 1, event=None):
     """Increments progress for the active tier of a specific mission base_name."""
     try:
         conn = sqlite3.connect(str(DB_PATH))
@@ -132,7 +142,7 @@ def increment_mission_progress(base_name: str, amount: int = 1):
         log.debug(f"Mission '{mission['name']}' progress: {new_progress}/{mission['target']}")
         
         if new_progress >= mission["target"]:
-            complete_mission(mission["name"])
+            complete_mission(mission["name"], event=event)
             
     except Exception as e:
         log.error(f"Failed to increment mission progress: {e}")

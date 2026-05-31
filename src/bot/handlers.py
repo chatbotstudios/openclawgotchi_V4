@@ -474,7 +474,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     sender = get_sender_name(user)
     
     # Fire message hook (for logging)
-    run_hook(HookEvent(
+    hook_event = run_hook(HookEvent(
         event_type="message",
         user_id=user.id,
         chat_id=chat.id,
@@ -626,6 +626,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Append tool usage summary if exists
         if tool_footer:
             clean_text += "\n\n" + tool_footer
+            
+        # Append mission notifications and level ups
+        if hook_event and hasattr(hook_event, "messages") and hook_event.messages:
+            clean_text += "\n\n" + "\n".join(hook_event.messages)
             
         await send_long_message(update, clean_text, parse_mode="Markdown" if connector == "litellm" else None)
 

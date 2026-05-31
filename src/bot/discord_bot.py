@@ -22,8 +22,21 @@ from hardware.system import get_stats
 from core.router import get_router
 from db.stats import get_stats_summary
 from memory.summarize import optimize_history
+from hooks.runner import run_hook, HookEvent
 
 log = logging.getLogger(__name__)
+
+def _fire_discord_command_hook(interaction, command_name):
+    hook_event = run_hook(HookEvent(
+        event_type="command",
+        user_id=interaction.user.id,
+        chat_id=interaction.channel_id,
+        username=interaction.user.name,
+        action=f"/{command_name}"
+    ))
+    if hook_event and hasattr(hook_event, "messages") and hook_event.messages:
+        return "\n\n" + "\n".join(hook_event.messages)
+    return ""
 
 def is_allowed(user_id: int) -> bool:
     allowed_users = get_discord_allowed_users()
@@ -189,6 +202,15 @@ class OpenClawDiscord(commands.Bot):
         if not user_text or user_text.startswith("/"): return
         conv_id = message.channel.id
         sender = message.author.display_name
+        
+        hook_event = run_hook(HookEvent(
+            event_type="message",
+            user_id=message.author.id,
+            chat_id=message.channel.id,
+            username=sender,
+            text=user_text
+        ))
+        
         save_user(message.author.id, message.author.name, sender, "")
         save_message(conv_id, "user", user_text)
         
@@ -233,6 +255,8 @@ class OpenClawDiscord(commands.Bot):
             if debug_footer: final_msg += debug_footer
             if status_block: final_msg += f"\n\n{status_block}"
             if tool_footer: final_msg += f"\n\n{tool_footer}"
+            if hook_event and hasattr(hook_event, "messages") and hook_event.messages:
+                final_msg += "\n\n" + "\n".join(hook_event.messages)
             if len(final_msg) > 2000:
                 for i in range(0, len(final_msg), 2000): await message.channel.send(final_msg[i:i+2000])
             else: await message.channel.send(final_msg)
@@ -270,7 +294,8 @@ async def cmd_status(interaction: discord.Interaction):
     
     # Slow hardware update
     show_face("smart", f"SAY:Status check! | STATUS:{mode}")
-    await interaction.followup.send(msg)
+    notifications = _fire_discord_command_hook(interaction, "status")
+    await interaction.followup.send(msg + notifications)
 
 @bot_instance.tree.command(name="clear", description="Wipe conversation history")
 async def cmd_clear(interaction: discord.Interaction):
@@ -321,7 +346,8 @@ async def cmd_remember(interaction: discord.Interaction, category: str, fact: st
     add_fact(fact, category)
     from memory.flush import write_to_daily_log
     write_to_daily_log(f"Remembered [{category}]: {fact}")
-    await interaction.response.send_message(f"📝 Saved [{category}]: {fact}")
+    notifications = _fire_discord_command_hook(interaction, "remember")
+    await interaction.response.send_message(f"📝 Saved [{category}]: {fact}" + notifications)
 
 @bot_instance.tree.command(name="recall", description="Search memory")
 async def cmd_recall(interaction: discord.Interaction, query: str = None):
@@ -332,7 +358,8 @@ async def cmd_recall(interaction: discord.Interaction, query: str = None):
     if not facts: return await interaction.followup.send("No facts found.")
     msg = "🔍 Results:\n\n"
     for f in facts: msg += f"[{f['timestamp'][:10]}] ({f['category']}) {f['content']}\n"
-    await interaction.followup.send(msg)
+    notifications = _fire_discord_command_hook(interaction, "recall")
+    await interaction.followup.send(msg + notifications)
 
 @bot_instance.tree.command(name="memory", description="Database stats")
 async def cmd_memory(interaction: discord.Interaction):
@@ -345,7 +372,8 @@ async def cmd_memory(interaction: discord.Interaction):
     f_c = cursor.execute("SELECT COUNT(*) FROM facts").fetchone()[0]
     conn.close()
     gotchi_stats = get_stats_summary()
-    await interaction.followup.send(f"📊 **Memory Dashboard**\nMessages: {m_c}\nFacts: {f_c}\nXP: {gotchi_stats['xp']} (Lv{gotchi_stats['level']})")
+    notifications = _fire_discord_command_hook(interaction, "memory")
+    await interaction.followup.send(f"📊 **Memory Dashboard**\nMessages: {m_c}\nFacts: {f_c}\nXP: {gotchi_stats['xp']} (Lv{gotchi_stats['level']})" + notifications)
 
 @bot_instance.tree.command(name="pro", description="Toggle Lite/Pro LLM modes")
 async def cmd_pro(interaction: discord.Interaction):
@@ -365,7 +393,8 @@ async def cmd_cron(interaction: discord.Interaction, name: str, interval: str, m
     from cron.scheduler import add_cron_job
     if interval.endswith("m"): add_cron_job(name=name, message=message, run_at=interval, delete_after_run=True, target_chat_id=interaction.channel_id)
     else: add_cron_job(name=name, message=message, interval_minutes=int(interval), target_chat_id=interaction.channel_id)
-    await interaction.response.send_message(f"⏰ Job added: {name}")
+    notifications = _fire_discord_command_hook(interaction, "cron")
+    await interaction.response.send_message(f"⏰ Job added: {name}" + notifications)
 
 @bot_instance.tree.command(name="pwn", description="Pwnagotchi Subconscious Control")
 async def cmd_pwn(interaction: discord.Interaction, action: str = "status", target: str = None):
@@ -400,7 +429,8 @@ async def cmd_jobs(interaction: discord.Interaction, action: str = None, job_id:
     if not jobs: return await interaction.followup.send("No jobs.")
     msg = "⏰ **Jobs**\n\n"
     for j in jobs: msg += f"• **{j.name}** ({j.id}) - {j.run_count} runs\n"
-    await interaction.followup.send(msg)
+    notifications = _fire_discord_command_hook(interaction, "jobs")
+    await interaction.followup.send(msg + notifications)
 
 def run_discord():
     if not DISCORD_BOT_TOKEN:
