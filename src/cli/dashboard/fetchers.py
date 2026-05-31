@@ -59,24 +59,83 @@ async def fetch_pwn_status():
     return await asyncio.to_thread(_get)
 
 async def fetch_recent_logs(limit=5):
-    """Fetch recent activity logs."""
+    """Fetch recent activity logs from gotchi logs."""
     def _get():
         logs = []
         try:
-            from db.memory import get_history
-            from config import get_admin_id
+            from audit_logging.command_logger import get_recent_commands
+            cmds = get_recent_commands(limit=limit)
             
-            # Attempt to get history from DB
-            admin_id = get_admin_id()
-            if admin_id:
-                history = get_history(admin_id, limit=limit)
-                for h in history:
-                    role = h.get("role", "?")
-                    content = h.get("content", "").replace("\n", " ")[:60]
-                    logs.append(f"[{role.upper()}] {content}")
+            if not cmds:
+                return ["No recent logs found."]
+                
+            for c in cmds:
+                action = c.get("action", "")
+                ts = c.get("ts", "")
+                
+                # Extract time
+                time_str = ""
+                if ts:
+                    try:
+                        time_str = ts.split("T")[1][:5] + " "
+                    except: pass
+                
+                if action == "error":
+                    err_type = c.get("error_type", "Error")
+                    msg = c.get("message", "")[:40]
+                    logs.append(f"{time_str}🔴 [bold red][ERR][/] {err_type}: {msg}")
+                elif action.startswith("heartbeat:"):
+                    hb_type = action.split(":")[1].upper()
+                    res = c.get("result", "")[:40]
+                    logs.append(f"{time_str}💓 [bold magenta][HB][/] {hb_type} - {res}")
+                elif action == "response":
+                    conn = c.get("connector", "LLM")
+                    logs.append(f"{time_str}🤖 [bold green][BOT][/] Sent response ({conn})")
+                elif action.startswith("cron:") or action == "cron":
+                    logs.append(f"{time_str}⏰ [bold yellow][CRON][/] Triggered {action}")
+                else:
+                    source = c.get("source", "system").upper()
+                    uname = c.get("username", "User")
+                    preview = c.get("text_preview", "").replace("\n", " ")[:35]
+                    logs.append(f"{time_str}👤 [bold cyan][{source}][/] @{uname} -> {action} {preview}")
         except Exception as e:
-            logs.append(f"[ERR] DB read failed: {e}")
+            logs.append(f"[ERR] Log parse failed: {e}")
         return logs
+    return await asyncio.to_thread(_get)
+
+async def fetch_missions_status():
+    """Fetch active, completed, and pending missions stats from game engine."""
+    def _get():
+        try:
+            from game_engine.missions import get_missions
+            all_missions = get_missions()
+            
+            active = []
+            completed_count = 0
+            pending_count = 0
+            
+            for m in all_missions:
+                status = m.get("status")
+                if status == "active":
+                    active.append({
+                        "name": m.get("name"),
+                        "category": m.get("category"),
+                        "progress": m.get("progress", 0),
+                        "target": m.get("target", 1),
+                        "xp": m.get("xp_reward", 0)
+                    })
+                elif status == "completed":
+                    completed_count += 1
+                elif status == "pending":
+                    pending_count += 1
+                    
+            return {
+                "active": active[:3],  # Show top 3 active
+                "completed_count": completed_count,
+                "pending_count": pending_count
+            }
+        except Exception as e:
+            return {"active": [], "completed_count": 0, "pending_count": 0, "error": str(e)}
     return await asyncio.to_thread(_get)
 
 async def fetch_face():
