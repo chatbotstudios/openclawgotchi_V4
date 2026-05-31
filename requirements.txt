@@ -1,0 +1,32 @@
+# OpenClawGotchi Dependencies
+# Install: pip install -r requirements.txt
+
+# Bots
+python-telegram-bot>=20.0
+discord.py>=2.3.2
+
+# LLM Fallback (Gemini)
+litellm>=1.81.7
+
+# E-Ink Display
+Pillow>=9.0.0
+
+# Raspberry Pi GPIO (for E-Ink)
+RPi.GPIO>=0.7.1; sys_platform == 'linux' and (platform_machine == 'armv7l' or platform_machine == 'aarch64')
+spidev>=3.6; sys_platform == 'linux' and (platform_machine == 'armv7l' or platform_machine == 'aarch64')
+
+# Hardware Monitoring
+psutil>=5.9.0
+
+# CLI Framework
+click>=8.1.0
+rich>=13.0.0
+
+# Network (Bettercap Listener)
+websockets>=10.0
+
+# Pwnagotchi Utilities
+qrcode>=7.4.2
+dpkt>=1.9.8
+requests
+python-dotenv

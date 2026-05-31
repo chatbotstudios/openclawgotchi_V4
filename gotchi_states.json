@@ -1,0 +1,474 @@
+{
+  "MAIN_STATES": [
+    {
+      "state": "Connecting",
+      "color": "🟧 #FF9F1C"
+    },
+    {
+      "state": "Thinking",
+      "color": "🟦 #2EC4B6"
+    },
+    {
+      "state": "Tool Loop",
+      "color": "🟪 #9B5DE5"
+    },
+    {
+      "state": "Success",
+      "color": "🟩 #4CAF50"
+    },
+    {
+      "state": "Error",
+      "color": "🟥 #E63946"
+    }
+  ],
+  "SPECIAL_STATES": [
+    {
+      "state": "pondering",
+      "color": "⬜ #A8DADC"
+    },
+    {
+      "state": "contemplating",
+      "color": "🟩 #457B9D"
+    },
+    {
+      "state": "musing",
+      "color": "⬛ #1D3557"
+    },
+    {
+      "state": "cogitating",
+      "color": "⬜ #F1FAEE"
+    },
+    {
+      "state": "ruminating",
+      "color": "🟥 #E63946"
+    },
+    {
+      "state": "deliberating",
+      "color": "🟨 #FFB703"
+    },
+    {
+      "state": "mulling",
+      "color": "🟧 #FB8500"
+    },
+    {
+      "state": "reflecting",
+      "color": "🟦 #2196F3"
+    },
+    {
+      "state": "processing",
+      "color": "🟦 #03A9F4"
+    },
+    {
+      "state": "reasoning",
+      "color": "🟦 #00BCD4"
+    },
+    {
+      "state": "analyzing",
+      "color": "🟩 #009688"
+    },
+    {
+      "state": "computing",
+      "color": "🟩 #4CAF50"
+    },
+    {
+      "state": "synthesizing",
+      "color": "🟩 #8BC34A"
+    },
+    {
+      "state": "formulating",
+      "color": "🟨 #CDDC39"
+    },
+    {
+      "state": "brainstorming",
+      "color": "🟨 #FFEB3B"
+    },
+    {
+      "state": "rationalizing",
+      "color": "🟨 #FFC107"
+    },
+    {
+      "state": "inferring",
+      "color": "🟧 #FF9800"
+    },
+    {
+      "state": "deducing",
+      "color": "🟧 #FF5722"
+    },
+    {
+      "state": "scheming",
+      "color": "🟫 #795548"
+    },
+    {
+      "state": "dreaming",
+      "color": "🟪 #9C27B0"
+    },
+    {
+      "state": "extrapolating",
+      "color": "🟪 #673AB7"
+    },
+    {
+      "state": "predicting",
+      "color": "🟪 #3F51B5"
+    },
+    {
+      "state": "visualizing",
+      "color": "🟥 #E91E63"
+    },
+    {
+      "state": "solving",
+      "color": "🟫 #607D8B"
+    },
+    {
+      "state": "deciphering",
+      "color": "🟪 #9E9E9E"
+    },
+    {
+      "state": "debugging",
+      "color": "🟥 #FF5252"
+    },
+    {
+      "state": "interpreting",
+      "color": "🟥 #FF4081"
+    },
+    {
+      "state": "simulating",
+      "color": "🟪 #E040FB"
+    },
+    {
+      "state": "evaluating",
+      "color": "🟪 #7C4DFF"
+    },
+    {
+      "state": "assessing",
+      "color": "🟪 #536DFE"
+    },
+    {
+      "state": "verifying",
+      "color": "🟦 #448AFF"
+    },
+    {
+      "state": "probing",
+      "color": "🟦 #00B0FF"
+    },
+    {
+      "state": "investigating",
+      "color": "🟦 #00E5FF"
+    },
+    {
+      "state": "scrutinizing",
+      "color": "🟩 #1DE9B6"
+    },
+    {
+      "state": "inspecting",
+      "color": "🟩 #00E676"
+    },
+    {
+      "state": "dissecting",
+      "color": "🟩 #76FF03"
+    },
+    {
+      "state": "decoding",
+      "color": "🟨 #C6FF00"
+    },
+    {
+      "state": "compiling",
+      "color": "🟨 #FFEA00"
+    },
+    {
+      "state": "parsing",
+      "color": "🟨 #FFC400"
+    },
+    {
+      "state": "indexing",
+      "color": "🟧 #FF9100"
+    },
+    {
+      "state": "structuring",
+      "color": "🟥 #FF3D00"
+    },
+    {
+      "state": "refactoring",
+      "color": "🟦 #3D5AFE"
+    },
+    {
+      "state": "architecting",
+      "color": "🟪 #651FFF"
+    },
+    {
+      "state": "orchestrating",
+      "color": "🟪 #D500F9"
+    },
+    {
+      "state": "navigating",
+      "color": "🟥 #F50057"
+    },
+    {
+      "state": "tracing",
+      "color": "🟦 #2979FF"
+    },
+    {
+      "state": "searching",
+      "color": "🟦 #00E5FF"
+    },
+    {
+      "state": "retrieving",
+      "color": "🟩 #1DE9B6"
+    },
+    {
+      "state": "auditing",
+      "color": "🟩 #00E676"
+    },
+    {
+      "state": "diagnosing",
+      "color": "🟨 #FFB300"
+    },
+    {
+      "state": "benchmarking",
+      "color": "🟧 #FB8C00"
+    },
+    {
+      "state": "optimizing",
+      "color": "🟥 #F4511E"
+    },
+    {
+      "state": "mapping",
+      "color": "🟪 #8E24AA"
+    },
+    {
+      "state": "generating",
+      "color": "🟪 #5E35B1"
+    },
+    {
+      "state": "filtering",
+      "color": "🟦 #3949AB"
+    },
+    {
+      "state": "pruning",
+      "color": "🟦 #1E88E5"
+    },
+    {
+      "state": "dialecticing",
+      "color": "🟦 #00ACC1"
+    },
+    {
+      "state": "curating",
+      "color": "🟩 #00897B"
+    },
+    {
+      "state": "compacting",
+      "color": "🟩 #43A047"
+    },
+    {
+      "state": "consolidating",
+      "color": "🟩 #7CB342"
+    },
+    {
+      "state": "abstracting",
+      "color": "🟨 #C0CA33"
+    },
+    {
+      "state": "generalizing",
+      "color": "🟨 #FDD835"
+    },
+    {
+      "state": "backpropagating",
+      "color": "🟥 #FF1744"
+    },
+    {
+      "state": "gradient descending",
+      "color": "🟥 #F50057"
+    },
+    {
+      "state": "optimizing policy",
+      "color": "🟪 #D500F9"
+    },
+    {
+      "state": "brute forcing",
+      "color": "🟪 #651FFF"
+    },
+    {
+      "state": "deauthing",
+      "color": "🟦 #3D5AFE"
+    },
+    {
+      "state": "jamming",
+      "color": "🟦 #2979FF"
+    },
+    {
+      "state": "decrypting",
+      "color": "🟦 #00B0FF"
+    },
+    {
+      "state": "encrypting",
+      "color": "🟦 #00E5FF"
+    },
+    {
+      "state": "vectorizing",
+      "color": "🟩 #1DE9B6"
+    },
+    {
+      "state": "inferencing",
+      "color": "🟩 #00E676"
+    },
+    {
+      "state": "overfitting",
+      "color": "🟩 #76FF03"
+    },
+    {
+      "state": "underfitting",
+      "color": "🟨 #C6FF00"
+    },
+    {
+      "state": "packet sniffing",
+      "color": "🟨 #FFEA00"
+    },
+    {
+      "state": "wardriving",
+      "color": "🟨 #FFC400"
+    },
+    {
+      "state": "cloaking",
+      "color": "🟧 #FF9100"
+    },
+    {
+      "state": "port scanning",
+      "color": "🟥 #FF3D00"
+    },
+    {
+      "state": "reconnoitering",
+      "color": "🟫 #A1887F"
+    },
+    {
+      "state": "puzzling",
+      "color": "⬜ #E0E0E0"
+    },
+    {
+      "state": "conceptualizing",
+      "color": "🟪 #90A4AE"
+    },
+    {
+      "state": "salt grinding",
+      "color": "⬜ #B0BEC5"
+    },
+    {
+      "state": "brute forcing handshakes",
+      "color": "⬜ #CFD8DC"
+    },
+    {
+      "state": "glitching logic gates",
+      "color": "🟪 #B388FF"
+    },
+    {
+      "state": "targeting vulnerability",
+      "color": "🟪 #82B1FF"
+    },
+    {
+      "state": "compiling payload",
+      "color": "⬜ #80D8FF"
+    },
+    {
+      "state": "deploying firewalls",
+      "color": "⬜ #84FFFF"
+    },
+    {
+      "state": "wiping traces",
+      "color": "⬜ #A7FFEB"
+    },
+    {
+      "state": "shadow stepping",
+      "color": "⬜ #B9F6CA"
+    },
+    {
+      "state": "traversing dark web",
+      "color": "⬜ #CCFF90"
+    },
+    {
+      "state": "silent scanning",
+      "color": "⬜ #FFE57F"
+    },
+    {
+      "state": "allocating tasks",
+      "color": "🟨 #FFD740"
+    },
+    {
+      "state": "accessing hive mind",
+      "color": "🟧 #FFAB40"
+    },
+    {
+      "state": "guarding perimeter",
+      "color": "🟧 #FF6E40"
+    },
+    {
+      "state": "patrolling networks",
+      "color": "🟥 #FF5252"
+    },
+    {
+      "state": "hardening shells",
+      "color": "🟥 #FF4081"
+    },
+    {
+      "state": "crunching hashes",
+      "color": "🟪 #E040FB"
+    },
+    {
+      "state": "snacking on packets",
+      "color": "🟪 #7C4DFF"
+    },
+    {
+      "state": "digesting headers",
+      "color": "🟪 #536DFE"
+    },
+    {
+      "state": "regulating voltage",
+      "color": "🟦 #448AFF"
+    },
+    {
+      "state": "cooling processor",
+      "color": "🟦 #00B0FF"
+    },
+    {
+      "state": "hibernating nodes",
+      "color": "🟦 #00E5FF"
+    },
+    {
+      "state": "syncing swarm logic",
+      "color": "🟩 #1DE9B6"
+    },
+    {
+      "state": "consensus building",
+      "color": "🟩 #00E676"
+    },
+    {
+      "state": "bridging connections",
+      "color": "🟩 #76FF03"
+    },
+    {
+      "state": "pulsing leader beacon",
+      "color": "🟨 #C6FF00"
+    },
+    {
+      "state": "minimizing entropy",
+      "color": "🟨 #FFEA00"
+    },
+    {
+      "state": "converging to optimum",
+      "color": "🟨 #FFC400"
+    },
+    {
+      "state": "measuring loss",
+      "color": "🟧 #FF9100"
+    },
+    {
+      "state": "recovering from static",
+      "color": "🟥 #FF3D00"
+    },
+    {
+      "state": "haunting interfaces",
+      "color": "🟫 #37474F"
+    },
+    {
+      "state": "staring into the void",
+      "color": "⬛ #212121"
+    }
+  ]
+}

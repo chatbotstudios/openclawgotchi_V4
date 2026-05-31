@@ -1,0 +1,24 @@
+#!/bin/bash
+# 🦋 OpenClawGotchi Unified CLI Wrapper
+
+# Robustly find the project root, even if called via symlink
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+PROJECT_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+
+cd "${PROJECT_DIR}"
+
+# Determine which python to use (venv preferred)
+if [ -f "${PROJECT_DIR}/venv/bin/python3" ]; then
+    PYTHON_EXEC="${PROJECT_DIR}/venv/bin/python3"
+else
+    PYTHON_EXEC="python3"
+fi
+
+# Run the CLI entrypoint
+export PYTHONPATH="${PROJECT_DIR}/src"
+exec "${PYTHON_EXEC}" -m core.cli.entry "$@"

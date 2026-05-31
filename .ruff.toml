@@ -1,0 +1,25 @@
+# .ruff.toml - Ruff configuration for OpenClawGotchi V3
+
+# Exclude legacy hardware drivers and UI files from linting to prevent
+# breaking critical E-Ink display code and drivers.
+extend-exclude = [
+    "src/drivers",
+    "src/ui/gotchi_ui.py",
+    "src/ui/faces.py"
+]
+
+[lint]
+# Ignore style-only rules for embedded environment compatibility and legacy codebases
+ignore = [
+    "E721", # Use `is` and `is not` for type comparisons
+    "E722", # Do not use bare except (used for raw GPIO fallback logic)
+    "E701", # Multiple statements on one line (colon)
+    "E702", # Multiple statements on one line (semicolon)
+    "E741", # Ambiguous variable name (e.g. 'l' in list comprehensions)
+    "E402", # Module level import not at top of file (used for dynamic PYTHONPATH injection)
+    "F401", # Unused imports (lazy imports or structured module exports)
+    "F601", # Repeated dictionary keys (used in legacy ASCII face catalog definitions)
+    "F541", # f-string without placeholders
+    "F821", # Undefined name (found in legacy/inactive system scripts)
+    "F841"  # Local variable assigned to but never used
+]
