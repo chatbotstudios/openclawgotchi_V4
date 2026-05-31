@@ -356,7 +356,7 @@ class LiteLLMConnector(LLMConnector):
                         
                         messages.append({
                             "role": "tool",
-                            "tool_call_id": tool_call.id,
+                            "tool_call_id": tool_call_id,
                             "name": func_name,
                             "content": str(result)[:4000]
                         })

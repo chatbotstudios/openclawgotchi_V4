@@ -1,6 +1,9 @@
 import subprocess
 import time
+import logging
 from sdk.tool_builder import register_tool
+
+log = logging.getLogger(__name__)
 
 @register_tool
 def tether_scan() -> str:
@@ -9,10 +12,10 @@ def tether_scan() -> str:
     try:
         # Use hcitool/bluetoothctl to scan
         cmd = "sudo bluetoothctl --timeout 5 scan on"
-        proc = subprocess.run(cmd.split(), capture_output=True, text=True)
+        proc = subprocess.run(cmd.split(), capture_output=True, text=True, timeout=8)
         
         # Get paired/known devices too
-        known = subprocess.run(["sudo", "bluetoothctl", "devices"], capture_output=True, text=True).stdout
+        known = subprocess.run(["sudo", "bluetoothctl", "devices"], capture_output=True, text=True, timeout=5).stdout
         
         return f"Nearby/Known Devices:\n{known}\n\nScan Result:\n{proc.stdout}"
     except Exception as e:
@@ -25,7 +28,7 @@ def tether_pair(mac: str) -> str:
     try:
         # We use a heredoc style to talk to bluetoothctl
         cmds = f"power on\nagent on\ndefault-agent\npair {mac}\ntrust {mac}\nexit\n"
-        proc = subprocess.run(["sudo", "bluetoothctl"], input=cmds, capture_output=True, text=True)
+        proc = subprocess.run(["sudo", "bluetoothctl"], input=cmds, capture_output=True, text=True, timeout=15)
         
         if "Pairing successful" in proc.stdout or "already paired" in proc.stdout.lower():
             return f"✅ Bond Established with {mac}. You can now run 'gotchi tether up'."
@@ -80,7 +83,7 @@ def tether_up(mac: str) -> str:
 def tether_status() -> str:
     """Check the current state of the Bluetooth tethering tunnel."""
     try:
-        res = subprocess.run(["ip", "addr", "show", "bnep0"], capture_output=True, text=True)
+        res = subprocess.run(["ip", "addr", "show", "bnep0"], capture_output=True, text=True, timeout=5)
         if res.returncode == 0:
             return f"✅ Tether ONLINE:\n{res.stdout}"
         return "❌ Tether OFFLINE (bnep0 interface not found)."
