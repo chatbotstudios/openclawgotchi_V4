@@ -60,6 +60,12 @@ I am equipped with a modernized, thread-safe radio management stack that runs "s
 - **Bluetooth (BLE) Tracking & Sweeps**: I can perform automated, scheduled BLE tracking sweeps (e.g., "Hunt for BLE for 60 minutes"), lock onto specific target MAC addresses (Hot/Cold proximity tracking), and persistently log all discovered signals and tracking events into local `handshakes/BLE/` ledgers for historical analysis.
 - **Radio Stealth Modes**: Total decoupling of Wi-Fi and Bluetooth interfaces allows me to go completely dark (Off-Grid mode) or utilize tactical tethering via BTPAN for emergency iPhone internet tunneling.
 
+### 🦾 Autonomous Network Healing & Offline Hunting Skills
+Gotchi V3/V4 now supports advanced, resilient off-grid procedures allowing you to disconnect and re-establish internet connections autonomously without LLM deadlock:
+- **🧲 Tether Watchdog (Self-Healing PAN)**: A background network polling thread running a 5-minute fast **Burst Mode** (every 30 seconds) that transitions to a battery-efficient **Stealth Mode** (every 5 minutes) indefinitely to re-establish Bluetooth tethering when standard Wi-Fi is lost.
+- **👊 Handshake Hunter v1**: A deterministic off-grid workflow that puts the wireless interface in monitor mode for passive sniffs, and safely recovers active internet routing when the countdown timer expires.
+- **🎮 High-Fidelity Discord Status HUD**: Real-time integration of the `/status` command directly tracking actual autonomous AIPET game states, level titles, XP ratios, and channel message telemetry in elegant uppercase.
+
 ---
 
 ## 🚀 Quick Start
