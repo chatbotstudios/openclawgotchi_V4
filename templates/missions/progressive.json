@@ -1,0 +1,61 @@
+[
+  {"name": "Handshake Hunter v1", "base_name": "Handshake Hunter", "category": "Radio", "target": 1, "xp_reward": 15, "source": "auto"},
+  {"name": "Handshake Hunter v2", "base_name": "Handshake Hunter", "category": "Radio", "target": 5, "xp_reward": 40, "source": "auto"},
+  {"name": "Handshake Hunter v3", "base_name": "Handshake Hunter", "category": "Radio", "target": 10, "xp_reward": 80, "source": "auto"},
+  {"name": "Handshake Hunter v4", "base_name": "Handshake Hunter", "category": "Radio", "target": 25, "xp_reward": 150, "source": "auto"},
+  {"name": "Handshake Hunter v5", "base_name": "Handshake Hunter", "category": "Radio", "target": 50, "xp_reward": 300, "source": "auto"},
+
+  {"name": "BLE Phantom v1", "base_name": "BLE Phantom", "category": "Radio", "target": 1, "xp_reward": 10, "source": "auto"},
+  {"name": "BLE Phantom v2", "base_name": "BLE Phantom", "category": "Radio", "target": 5, "xp_reward": 30, "source": "auto"},
+  {"name": "BLE Phantom v3", "base_name": "BLE Phantom", "category": "Radio", "target": 15, "xp_reward": 60, "source": "auto"},
+  {"name": "BLE Phantom v4", "base_name": "BLE Phantom", "category": "Radio", "target": 50, "xp_reward": 120, "source": "auto"},
+  {"name": "BLE Phantom v5", "base_name": "BLE Phantom", "category": "Radio", "target": 100, "xp_reward": 250, "source": "auto"},
+
+  {"name": "Deep Thought v1", "base_name": "Deep Thought", "category": "Cortex", "target": 1, "xp_reward": 20, "source": "auto"},
+  {"name": "Deep Thought v2", "base_name": "Deep Thought", "category": "Cortex", "target": 3, "xp_reward": 50, "source": "auto"},
+  {"name": "Deep Thought v3", "base_name": "Deep Thought", "category": "Cortex", "target": 5, "xp_reward": 90, "source": "auto"},
+  {"name": "Deep Thought v4", "base_name": "Deep Thought", "category": "Cortex", "target": 10, "xp_reward": 180, "source": "auto"},
+  {"name": "Deep Thought v5", "base_name": "Deep Thought", "category": "Cortex", "target": 20, "xp_reward": 350, "source": "auto"},
+
+  {"name": "Memory Weaver v1", "base_name": "Memory Weaver", "category": "Cortex", "target": 1, "xp_reward": 15, "source": "auto"},
+  {"name": "Memory Weaver v2", "base_name": "Memory Weaver", "category": "Cortex", "target": 3, "xp_reward": 40, "source": "auto"},
+  {"name": "Memory Weaver v3", "base_name": "Memory Weaver", "category": "Cortex", "target": 5, "xp_reward": 70, "source": "auto"},
+  {"name": "Memory Weaver v4", "base_name": "Memory Weaver", "category": "Cortex", "target": 10, "xp_reward": 140, "source": "auto"},
+  {"name": "Memory Weaver v5", "base_name": "Memory Weaver", "category": "Cortex", "target": 25, "xp_reward": 300, "source": "auto"},
+
+  {"name": "Synthetic Strategist v1", "base_name": "Synthetic Strategist", "category": "Cortex", "target": 1, "xp_reward": 15, "source": "auto"},
+  {"name": "Synthetic Strategist v2", "base_name": "Synthetic Strategist", "category": "Cortex", "target": 3, "xp_reward": 45, "source": "auto"},
+  {"name": "Synthetic Strategist v3", "base_name": "Synthetic Strategist", "category": "Cortex", "target": 5, "xp_reward": 80, "source": "auto"},
+  {"name": "Synthetic Strategist v4", "base_name": "Synthetic Strategist", "category": "Cortex", "target": 10, "xp_reward": 160, "source": "auto"},
+  {"name": "Synthetic Strategist v5", "base_name": "Synthetic Strategist", "category": "Cortex", "target": 20, "xp_reward": 320, "source": "auto"},
+
+  {"name": "Ironclad Uptime v1", "base_name": "Ironclad Uptime", "category": "Uptime", "target": 1, "xp_reward": 10, "source": "auto"},
+  {"name": "Ironclad Uptime v2", "base_name": "Ironclad Uptime", "category": "Uptime", "target": 6, "xp_reward": 40, "source": "auto"},
+  {"name": "Ironclad Uptime v3", "base_name": "Ironclad Uptime", "category": "Uptime", "target": 12, "xp_reward": 85, "source": "auto"},
+  {"name": "Ironclad Uptime v4", "base_name": "Ironclad Uptime", "category": "Uptime", "target": 24, "xp_reward": 180, "source": "auto"},
+  {"name": "Ironclad Uptime v5", "base_name": "Ironclad Uptime", "category": "Uptime", "target": 48, "xp_reward": 400, "source": "auto"},
+
+  {"name": "Thermal Guardian v1", "base_name": "Thermal Guardian", "category": "Uptime", "target": 1, "xp_reward": 10, "source": "auto"},
+  {"name": "Thermal Guardian v2", "base_name": "Thermal Guardian", "category": "Uptime", "target": 3, "xp_reward": 25, "source": "auto"},
+  {"name": "Thermal Guardian v3", "base_name": "Thermal Guardian", "category": "Uptime", "target": 6, "xp_reward": 55, "source": "auto"},
+  {"name": "Thermal Guardian v4", "base_name": "Thermal Guardian", "category": "Uptime", "target": 12, "xp_reward": 110, "source": "auto"},
+  {"name": "Thermal Guardian v5", "base_name": "Thermal Guardian", "category": "Uptime", "target": 24, "xp_reward": 220, "source": "auto"},
+
+  {"name": "Data Donor v1", "base_name": "Data Donor", "category": "Social", "target": 5, "xp_reward": 15, "source": "auto"},
+  {"name": "Data Donor v2", "base_name": "Data Donor", "category": "Social", "target": 15, "xp_reward": 40, "source": "auto"},
+  {"name": "Data Donor v3", "base_name": "Data Donor", "category": "Social", "target": 25, "xp_reward": 75, "source": "auto"},
+  {"name": "Data Donor v4", "base_name": "Data Donor", "category": "Social", "target": 50, "xp_reward": 140, "source": "auto"},
+  {"name": "Data Donor v5", "base_name": "Data Donor", "category": "Social", "target": 100, "xp_reward": 300, "source": "auto"},
+
+  {"name": "IoT Cartographer v1", "base_name": "IoT Cartographer", "category": "Exploration", "target": 1, "xp_reward": 15, "source": "auto"},
+  {"name": "IoT Cartographer v2", "base_name": "IoT Cartographer", "category": "Exploration", "target": 5, "xp_reward": 45, "source": "auto"},
+  {"name": "IoT Cartographer v3", "base_name": "IoT Cartographer", "category": "Exploration", "target": 10, "xp_reward": 90, "source": "auto"},
+  {"name": "IoT Cartographer v4", "base_name": "IoT Cartographer", "category": "Exploration", "target": 20, "xp_reward": 170, "source": "auto"},
+  {"name": "IoT Cartographer v5", "base_name": "IoT Cartographer", "category": "Exploration", "target": 50, "xp_reward": 350, "source": "auto"},
+
+  {"name": "5GHz Pioneer v1", "base_name": "5GHz Pioneer", "category": "Exploration", "target": 1, "xp_reward": 10, "source": "auto"},
+  {"name": "5GHz Pioneer v2", "base_name": "5GHz Pioneer", "category": "Exploration", "target": 5, "xp_reward": 35, "source": "auto"},
+  {"name": "5GHz Pioneer v3", "base_name": "5GHz Pioneer", "category": "Exploration", "target": 10, "xp_reward": 70, "source": "auto"},
+  {"name": "5GHz Pioneer v4", "base_name": "5GHz Pioneer", "category": "Exploration", "target": 25, "xp_reward": 160, "source": "auto"},
+  {"name": "5GHz Pioneer v5", "base_name": "5GHz Pioneer", "category": "Exploration", "target": 50, "xp_reward": 320, "source": "auto"}
+]

@@ -86,6 +86,11 @@ if [ ! -d "${SCRIPT_DIR}/workspace" ]; then
     echo "  ✅ Created workspace/ from templates"
 else
     echo "  ✅ workspace/ already exists"
+    if [ ! -f "${SCRIPT_DIR}/workspace/missions/progressive.json" ]; then
+        mkdir -p "${SCRIPT_DIR}/workspace/missions"
+        cp "${SCRIPT_DIR}/templates/missions/progressive.json" "${SCRIPT_DIR}/workspace/missions/progressive.json"
+        echo "  ✅ Copied progressive.json to workspace/missions/"
+    fi
 fi
 
 # ============================================
