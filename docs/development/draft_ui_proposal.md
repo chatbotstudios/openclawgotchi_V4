@@ -7,14 +7,14 @@ The top row is dedicated to bot identity and essential connectivity/telemetry.
   - `Gotchi>` (The bot's name)
   - **WIFI Icon**: `▂▄▆█` (Full 4-bar signal)' where `▂▄▆_` (3-bar signal / slight drop), `▂▄__` (2-bar signal / weak), `▂___` (1-bar signal / very weak), `✖` (Offline)
   - **Bluetooth Icon**:
-  `ᛒ` (BLE ON)
+  `B` (BLE ON)
   `✖` (BLE OFF)
-  `ᛒ»` (Bluetooth broadcasting/sending/scanning etc)
-  `«ᛒ»` (Bluetooth discoverable field)
-  `ᛒ✓` (Paired/Pairing successful)
-  `ᛒ✕` (Pairing failed /disconnected)
+  `B»` (Bluetooth broadcasting/sending/scanning etc)
+  `«B»` (Bluetooth discoverable field)
+  `B✓` (Paired/Pairing successful)
+  `B✕` (Pairing failed /disconnected)
  
-  - *Example*: `Gotchi> ▂▄▆_ ᛒ`
+  - *Example*: `Gotchi> ▂▄▆_ B`
 
 - **Top-Right (Telemetry & HP)**: 
   - Condensed system stats and Game Engine HP.
