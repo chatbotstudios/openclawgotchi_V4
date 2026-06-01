@@ -29,14 +29,19 @@ class KeyboardListener:
         try:
             tty.setcbreak(sys.stdin.fileno())
             while self.running:
-                # Read a single character
-                # Note: this will block until a key is pressed.
-                # To prevent blocking forever on exit, we rely on daemon=True.
                 import select
                 if select.select([sys.stdin], [], [], 0.5)[0]:
                     ch = sys.stdin.read(1)
                     if ch:
-                        self.queue.put(ch.lower())
+                        if ch == '\x1b':
+                            self.queue.put("key:escape")
+                        elif ch in ('\n', '\r'):
+                            self.queue.put("key:enter")
+                        elif ch in ('\x7f', '\x08'):
+                            self.queue.put("key:backspace")
+                        else:
+                            # Preserve case for typing, put in format char:<ch>
+                            self.queue.put(f"char:{ch}")
         except Exception as e:
             log.error(f"Keyboard listener error: {e}")
         finally:

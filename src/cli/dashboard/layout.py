@@ -16,9 +16,9 @@ def generate_layout() -> Layout:
     )
     
     layout["top_row"].split_row(
-        Layout(name="face", ratio=1),
-        Layout(name="vitals", ratio=1),
-        Layout(name="right_col", ratio=1)
+        Layout(name="face", ratio=2),
+        Layout(name="vitals", ratio=3),
+        Layout(name="right_col", ratio=3)
     )
     
     layout["bottom_row"].split_row(
@@ -120,6 +120,13 @@ def render_logs(logs: list) -> Panel:
     text = Text.from_markup("\n".join(logs))
     return Panel(text, title="📜 RECENT ACTIVITY", border_style="blue")
 
-def render_footer() -> Panel:
-    text = "[Q]uit  |  [R]efresh  |  [P]ause Pwn"
-    return Panel(Align.center(text), style="black on white")
+def render_footer(chat_mode: bool = False, input_buffer: str = "") -> Panel:
+    if chat_mode:
+        text = Text()
+        text.append("💬 Talk to Gotchi (ESC to exit): ", style="bold cyan")
+        text.append(input_buffer, style="white")
+        text.append("█", style="dim")  # simulated cursor
+        return Panel(text, style="black on bright_yellow")
+    else:
+        text = "[Q]uit  |  [R]efresh  |  [P]ause Pwn  |  [C]hat Mode"
+        return Panel(Align.center(text), style="black on white")
