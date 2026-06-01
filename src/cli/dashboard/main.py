@@ -22,6 +22,7 @@ from cli.dashboard.layout import (
     render_memory,
     render_missions,
     render_logs,
+    render_prompt_bar,
     render_footer
 )
 from cli.dashboard.keyboard import KeyboardListener
@@ -52,7 +53,7 @@ async def update_data_cache_task():
             sys_task = asyncio.create_task(fetch_system_stats())
             gotchi_task = asyncio.create_task(fetch_gotchi_stats())
             pwn_task = asyncio.create_task(fetch_pwn_status())
-            logs_task = asyncio.create_task(fetch_recent_logs(6))
+            logs_task = asyncio.create_task(fetch_recent_logs(8))
             missions_task = asyncio.create_task(fetch_missions_status())
             
             results = await asyncio.gather(sys_task, gotchi_task, pwn_task, logs_task, missions_task)
@@ -229,8 +230,9 @@ async def dashboard_loop(refresh_rate: float):
                 layout["right_col"].update(render_radio(pwn_stats))
                 layout["memory"].update(render_memory(gotchi_stats))
                 layout["missions"].update(render_missions(missions_data))
-                layout["logs"].update(render_logs(recent_logs))
-                layout["footer"].update(render_footer(chat_mode, input_buffer))
+                layout["logs"].update(render_logs(recent_logs, gotchi_thinking, thinking_verb))
+                layout["prompt_bar"].update(render_prompt_bar(chat_mode, input_buffer))
+                layout["footer"].update(render_footer())
                 
                 await asyncio.sleep(tui_tick)
     finally:

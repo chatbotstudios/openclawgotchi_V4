@@ -12,19 +12,20 @@ def generate_layout() -> Layout:
         Layout(name="header", size=3),
         Layout(name="top_row", size=8),
         Layout(name="bottom_row", size=8),
+        Layout(name="prompt_bar", size=3),
         Layout(name="footer", size=3)
     )
     
     layout["top_row"].split_row(
-        Layout(name="face", ratio=2),
-        Layout(name="vitals", ratio=3),
-        Layout(name="right_col", ratio=3)
+        Layout(name="face", ratio=1),
+        Layout(name="vitals", ratio=2),
+        Layout(name="right_col", ratio=2)
     )
     
     layout["bottom_row"].split_row(
-        Layout(name="memory", ratio=2),
-        Layout(name="missions", ratio=3),
-        Layout(name="logs", ratio=4)
+        Layout(name="memory", ratio=1),
+        Layout(name="missions", ratio=1.5),
+        Layout(name="logs", ratio=2.5)
     )
     
     return layout
@@ -116,17 +117,33 @@ def render_missions(missions_data: dict) -> Panel:
     
     return Panel(text, title="🎯 TARGET MISSIONS", border_style="cyan")
 
-def render_logs(logs: list) -> Panel:
-    text = Text.from_markup("\n".join(logs))
+def render_logs(logs: list, gotchi_thinking: bool = False, thinking_verb: str = "") -> Panel:
+    text = Text()
+    # We display up to 6 lines to fit cleanly in the 8-row height
+    for line in logs[-6:]:
+        try:
+            text.append(Text.from_markup(line + "\n"))
+        except:
+            text.append(line + "\n")
+        
+    if gotchi_thinking:
+        text.append(f"\nGotchi is thinking... [{thinking_verb}]", style="bold pink blink")
+        
     return Panel(text, title="📜 RECENT ACTIVITY", border_style="blue")
 
-def render_footer(chat_mode: bool = False, input_buffer: str = "") -> Panel:
+def render_prompt_bar(chat_mode: bool = False, input_buffer: str = "") -> Panel:
+    text = Text()
     if chat_mode:
-        text = Text()
-        text.append("💬 Talk to Gotchi (ESC to exit): ", style="bold cyan")
-        text.append(input_buffer, style="white")
-        text.append("█", style="dim")  # simulated cursor
-        return Panel(text, style="black on bright_yellow")
+        text.append("💬 Prompt Gotchi (ESC to exit, Enter to send): ", style="bold yellow")
+        text.append(input_buffer, style="white bold")
+        text.append("█", style="yellow blink")  # simulated cursor
+        return Panel(text, title="⌨️ DIRECT INPUT", border_style="yellow")
     else:
-        text = "[Q]uit  |  [R]efresh  |  [P]ause Pwn  |  [C]hat Mode"
-        return Panel(Align.center(text), style="black on white")
+        text.append("💬 Talk to Gotchi: Press ", style="dim")
+        text.append("[C]", style="bold cyan")
+        text.append(" to prompt gotchi directly...", style="dim")
+        return Panel(text, title="⌨️ DIRECT INPUT", border_style="dim")
+
+def render_footer() -> Panel:
+    text = "[Q]uit  |  [R]efresh  |  [P]ause Pwn  |  [C]hat Mode"
+    return Panel(Align.center(text), style="black on white")
