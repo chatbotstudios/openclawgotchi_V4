@@ -142,7 +142,7 @@ Uptime Category (Hardware Health)
 
 
 Mission NameXPDescriptionTriggerIronclad Uptime200Maintain 99%+ uptime for 48 hoursAutoThermal Guardian85Keep CPU temperature under 65°C for 12 hoursAutoPower Efficient130Run on battery for 6+ hours without hibernationAutoSelf-Healing150Automatically recover from 3+ system warningsAuto
-Social / Mesh Category (Future Swarm)
+Social /  Category (Future Swarm)
 
 
 
@@ -178,7 +178,7 @@ Social / Mesh Category (Future Swarm)
 
 
 
-Mission NameXPDescriptionTriggerFirst Contact220Successfully exchange data with another AIPETManualNeural Link180Maintain mesh connection for 30+ minutesAutoData Donor100Share 50+ unique SSIDs via meshAutoSwarm Coordinator300Trigger a coordinated action with 2+ peersManual
+Mission NameXPDescriptionTriggerFirst Contact220Successfully exchange data with another AIPETManualNeural Link180Maintain  connection for 30+ minutesAutoData Donor100Share 50+ unique SSIDs via AutoSwarm Coordinator300Trigger a coordinated action with 2+ peersManual
 Exploration & Bounty Category
 
 

@@ -17,7 +17,7 @@ def generate_layout() -> Layout:
     )
     
     layout["top_row"].split_row(
-        Layout(name="face", ratio=1),
+        Layout(name="face", size=24),
         Layout(name="vitals", ratio=2),
         Layout(name="right_col", ratio=2)
     )
@@ -38,7 +38,7 @@ def render_header(uptime: str = "?", mode: str = "Pro 🧠") -> Panel:
     return Panel(header_text, style="white on black")
 
 def render_face(face_str: str) -> Panel:
-    ascii_art = f"\n\n       {face_str}\n\n"
+    ascii_art = f"\n  {face_str}\n"
     return Panel(Align.center(ascii_art, vertical="middle"), title="🤖 E-INK SIMULATOR", border_style="cyan")
 
 def render_vitals(sys_stats: dict) -> Panel:

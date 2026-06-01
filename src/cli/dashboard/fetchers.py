@@ -58,13 +58,14 @@ async def fetch_pwn_status():
             
     return await asyncio.to_thread(_get)
 
-async def fetch_recent_logs(limit=5):
+async def fetch_recent_logs(limit=8):
     """Fetch recent activity logs from gotchi logs."""
     def _get():
         logs = []
         try:
             from audit_logging.command_logger import get_recent_commands
-            cmds = get_recent_commands(limit=limit)
+            # Fetch a larger pool to ensure we filter and display rich, effective activities
+            cmds = get_recent_commands(limit=max(limit, 20))
             
             if not cmds:
                 return ["No recent logs found."]
@@ -89,18 +90,31 @@ async def fetch_recent_logs(limit=5):
                     res = c.get("result", "")[:40]
                     logs.append(f"{time_str}💓 [bold magenta][HB][/] {hb_type} - {res}")
                 elif action == "response":
-                    conn = c.get("connector", "LLM")
-                    logs.append(f"{time_str}🤖 [bold green][BOT][/] Sent response ({conn})")
+                    source = c.get("source", "system").upper()
+                    preview = (c.get("response_preview") or c.get("text_preview") or "Sent response").replace("\n", " ")[:35]
+                    logs.append(f"{time_str}🤖 [bold green][{source}][/] Bot -> {preview}")
+                elif action.startswith("tool:"):
+                    tool_name = action.split(":")[1]
+                    logs.append(f"{time_str}🔧 [bold yellow][TOOL][/] Gotchi -> {tool_name}")
                 elif action.startswith("cron:") or action == "cron":
                     logs.append(f"{time_str}⏰ [bold yellow][CRON][/] Triggered {action}")
+                elif action == "message":
+                    source = c.get("source", "system").upper()
+                    uname = c.get("username", "User")
+                    preview = c.get("text_preview", "").replace("\n", " ")[:35]
+                    logs.append(f"{time_str}👤 [bold cyan][{source}][/] @{uname} -> {preview}")
                 else:
                     source = c.get("source", "system").upper()
                     uname = c.get("username", "User")
                     preview = c.get("text_preview", "").replace("\n", " ")[:35]
-                    logs.append(f"{time_str}👤 [bold cyan][{source}][/] @{uname} -> {action} {preview}")
+                    action_str = f" {action}" if action else ""
+                    preview_str = f" {preview}" if preview else ""
+                    logs.append(f"{time_str}👤 [bold cyan][{source}][/] @{uname} ->{action_str}{preview_str}")
         except Exception as e:
             logs.append(f"[ERR] Log parse failed: {e}")
-        return logs
+        
+        # Return the last 'limit' formatted logs to match display size perfectly
+        return logs[-limit:] if len(logs) > limit else logs
     return await asyncio.to_thread(_get)
 
 async def fetch_missions_status():

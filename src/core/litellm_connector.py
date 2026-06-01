@@ -352,6 +352,19 @@ class LiteLLMConnector(LLMConnector):
                         else:
                             result = f"Unknown tool: {func_name}. Available: {', '.join(TOOL_MAP.keys())}"
                         
+                        try:
+                            from audit_logging.command_logger import log_command
+                            log_command(
+                                action=f"tool:{func_name}",
+                                user_id=0,
+                                chat_id=0,
+                                username="Gotchi",
+                                text=f"args={args} res={str(result)[:80]}",
+                                source="system"
+                            )
+                        except Exception as e_log:
+                            log.warning(f"Failed to log tool execution: {e_log}")
+                        
                         tool_actions.append(_format_tool_action(func_name, args, str(result)[:200]))
                         
                         messages.append({

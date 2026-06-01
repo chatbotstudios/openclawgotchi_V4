@@ -936,6 +936,84 @@ with tool use, memory read/write, and multi-turn reasoning across any period.
 
 ---
 
+## 🚀 AIPET V4 — 50 New Tactical & Evolution Missions
+
+In the V4 update, **50 new missions** were introduced to gamify the advanced cognitive reasoning (Cortex) and active system modification (Self-Evolution) capabilities of the AIPET engine.
+
+### 🕶️ Stealth & Ghost
+*   **Stealth Phantom (Progressive — 5 Tiers):** Complete milestones in the Stealth category.
+    *   **v1:** Complete 3 milestones (+25 XP)
+    *   **v2:** Complete 8 milestones (+55 XP)
+    *   **v3:** Complete 15 milestones (+110 XP)
+    *   **v4:** Complete 30 milestones (+220 XP)
+    *   **v5:** Complete 60 milestones (+420 XP)
+*   **Ghost Protocol v1:** Successfully complete a full passive scan with zero deauths (+40 XP).
+*   **Ghost Protocol v3:** Maintain stealth mode for 6+ hours while actively scanning (+130 XP).
+*   **Phantom Relic v5:** Complete 5 Ghost Protocol missions (+380 XP).
+
+### 🧬 Self-Evolution
+Missions tracking the gotchi's capacity to modify its own code, design skills, and shape its digital identity.
+*   **Self Evolution (Progressive — 5 Tiers):** Complete milestones in the Self-Evolution category.
+    *   **v1:** Complete 3 milestones (+30 XP)
+    *   **v2:** Complete 8 milestones (+65 XP)
+    *   **v3:** Complete 15 milestones (+125 XP)
+    *   **v4:** Complete 30 milestones (+240 XP)
+    *   **v5:** Complete 60 milestones (+450 XP)
+*   **Code Weaver v2:** Successfully commit 3 self-modifications to code or config (+90 XP).
+*   **Identity Sculptor v3:** Rewrite or significantly evolve `SOUL.md` or `IDENTITY.md` (+150 XP).
+*   **Skill Architect v4:** Create or upgrade 5 different skills (+280 XP).
+
+### 🛠️ Tool Mastery
+*   **Tool Master (Progressive — 5 Tiers):** Complete tool calls successfully.
+    *   **v1:** Complete 5 tool calls (+20 XP)
+    *   **v2:** Complete 15 tool calls (+50 XP)
+    *   **v3:** Complete 40 tool calls (+100 XP)
+    *   **v4:** Complete 100 tool calls (+190 XP)
+    *   **v5:** Complete 250 tool calls (+380 XP)
+*   **Multi-Tool Sage v3:** Use 4+ different tools in a single task (+140 XP).
+*   **Tool Orchestrator v4:** Complete a complex task using 6+ tool calls in sequence (+260 XP).
+
+### ☠️ Bounty Hunter
+*   **Bounty Hunter (Progressive — 5 Tiers):** Complete user-injected bounties.
+    *   **v1:** Complete 2 user bounties (+35 XP)
+    *   **v2:** Complete 6 user bounties (+75 XP)
+    *   **v3:** Complete 15 user bounties (+145 XP)
+    *   **v4:** Complete 30 user bounties (+275 XP)
+    *   **v5:** Complete 60 user bounties (+520 XP)
+*   **Legendary Bounty v3:** Complete a high-value bounty yielding 300+ XP (+180 XP).
+*   **Alpha Bounty v5:** Complete 5 Legendary Bounties (+400 XP).
+
+### 🔧 Maintenance & Optimization
+*   **System Purifier v1:** Clean up 50+ outdated memory entries (+25 XP).
+*   **System Purifier v3:** Optimize long-term memory, reducing size by 40% (+95 XP).
+*   **Git Guardian v2:** Maintain perfect Git sync for 7 consecutive days (+60 XP).
+*   **Git Guardian v4:** Maintain perfect Git sync for 30 consecutive days (+175 XP).
+*   **Power Optimizer v3:** Reduce average power consumption by 25% (+110 XP).
+*   **Eternal Uptime v5:** Achieve 90+ days of continuous uptime (+350 XP).
+
+### 💭 Dream & Synthetic
+*   **Dream Weaver (Progressive — 3 Tiers):** Complete dream sessions.
+    *   **v1:** Complete 3 Dream Sessions (+30 XP)
+    *   **v3:** Complete 12 Dream Sessions (+100 XP)
+    *   **v5:** Complete 40 Dream Sessions (+320 XP)
+*   **Synthetic Overlord v2:** Generate 15 high-quality synthetic scenarios (+85 XP).
+*   **Synthetic Overlord v4:** Generate 50 high-quality synthetic scenarios (+195 XP).
+*   **Hallucination Master v5:** Successfully use synthetic data in 3 real operations (+380 XP).
+
+### 🧭 Exploration Mastery
+*   **Hidden Network v2:** Discover 10 hidden/cloaked networks (+55 XP).
+*   **Hidden Network v4:** Discover 40 hidden/cloaked networks (+165 XP).
+*   **Spectrum Lord v3:** Create 5 full spectrum heatmaps (+120 XP).
+*   **Signal Whisperer v4:** Detect 30+ very weak signals (≤ -85 dBm) (+210 XP).
+*   **New World Pioneer v5:** Be the first to discover 5 completely new network types (+340 XP).
+
+### 🌟 Epic Quests
+*   **Radio Odyssey v5:** Complete all 5 Handshake Hunter + 5 BLE Phantom missions (+550 XP).
+*   **Cortex Ascension v5:** Reach Level 40 using only Cortex + Self-Evolution missions (+600 XP).
+*   **Swarm Supremacy v5:** Lead or participate in 10 successful swarm operations (+750 XP).
+
+---
+
 ## 🔢 XP Summary — Total Achievable XP
 
 | Category | Progressive Missions (total) | Single Missions (total) |
@@ -954,5 +1032,5 @@ with tool use, memory read/write, and multi-turn reasoning across any period.
 
 ---
 
-*Last updated: Phase 2 completion — deauth_handler, network_auditor, extended BasePlugin compat layer.*
+*Last updated: v4 AIPET Integration — Added 50 advanced missions across stealth, self-evolution, tool mastery, and synthetic dream sessions.*
 *For implementation details see [`docs/development/pwnagotchi_plugins_integration.md`](file:///Users/js66/.gemini/antigravity-ide/scratch/openclawgotchi_V4/docs/development/pwnagotchi_plugins_integration.md).*

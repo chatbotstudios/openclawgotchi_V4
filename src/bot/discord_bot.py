@@ -32,7 +32,8 @@ def _fire_discord_command_hook(interaction, command_name):
         user_id=interaction.user.id,
         chat_id=interaction.channel_id,
         username=interaction.user.name,
-        action=f"/{command_name}"
+        action=f"/{command_name}",
+        source="discord"
     ))
     if hook_event and hasattr(hook_event, "messages") and hook_event.messages:
         return "\n\n" + "\n".join(hook_event.messages)
@@ -208,7 +209,8 @@ class OpenClawDiscord(commands.Bot):
             user_id=message.author.id,
             chat_id=message.channel.id,
             username=sender,
-            text=user_text
+            text=user_text,
+            source="discord"
         ))
         
         save_user(message.author.id, message.author.name, sender, "")
@@ -245,6 +247,18 @@ class OpenClawDiscord(commands.Bot):
                 debug_footer = f"\n\n```\n{debug_block}\n```"
             if not cmds.get("face"): show_face(mood="happy", text=clean_text[:50] if clean_text else "...")
             save_message(conv_id, "assistant", response)
+            
+            # Log assistant response to commands.jsonl
+            from audit_logging.command_logger import log_command
+            log_command(
+                action="response",
+                user_id=0,
+                chat_id=conv_id,
+                username=BOT_NAME,
+                text=clean_text,
+                source="discord"
+            )
+            
             on_message_answered()
             
             # Award tool-use XP

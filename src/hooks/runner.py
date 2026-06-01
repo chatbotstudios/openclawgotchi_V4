@@ -34,6 +34,7 @@ class HookEvent:
     chat_id: int = 0
     username: str = ""
     text: str = ""
+    source: str = "system"
     
     # Results (hooks can modify)
     messages: list = field(default_factory=list)  # Messages to send
@@ -148,6 +149,7 @@ def _builtin_message_hook(event: HookEvent):
         chat_id=event.chat_id,
         username=event.username,
         text=event.text,
+        source=getattr(event, "source", "system")
     )
 
 def _builtin_command_hook(event: HookEvent):
@@ -158,6 +160,7 @@ def _builtin_command_hook(event: HookEvent):
         user_id=event.user_id,
         chat_id=event.chat_id,
         username=event.username,
+        source=getattr(event, "source", "system")
     )
 
 def _builtin_heartbeat_hook(event: HookEvent):
