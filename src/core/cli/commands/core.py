@@ -9,7 +9,7 @@ PROJECT_DIR = Path(__file__).parent.parent.parent.parent.parent.resolve()
 from core.commands import get_status_report, format_status_plain, set_llm_mode, clear_bot_history
 
 @click.command()
-@click.option('--json', 'as_json', is_flag=True, help="Output in JSON format")
+@click.option('--json', 'as_json', is_flag=True, help="Output in JSON format (machine-readable)")
 def status(as_json):
     """Show current hardware and bot status."""
     report = get_status_report()

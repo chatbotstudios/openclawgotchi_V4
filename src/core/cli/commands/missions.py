@@ -1,3 +1,4 @@
+import json
 import click
 from rich.console import Console
 from rich.table import Table
@@ -15,14 +16,33 @@ def missions():
 @missions.command()
 @click.option('--status', type=click.Choice(['available', 'active', 'completed', 'abandoned']), help="Filter by status")
 @click.option('--category', help="Filter by category (e.g., tactical, daily)")
-def list(status, category):
+@click.option('--json', 'as_json', is_flag=True, help="Output in JSON format (machine-readable)")
+def list(status, category, as_json):
     """List missions (active, available, completed)."""
-    format_header(f"Gotchi Missions {('(' + status.upper() + ')') if status else ''}")
-    
     all_missions = get_missions(status)
     if category:
         all_missions = [m for m in all_missions if m.category.lower() == category.lower()]
-        
+
+    if as_json:
+        missions_data = [
+            {
+                "id": m.id,
+                "title": m.title,
+                "description": getattr(m, 'description', ''),
+                "category": m.category,
+                "tier": m.tier,
+                "actor": m.actor,
+                "status": m.status,
+                "progress": m.progress,
+                "target": m.target,
+                "reward_xp": m.reward_xp,
+            }
+            for m in all_missions
+        ]
+        click.echo(json.dumps(missions_data))
+        return
+
+    format_header(f"Gotchi Missions {('(' + status.upper() + ')') if status else ''}")
     if not all_missions:
         click.echo("No missions found.")
         return

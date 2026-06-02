@@ -13,6 +13,7 @@ Entry point. All logic is in modules:
 - skills/           — Skills loading with gating
 - logging/          — Command audit trail
 - memory/           — Memory flush system
+- core/hermes_bridge.py  — 🌉 Hermes HTTP bridge (localhost:7438)
 """
 
 import sys
@@ -224,7 +225,48 @@ def main():
     from hardware.display import start_animation_daemon
     start_animation_daemon()
 
-    # Start the localhost Live Web Dashboard server (only on Local PC/Mac deployments)
+    # -----------------------------------------------------------------------
+    # 🌉 Start the Hermes Bridge (localhost HTTP API for Hermes ↔ Gotchi sync)
+    # Runs as a daemon thread — never blocks the bot loop.
+    # Disable by setting GOTCHI_BRIDGE_ENABLED=0 in .env
+    # -----------------------------------------------------------------------
+    import os as _os
+    if _os.environ.get("GOTCHI_BRIDGE_ENABLED", "1") not in ("0", "false", "no"):
+        try:
+            from core.hermes_bridge import start_bridge_thread
+            bridge_port = int(_os.environ.get("GOTCHI_BRIDGE_PORT", "7438"))
+            start_bridge_thread()
+            log.info(f"🌉 Hermes Bridge active on localhost:{bridge_port}")
+        except Exception as _e:
+            log.warning(f"Hermes Bridge failed to start: {_e} (non-fatal, continuing)")
+    else:
+        log.info("Hermes Bridge disabled via GOTCHI_BRIDGE_ENABLED=0")
+
+    # -----------------------------------------------------------------------
+    # 📁 Ensure shared Hermes-Gotchi workspace directory exists
+    # Hermes writes mission briefs/results here; Gotchi reads/writes state.
+    # -----------------------------------------------------------------------
+    try:
+        _shared_dir = Path(_os.environ.get("HERMES_GOTCHI_SHARED", "/home/pi/shared/hermes-gotchi"))
+        _shared_dir.mkdir(parents=True, exist_ok=True)
+        _log_file = _shared_dir / "mission_log.md"
+        if not _log_file.exists():
+            _log_file.write_text(
+                "# Hermes-Gotchi Mission Log\n"
+                "_Shared mission results between Hermes and Gotchi._\n\n",
+                encoding="utf-8",
+            )
+        _state_file = _shared_dir / "state.json"
+        if not _state_file.exists():
+            import json as _json
+            _state_file.write_text(
+                _json.dumps({"last_sync": None, "active_mission": None}, indent=2),
+                encoding="utf-8",
+            )
+        log.info(f"📁 Shared Hermes-Gotchi workspace: {_shared_dir}")
+    except Exception as _e:
+        log.warning(f"Could not create shared workspace: {_e} (non-fatal)")
+
     import os
     if os.environ.get("GOTCHI_DEPLOYMENT", "Device") == "Local":
         try:
