@@ -152,10 +152,17 @@ async def dashboard_loop(refresh_rate: float):
     await update_data_cache_task()
     
     try:
-        # Loop at 10 FPS (0.1s) when in chat mode for lag-free typing, otherwise use requested refresh_rate
-        # We throttle background IO fetches inside the loop
+        # Minimum terminal size required by the fixed layout (3+8+8+3+3 = 25 rows, 80 cols safe minimum)
+        term_width, term_height = console.size
+        if term_height < 26 or term_width < 60:
+            raise RuntimeError(
+                f"Terminal too small ({term_width}×{term_height}). "
+                f"Please resize to at least 60 columns × 26 rows and try again."
+            )
+
+        # Loop at 10 FPS (0.1s) for lag-free typing; background IO is throttled inside the loop
         tui_tick = 0.1
-        with Live(layout, console=console, screen=True, refresh_per_second=1.0/tui_tick) as live:
+        with Live(layout, console=console, screen=True, refresh_per_second=10) as live:
             while True:
                 # Handle keyboard inputs
                 key = kb.get_key()

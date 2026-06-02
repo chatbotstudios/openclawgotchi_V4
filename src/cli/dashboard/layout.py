@@ -23,9 +23,9 @@ def generate_layout() -> Layout:
     )
     
     layout["bottom_row"].split_row(
-        Layout(name="memory", ratio=1),
-        Layout(name="missions", ratio=1.5),
-        Layout(name="logs", ratio=2.5)
+        Layout(name="memory", ratio=2),
+        Layout(name="missions", ratio=3),
+        Layout(name="logs", ratio=5)
     )
     
     return layout
