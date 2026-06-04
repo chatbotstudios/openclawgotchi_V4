@@ -83,7 +83,7 @@ def pwn_status() -> str:
         return f"Failed to reach Subconscious Pwn Daemon: {e}"
 
 @register_tool
-def pwn_crack(pcap_path: str) -> str:
+def _do_pwn_crack(pcap_path: str) -> str:
     """Uploads a .pcap file to wpa-sec.stanev.org for hash cracking."""
     from config import WPA_SEC_KEY
     if not WPA_SEC_KEY:
@@ -104,7 +104,13 @@ def pwn_crack(pcap_path: str) -> str:
         return f"Failed to upload: {e}"
 
 @register_tool
-def pwn_check_cracks() -> str:
+def pwn_crack(pcap_path: str) -> str:
+    import concurrent.futures
+    with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
+        return executor.submit(_do_pwn_crack, pcap_path).result()
+
+@register_tool
+def _do_pwn_check_cracks() -> str:
     """Checks wpa-sec.stanev.org for newly cracked passwords and saves them."""
     from config import WPA_SEC_KEY
     if not WPA_SEC_KEY:
@@ -141,6 +147,12 @@ def pwn_check_cracks() -> str:
         return "Cracked Passwords:\n" + "\n".join(cracked_list)
     except Exception as e:
         return f"Failed to check wpa-sec: {e}"
+
+@register_tool
+def pwn_check_cracks() -> str:
+    import concurrent.futures
+    with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
+        return executor.submit(_do_pwn_check_cracks).result()
 
 @register_tool
 def pwn_show_qr(ssid: str) -> str:

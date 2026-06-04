@@ -6,6 +6,7 @@ Includes LLM-powered conversation summarization for heartbeat.
 """
 
 import logging
+import gc
 from datetime import datetime
 from typing import Optional
 
@@ -44,6 +45,7 @@ def check_and_inject_flush(history: list[dict]) -> str:
     """
     if should_flush(len(history)):
         log.info(f"Memory flush suggested ({len(history)}/{HISTORY_LIMIT} messages)")
+        gc.collect()  # Aggressive GC after checking a large history object
         return get_flush_prompt()
     return ""
 
@@ -191,6 +193,7 @@ async def summarize_and_save(chat_id: int) -> bool:
     # Save to daily log
     write_to_daily_log(f"[Conversation Summary]\n{summary}")
     
+    gc.collect()  # Reclaim memory from old history array and strings
     return True
 
 

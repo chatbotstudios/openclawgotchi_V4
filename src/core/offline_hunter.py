@@ -80,6 +80,7 @@ class OfflineHunter:
         
         # 1. Update State
         state = self._read_state()
+        was_target_locked = bool(state.get("target_lock"))
         state["is_offline_hunting"] = True
         state["hunt_duration_seconds"] = duration_seconds
         state["offline_hunt_start_time"] = time.time()
@@ -93,35 +94,37 @@ class OfflineHunter:
         
         # 3. Enter Monitor Mode
         log.info("Transitioning wlan0 to monitor mode...")
-        # Put wlan0 into monitor mode using the radio wrapper
-        subprocess.run(["python3", "-m", "core.cli.entry", "network", "wifi", "off"], cwd=str(self.project_dir), capture_output=True)
-        
-        # 4. Wait/Sleep for the duration of the hunt
-        log.info(f"Offline hunt active. Sleeping for {duration_seconds} seconds...")
-        time.sleep(duration_seconds)
-        
-        # 5. Restore managed mode and client Wi-Fi
-        log.info("Hunt complete. Restoring managed mode...")
-        subprocess.run(["python3", "-m", "core.cli.entry", "network", "wifi", "on"], cwd=str(self.project_dir), capture_output=True)
-        
-        log.info("Waiting 15 seconds for NetworkManager to connect to Wi-Fi...")
-        time.sleep(15)
-        
-        # Restore original Dark Mode UI preferences
-        self._set_env_var("DARK_MODE", orig_dark)
-        
-        # Clear offline hunting state
-        state = self._read_state()
-        state["is_offline_hunting"] = False
-        self._write_state(state)
-        
-        # Re-render UI
-        self._trigger_ui_refresh("happy", "Back online. Uploading hunt data...")
-        
-        # Post-process handshakes / reporting
-        self.report_results(duration_seconds, mission_id)
+        try:
+            # Put wlan0 into monitor mode using the radio wrapper
+            subprocess.run(["python3", "-m", "core.cli.entry", "network", "wifi", "off"], cwd=str(self.project_dir), capture_output=True)
+            
+            # 4. Wait/Sleep for the duration of the hunt
+            log.info(f"Offline hunt active. Sleeping for {duration_seconds} seconds...")
+            time.sleep(duration_seconds)
+            
+        finally:
+            # 5. Restore managed mode and client Wi-Fi
+            log.info("Hunt complete. Restoring managed mode...")
+            subprocess.run(["python3", "-m", "core.cli.entry", "network", "wifi", "on"], cwd=str(self.project_dir), capture_output=True)
+            
+            log.info("Waiting 15 seconds for NetworkManager to connect to Wi-Fi...")
+            time.sleep(15)
+            
+            # Restore original Dark Mode UI preferences
+            self._set_env_var("DARK_MODE", orig_dark)
+            
+            # Clear offline hunting state
+            state = self._read_state()
+            state["is_offline_hunting"] = False
+            self._write_state(state)
+            
+            # Re-render UI
+            self._trigger_ui_refresh("happy", "Back online. Uploading hunt data...")
+            
+            # Post-process handshakes / reporting
+            self.report_results(duration_seconds, mission_id, was_target_locked)
 
-    def report_results(self, duration: int, mission_id: str):
+    def report_results(self, duration: int, mission_id: str, was_target_locked: bool = False):
         """
         Parses session handshakes, processes rewards, and sends completion logs.
         """
@@ -149,7 +152,7 @@ class OfflineHunter:
         # Fire cognitive event hook to inform the LLM and memory
         try:
             from core.events import emit
-            emit('hunt_completed', new_handshakes=captured, duration_minutes=duration // 60)
+            emit('hunt_completed', new_handshakes=captured, duration_minutes=duration // 60, was_target_locked=was_target_locked)
         except ImportError as e:
             log.warning(f"Could not emit event: {e}")
             

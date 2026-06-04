@@ -493,6 +493,15 @@ def run_discord():
         log.error("DISCORD_BOT_TOKEN is not set!")
         return
     
+    # Monkey-patch discord.py's internal exponential backoff to cap at 15s.
+    # Otherwise, an offline hunt will cause the bot to sleep for 5+ minutes before retrying!
+    import discord.backoff
+    if not hasattr(discord.backoff.ExponentialBackoff, '_original_delay'):
+        discord.backoff.ExponentialBackoff._original_delay = discord.backoff.ExponentialBackoff.delay
+        def _capped_delay(self):
+            return min(self._original_delay(), 15.0)
+        discord.backoff.ExponentialBackoff.delay = _capped_delay
+    
     global bot_instance
     retry_delay = 10
     

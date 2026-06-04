@@ -62,11 +62,11 @@ def handle_peer_detected(peer_name: str, rssi: int):
             is_group=False
         )
 
-def handle_hunt_completed(new_handshakes: int, duration_minutes: int):
+def handle_hunt_completed(new_handshakes: int, duration_minutes: int, was_target_locked: bool = False):
     """
     Event: The Gotchi just returned from an offline hunt.
     """
-    logger.info(f"Ingesting hunt completion: {new_handshakes} handshakes in {duration_minutes}m")
+    logger.info(f"Ingesting hunt completion: {new_handshakes} handshakes in {duration_minutes}m (Target Locked: {was_target_locked})")
     
     admin_id = get_admin_id()
     if admin_id:
@@ -81,6 +81,12 @@ def handle_hunt_completed(new_handshakes: int, duration_minutes: int):
                 f"[System Event: You just finished a {duration_minutes}-minute offline hunt "
                 "but didn't capture any handshakes. "
                 "Express mild disappointment but determination for next time.]"
+            )
+            
+        if was_target_locked:
+            system_prompt += (
+                "\n\n[WARNING: You were engaged in a 'Full Pwn Mode' target lock which generates excessive SoC heat. "
+                "You MUST run the `health_check` tool right now to report the Pi's thermal status to the user!]"
             )
         
         save_pending_task(
