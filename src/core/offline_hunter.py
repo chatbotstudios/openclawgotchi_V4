@@ -104,6 +104,9 @@ class OfflineHunter:
         log.info("Hunt complete. Restoring managed mode...")
         subprocess.run(["python3", "-m", "core.cli.entry", "network", "wifi", "on"], cwd=str(self.project_dir), capture_output=True)
         
+        log.info("Waiting 15 seconds for NetworkManager to connect to Wi-Fi...")
+        time.sleep(15)
+        
         # Restore original Dark Mode UI preferences
         self._set_env_var("DARK_MODE", orig_dark)
         
@@ -143,8 +146,13 @@ class OfflineHunter:
         # Log and write update to daily journal
         log.info(report_msg)
         
-        # Fire hooks/triggers (e.g. notify Discord if configured)
-        # In a real environment, we'd send via bot webhook. For CLI/testing, we write to log.
+        # Fire cognitive event hook to inform the LLM and memory
+        try:
+            from core.events import emit
+            emit('hunt_completed', new_handshakes=captured, duration_minutes=duration // 60)
+        except ImportError as e:
+            log.warning(f"Could not emit event: {e}")
+            
         log.info("Post-hunt reporting completed successfully.")
         
 # Global instance

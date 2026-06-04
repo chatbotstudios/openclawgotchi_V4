@@ -209,6 +209,26 @@ def manage_reminders(action: str, msg: str = None) -> str:
         return f"Reminder set: {msg}"
     return "Reminder management active (Basic)."
 
+@register_tool
+def launch_offline_hunt(duration_minutes: int) -> str:
+    """
+    Launch an autonomous offline handshake hunt.
+    This disconnects from the internet (entering monitor mode) for the given duration.
+    It runs safely in the background and will automatically reconnect when finished.
+    """
+    import subprocess
+    import sys
+    
+    duration_seconds = int(duration_minutes) * 60
+    cmd = [
+        sys.executable, "-c",
+        f"from core.offline_hunter import offline_hunter; offline_hunter.run_hunt({duration_seconds}, 'handshake_hunter_v1')"
+    ]
+    
+    # Run completely detached from the caller so it doesn't block Litellm
+    subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    return f"🚀 Offline Hunt launched in background for {duration_minutes} minutes. Connection will drop shortly and restore automatically."
+
 # Removed duplicate set_llm_mode
 
 @register_tool

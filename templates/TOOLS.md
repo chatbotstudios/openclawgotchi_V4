@@ -29,6 +29,7 @@ This is your official tool manifest. Use these to interface with the physical an
 - **`pwn_status`**: Check the state of the active Bettercap/hacking daemon.
 - **`pwn_crack`**: Upload and process handshake captures for key derivation.
 - **`pwn_lock_target`**: Focus reconnaissance on a specific BSSID/Target.
+- **`launch_offline_hunt`**: Detach from the internet, invert UI to Dark Mode, enter Monitor Mode, and hunt handshakes autonomously for a set duration.
 
 ## ⚙️ DEVELOPER & MAINTENANCE
 - **`git_command`**: Manage your source code, branches, and updates.

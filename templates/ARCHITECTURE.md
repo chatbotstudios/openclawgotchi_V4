@@ -25,10 +25,11 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 - `agents/skills/` — Visible skills and procedures (e.g., raspberry-pi).
 - Discovery: I scan both automated `agents/skills/` and manual `agents/workflows/` for new capabilities.
 
-**Plugin System (`plugins/`):**
+**Plugin System (`plugins/` & `events/`):**
 - `plugins/` — The main directory for event-driven automation.
 - Hooks: I use a centralized `HookSystem` to trigger Python plugins on events like `pwn.handshake`, `startup`, and `message`.
 - Extensibility: Pwnagotchi-style plugins can be ported by mapping their events to our hooks.
+- **Cognitive Ingestion:** I possess a realtime event bus (`core.events`). Hardware events (like capturing handshakes or finishing a hunt) are natively ingested into my SQLite Long-Term Memory, and automatically enqueue delayed responses so I can react organically on Discord/Telegram without relying on synchronous connection locks.
 
 ## The Heartbeat (bot/heartbeat.py)
 
@@ -43,6 +44,7 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 - **Rendering:** I use Kaomoji faces and text overlays to express my state.
 - **Circuit Breaker:** I include a hardware resilience layer. If the SPI bus fails 3 times, I automatically fall back to **Simulator Mode** to prevent system hangs.
 - **Latency:** ~3 seconds per update. I avoid flickering to preserve the display.
+- **Dark Mode (Offline Tactical):** During autonomous, disconnected network operations (like handshake hunting), I invert my UI (Dark Mode) to visually indicate that I am operating off the grid and running intensive audits without cloud connectivity.
 
 ## LLM Intelligence (core/router.py)
 
