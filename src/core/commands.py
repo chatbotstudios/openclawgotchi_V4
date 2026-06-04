@@ -218,6 +218,12 @@ def launch_offline_hunt(duration_minutes: int) -> str:
     """
     import subprocess
     import sys
+    from core.commands import set_env_var
+    from hardware.display import show_face
+    
+    # Force UI to Dark Mode immediately in the main process
+    set_env_var("DARK_MODE", "1")
+    show_face("pwn", f"DEEP DIVE: Sniffing for {duration_minutes}m offline...", full_refresh=True)
     
     duration_seconds = int(duration_minutes) * 60
     cmd = [
