@@ -7,6 +7,17 @@ from discord.ext import commands, tasks
 # Suppress discord.client warnings about PyNaCl and davey (voice support)
 logging.getLogger("discord.client").setLevel(logging.ERROR)
 
+class OfflineHuntFilter(logging.Filter):
+    def filter(self, record):
+        # Suppress discord.client reconnect spam if it's a DNS error (caused by offline hunt monitor mode)
+        if record.getMessage() and "Attempting a reconnect in" in record.getMessage() and record.exc_info:
+            exc_type, exc_value, _ = record.exc_info
+            if "Temporary failure in name resolution" in str(exc_value):
+                return False
+        return True
+
+logging.getLogger("discord.client").addFilter(OfflineHuntFilter())
+
 from config import (
     DISCORD_BOT_TOKEN, get_discord_allowed_users, 
     DISCORD_HEARTBEATS_CHANNEL, DISCORD_CHANNEL_ID, BOT_NAME,
