@@ -10,7 +10,10 @@ from config import DB_PATH, HISTORY_LIMIT
 
 def get_connection():
     """Get SQLite connection."""
-    return sqlite3.connect(str(DB_PATH))
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA synchronous=NORMAL;")
+    return conn
 
 
 from contextlib import contextmanager
@@ -19,6 +22,8 @@ from contextlib import contextmanager
 def get_db():
     """Get SQLite connection as context manager (auto-closes)."""
     conn = sqlite3.connect(str(DB_PATH))
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA synchronous=NORMAL;")
     try:
         yield conn
     finally:

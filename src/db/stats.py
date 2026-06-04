@@ -8,7 +8,42 @@ import logging
 from datetime import datetime, date
 from typing import Optional, Callable
 
+import time
 from config import DB_PATH
+
+_stat_buffer = {}
+_last_flush_time = time.time()
+
+def get_connection():
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA synchronous=NORMAL;")
+    return conn
+
+def flush_stats():
+    global _stat_buffer, _last_flush_time
+    if not _stat_buffer:
+        return
+    conn = get_connection()
+    try:
+        now_str = datetime.now().isoformat()
+        for key, value in _stat_buffer.items():
+            conn.execute('''
+                INSERT OR REPLACE INTO gotchi_stats (key, value, updated_at)
+                VALUES (?, ?, ?)
+            ''', (key, value, now_str))
+        conn.commit()
+    except Exception as e:
+        log.error(f"Failed to flush stats: {e}")
+    finally:
+        conn.close()
+    _stat_buffer.clear()
+    _last_flush_time = time.time()
+
+def check_flush():
+    if time.time() - _last_flush_time > 300:
+        flush_stats()
+
 
 log = logging.getLogger(__name__)
 
@@ -80,7 +115,7 @@ def set_level_up_callback(callback: Callable[[int, str], None]):
 
 def init_stats_table():
     """Initialize stats table if not exists."""
-    conn = sqlite3.connect(str(DB_PATH))
+    conn = get_connection()
     conn.execute('''
         CREATE TABLE IF NOT EXISTS gotchi_stats (
             key TEXT PRIMARY KEY,
@@ -112,7 +147,9 @@ def init_stats_table():
 
 def get_stat(key: str) -> int:
     """Get a stat value."""
-    conn = sqlite3.connect(str(DB_PATH))
+    if key in _stat_buffer:
+        return _stat_buffer[key]
+    conn = get_connection()
     row = conn.execute(
         "SELECT value FROM gotchi_stats WHERE key = ?", (key,)
     ).fetchone()
@@ -121,14 +158,9 @@ def get_stat(key: str) -> int:
 
 
 def set_stat(key: str, value: int):
-    """Set a stat value."""
-    conn = sqlite3.connect(str(DB_PATH))
-    conn.execute('''
-        INSERT OR REPLACE INTO gotchi_stats (key, value, updated_at)
-        VALUES (?, ?, ?)
-    ''', (key, value, datetime.now().isoformat()))
-    conn.commit()
-    conn.close()
+    """Set a stat value (buffered in memory)."""
+    _stat_buffer[key] = value
+    check_flush()
 
 
 def increment_stat(key: str, amount: int = 1) -> int:
@@ -311,6 +343,7 @@ def on_heartbeat():
     increment_stat("heartbeats")
     add_xp(XP_HEARTBEAT, "heartbeat")
     check_daily_xp()
+    flush_stats()  # Guarantee flush on heartbeat
 
 
 # Initialize on import
