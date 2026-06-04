@@ -1,6 +1,6 @@
-# Getting Started with OpenClawGotchi V3
+# Getting Started with OpenClawGotchi V4
 
-Welcome to OpenClawGotchi V3! This guide will walk you through the initial setup, boot sequence, and basic interactions with your new tactical document-driven agent.
+Welcome to OpenClawGotchi V4! This guide will walk you through the initial setup, boot sequence, and basic interactions with your new tactical document-driven agent.
 
 ## Hardware & Software Requirements
 
@@ -53,7 +53,7 @@ The E-Ink display is the primary visual interface for OpenClawGotchi.
 - **The Unified Tactical CLI**: The easiest way to interact is via SSH using the `gotchi` command.
   - Try: `gotchi pwn status` or `gotchi ui refresh`
 - **Discord/Chat**: If configured, you can interact with the AI brain directly via chat platforms.
-- **Auto-Pwn**: If enabled, the device will automatically start sniffing and capturing handshakes without intervention.
-- **Offline Timed Missions**: Trigger offline hunts (e.g., *"Go offline and hunt for 15 minutes"*). The Gotchi will automatically invert the E-Ink screen to Dark Mode, decouple from the LLM endpoint, run a Bettercap sweep, and restore connectivity and original UI settings afterward to report the captured handshakes.
+- **Auto-Pwn & Full Pwn Mode**: If enabled, the device will automatically start sniffing and capturing handshakes without intervention. The LLM can also activate a 4-phase "Full Pwn Mode" to lock onto a specific BSSID target and actively jam it.
+- **Offline Timed Missions**: Trigger offline hunts (e.g., *"Go offline and hunt for 15 minutes"*). The Gotchi will automatically invert the E-Ink screen to Dark Mode and display a dynamic countdown timer (e.g., "See you in 14m..."). It completely decouples from the LLM endpoint, runs a Bettercap sweep using a failsafe `try/finally` block to prevent network stranding, and seamlessly restores connectivity to report the captured handshakes.
 
 Enjoy your new OpenClawGotchi!

@@ -80,8 +80,11 @@ The V4 Architecture implements a deeply integrated RPG-style Game Engine:
 
 ## Safety, Hardening & Hardware Safety
 
-- **Memory Constraints (512MB RAM):** The Pi Zero 2W environment requires highly efficient memory usage. Heavy reasoning is offloaded to cloud APIs, and garbage collection is favored over keeping large objects/buffers in memory.
-- **Non-Blocking Operation:** The heartbeats and E-Ink display loop rely on a responsive environment. All external HTTP requests and long system command calls must run in background threads (`asyncio.to_thread`) to prevent freezing.
+- **Memory Constraints (512MB RAM):** The Pi Zero 2W environment requires highly efficient memory usage. Heavy reasoning is offloaded to cloud APIs, and aggressive garbage collection (`gc.collect()`) sweeps occur after digesting context history arrays.
+- **SQLite Optimization**: The system exclusively operates in `WAL` (Write-Ahead Logging) mode to drastically reduce SD card I/O contention. Gamification (XP/Stats) uses an in-memory dictionary buffer that flushes to disk periodically instead of executing synchronous database writes.
+- **GIL Evasion**: All external HTTP requests and long system command calls must run in background threads (`asyncio.to_thread`) to prevent freezing. Heavy OS-level processing, such as parsing `.pcap` handshake hashes via the `wpa-sec` API, are completely offloaded to isolated processes using `concurrent.futures.ProcessPoolExecutor` to ensure the main Discord WebSocket is never strangled.
+- **Radio Guardrails**: Disconnecting from the primary Wi-Fi interface (monitor mode) uses strict `try/finally` stranding prevention to ensure the Gotchi automatically falls back to managed mode even if the Python daemon crashes during an offline hunt.
+- **Thermal Safety**: The LLM is explicitly prompted to check the Pi's SoC temperature (`health_check`) following intense radio activity (like a "Full Pwn Mode" targeted channel hop) to alert the user of potential overheating.
 - **E-Ink Display Protection:** SPI updates take ~3s and E-Ink particles suffer wear. Screen refreshes are strictly rate-limited (once per 10-30 seconds minimum) to optimize display lifespan and battery. Animations do not exceed 1 frame per second.
 - **Power & Battery Efficiency:** Telemetry checks automatically trigger low-frequency operational modes if a low battery state is flagged, avoiding persistent 100% CPU spikes.
 - **Filesystem & SD Card Protection:** State caching resides inside SQLite (`gotchi.db`), and markdown logging is performed in batches/intervals to minimize write wear on the system's SD card.

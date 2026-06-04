@@ -1,6 +1,6 @@
 # Hardware Limits and Safety Guidelines
 
-> CRITICAL constraints for AI Agents generating code or workflows for OpenClawGotchi V3.
+> CRITICAL constraints for AI Agents generating code or workflows for OpenClawGotchi V4.
 
 The target hardware for this project is primarily the **Raspberry Pi Zero 2W**. While capable, it is highly constrained compared to a desktop environment. 
 
@@ -9,13 +9,14 @@ The target hardware for this project is primarily the **Raspberry Pi Zero 2W**. 
 The Pi Zero 2W has only 512MB of RAM, shared with the GPU.
 - **Rule**: Avoid loading large datasets or LLM weights into memory. All heavy LLM reasoning *must* be routed through external APIs (OpenAI, Gemini, Anthropic).
 - **Rule**: Limit concurrent Python threads.
-- **Rule**: Avoid aggressive pandas or numpy operations unless absolutely necessary and garbage-collected quickly.
+- **Rule**: Avoid aggressive pandas or numpy operations unless absolutely necessary and garbage-collected quickly. Always trigger `gc.collect()` after processing heavy context arrays.
 
 ## 2. Synchronous Blocking is Fatal
 
 The Python "Body" runs a constant heartbeat loop that manages radio interfaces and the E-Ink display.
 - **Rule**: NEVER write long-running synchronous code in the main thread.
 - **Rule**: If writing a tool or plugin that makes a network request (e.g., `requests.get`), you must use `asyncio.to_thread` or an async library like `aiohttp`. Blocking the main loop for even 5 seconds will cause watchdog timeouts and E-Ink freezes.
+- **Rule**: Heavy filesystem/OS parsing (like cracking `.pcap` files) MUST be sandboxed into `concurrent.futures.ProcessPoolExecutor` to ensure the Python GIL drops and background Discord ping heartbeats aren't stalled.
 
 ## 3. E-Ink Display Constraints
 
@@ -33,3 +34,10 @@ The Waveshare E-Ink display is not an LCD. It requires physical time for the e-i
 
 The OS runs on an SD Card, which has limited write cycles.
 - **Rule**: Minimize aggressive logging. Use SQLite for state, and only write to markdown journals periodically, not every millisecond.
+- **Rule**: All SQLite connections must utilize `PRAGMA journal_mode=WAL` to drastically reduce disk I/O locking and prolong the SD card lifespan. Gamification trackers must use in-memory buffering.
+
+## 6. Thermal Envelope
+
+The Pi Zero 2W has no active cooling.
+- **Rule**: Do not peg the CPU to 100% continuously.
+- **Rule**: The LLM must monitor thermal states (`health_check`). If the Gotchi returns from an intense RF session (like a "Full Pwn Mode" targeted attack), the AI MUST be prompted to inspect temperatures to warn the user of potential overheating.
