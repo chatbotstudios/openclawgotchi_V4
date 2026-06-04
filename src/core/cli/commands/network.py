@@ -70,6 +70,25 @@ def tether_burst(duration):
     watchdog.restart_burst()
     click.echo(f"🧲 Tether Burst Mode started ({duration}s).")
 
+@network.command(name="hunt")
+@click.option('--duration', default=900, type=int, help="Duration of offline hunt in seconds (default 900 / 15m).")
+@click.option('--mission', default="handshake_hunter_v1", type=str, help="Associated mission ID.")
+def network_hunt(duration, mission):
+    """Go offline, turn wlan0 to monitor mode, invert UI, and hunt."""
+    import subprocess
+    import sys
+    click.echo(f"📡 Transitioning to Offline Hunt for {duration // 60} minutes...")
+    
+    # Run the offline hunter in a background python process to prevent blocking the terminal/LLM
+    cmd = [
+        sys.executable, "-c",
+        f"from core.offline_hunter import offline_hunter; offline_hunter.run_hunt({duration}, '{mission}')"
+    ]
+    
+    # Run completely detached from the caller
+    subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    click.echo("🚀 Hunt launched in background. Connection will drop shortly.")
+
 @network.group()
 def net():
     """Global network diagnostics."""

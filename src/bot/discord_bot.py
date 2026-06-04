@@ -519,4 +519,4 @@ def run_discord():
             log.info(f"Retrying in {retry_delay}s...")
             import time
             time.sleep(retry_delay)
-            retry_delay = min(retry_delay * 2, 300) # Max 5 mins
+            retry_delay = min(retry_delay + 5, 15) # Cap at 15s so it quickly recovers after offline hunt
