@@ -278,6 +278,27 @@ def generate_canvas(mood="happy", status_text="") -> Image:
     if not speech_text:
         speech_text = "Idle."
 
+    # Dynamic Offline Hunt Countdown
+    try:
+        import time
+        states_path = PROJECT_DIR / "gotchi_states.json"
+        if states_path.exists():
+            state_data = json.loads(states_path.read_text())
+            if state_data.get("is_offline_hunting", False):
+                start_time = state_data.get("offline_hunt_start_time", 0)
+                duration = state_data.get("hunt_duration_seconds", 0)
+                if start_time and duration:
+                    elapsed = time.time() - start_time
+                    remaining_sec = max(0, duration - elapsed)
+                    remaining_min = max(1, int(remaining_sec / 60)) if remaining_sec > 0 else 0
+                    
+                    if remaining_sec > 0:
+                        speech_text = f"DEEP DIVE: Sniffing...\nGoing dark - See you in {remaining_min}m"
+                    else:
+                        speech_text = "DEEP DIVE: Finishing up... (Restoring uplink)"
+    except Exception:
+        pass
+
     global _animation_tick
     _animation_tick += 1
     
