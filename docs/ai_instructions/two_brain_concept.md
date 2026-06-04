@@ -60,6 +60,12 @@ The interaction between the Soul (LLM) and the Body (Python) is the core of the 
 ### Bridging the Gap
 Plugins can further bridge the two brains. For example, a Python plugin that triggers on a handshake capture event can format a summary and inject it into the AI brain's context, prompting the AI to change its mood or post a celebratory message to Discord.
 
+### The Offline Handover Protocol (Timed Missions)
+Because the Raspberry Pi Zero has a single Wi-Fi radio interface, it cannot remain connected to the cloud LLM API while running `wlan0` in Monitor Mode for wireless auditing. To solve this, the two brains coordinate a **Timed Offline Hunt**:
+1. **The Soul's Permission**: When prompted, the LLM Brain writes its target mission objectives and duration to `gotchi_states.json`, instructs the user it is going offline, and shuts down its network connection.
+2. **The Body's Tactical Inversion**: The Python Brain detects this state, sets `.env` `DARK_MODE=1` to turn the screen dark (visualizing the active tactical audit), and initiates a local timer. It switches `wlan0` to Monitor Mode and runs Bettercap autonomously.
+3. **Re-connection & Reporting**: Once the timer expires, the Python Brain restores `wlan0` to managed mode, resets the screen's `DARK_MODE` setting, establishes the internet link, and reports the captured PCAPs/handshakes back to the LLM Brain to process XP rewards and notify the user on Discord/Telegram.
+
 ### Strengths of This Split Architecture
 - **Resilience**: If the LLM router is slow, rate-limited, or crashes, the Python Body maintains core functions (display updating, passive radio sniffing, heartbeat).
 - **Efficiency**: Expensive LLM reasoning only occurs when high-level decisions are needed; routine tactical tasks run natively in lightweight Python.

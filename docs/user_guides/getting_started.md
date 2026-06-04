@@ -54,5 +54,6 @@ The E-Ink display is the primary visual interface for OpenClawGotchi.
   - Try: `gotchi pwn status` or `gotchi ui refresh`
 - **Discord/Chat**: If configured, you can interact with the AI brain directly via chat platforms.
 - **Auto-Pwn**: If enabled, the device will automatically start sniffing and capturing handshakes without intervention.
+- **Offline Timed Missions**: Trigger offline hunts (e.g., *"Go offline and hunt for 15 minutes"*). The Gotchi will automatically invert the E-Ink screen to Dark Mode, decouple from the LLM endpoint, run a Bettercap sweep, and restore connectivity and original UI settings afterward to report the captured handshakes.
 
 Enjoy your new OpenClawGotchi!
