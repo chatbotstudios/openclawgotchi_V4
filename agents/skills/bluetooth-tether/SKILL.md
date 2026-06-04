@@ -40,7 +40,15 @@ Successful tethering creates the **`bnep0`** interface.
 *   **IP Range**: Usually `172.20.10.x` (iOS) or `192.168.44.x` (Android).
 *   **Throughput**: 1–2 Mbps (Standard).
 
-### 3. Magnetic Watchdog (Autonomous Recovery)
+### 4. Configuration & Environment Variables
+The following environment configurations in `.env` govern Bluetooth tethering defaults:
+- **`BLE_TETHER_NAME`**: The name of the tethering host phone (e.g. `JPhone`).
+- **`BLE_ADDRESS`**: The static MAC address of the target mobile device (e.g. `D0:3F:AA:14:C9:29`).
+- **`BLE_TETHER_PASSWORD`**: Hotspot/PAN PIN if needed for legacy compatibility.
+
+*Note on Pairing PINs*: During the initial `gotchi tether_pair` flow, a 6-digit Secure Simple Pairing (SSP) code is displayed. The user must tap "Pair" on the phone or confirm on the terminal. Once paired and trusted, no PIN or code entry is required for subsequent connections or watchdog pulses.
+
+### 5. Magnetic Watchdog (Autonomous Recovery)
 The unit features a background pulse that monitors internet connectivity:
 *   **Burst Mode**: For the first 5 minutes of disconnection, it pulses every 30 seconds.
 *   **Stealth Mode**: After 5 minutes, it relaxes to a 5-minute interval to save iPhone battery.
