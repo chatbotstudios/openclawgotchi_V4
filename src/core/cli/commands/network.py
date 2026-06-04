@@ -62,11 +62,13 @@ def tether():
     pass
 
 @tether.command(name="burst")
-def tether_burst():
-    """Start 5-minute aggressive tether watchdog."""
+@click.option('--duration', default=300, type=int, help="Duration in seconds for aggressive polling.")
+def tether_burst(duration):
+    """Start aggressive tether watchdog."""
     from core.tether_watchdog import watchdog
+    watchdog.burst_duration = duration
     watchdog.restart_burst()
-    click.echo("🧲 Tether Burst Mode started.")
+    click.echo(f"🧲 Tether Burst Mode started ({duration}s).")
 
 @network.group()
 def net():

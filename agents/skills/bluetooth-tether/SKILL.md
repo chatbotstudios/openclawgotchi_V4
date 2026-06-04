@@ -2,6 +2,12 @@
 
 This skill enables the unit to maintain a low-bandwidth, high-reliability internet uplink using a mobile phone's Personal Hotspot via Bluetooth PAN (Personal Area Network).
 
+## 🧠 Trigger Phrases
+- "Connect to my phone hotspot"
+- "Tether to phone"
+- "Enable bluetooth tethering"
+- "Bring up bluetooth hotspot"
+
 ## 🎯 Tactical Purpose
 Bluetooth tethering is the preferred method for remote agent connectivity because:
 1.  **Radio Isolation**: It leaves the `wlan0` interface completely free for Monitor Mode / Subconscious auditing.
@@ -10,7 +16,16 @@ Bluetooth tethering is the preferred method for remote agent connectivity becaus
 
 ## 🛠️ Procedural Knowledge
 
-### 1. The "Hotspot Screen" Paradox
+### 1. Proactive Activation & Watchdog
+When the operator triggers any of the phrases above:
+1.  **Acknowledge**: Instruct the user: *"Please open your phone's Settings > Personal Hotspot screen to make the hotspot discoverable."*
+2.  **Initiate Watchdog**: Start a 3-minute BLE aggressive watchdog burst to repeatedly probe for connectivity:
+    ```bash
+    gotchi network tether burst --duration 180
+    ```
+3.  **Establish Bond/Tunnel**: Perform a connection attempt to the paired host MAC using the `tether_up` tool.
+
+### 2. The "Hotspot Screen" Paradox
 **CRITICAL**: iOS and many Android versions only broadcast their tethering availability while the **Settings > Personal Hotspot** screen is actively open. 
 *   **Action**: If a connection fails, the agent must prompt the user to "Wake the Hotspot".
 
