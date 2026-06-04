@@ -30,7 +30,7 @@ Execute the hunt command using the unified tactical wrapper (`gotchi`). Do **NOT
 ```bash
 # Launch a 10-minute (600 seconds) target capture in background
 # This puts wlan0 in monitor mode, runs bettercap/aircrack, and automatically restores station mode after 600s
-./gotchi wifi hunt --duration 600 &
+gotchi network hunt --duration 600
 ```
 
 ### Step 3: Sleep/Offline Monitoring (Local Python Daemon)
@@ -68,5 +68,5 @@ Scan your `handshakes/` folder for new WPA handshakes or BLE logs, add them to y
 ## ⚠️ Safety & Operational Safeguards
 
 - **Never Block the Main Daemon**: Always execute network disabling/scanning commands in background shells (`&`) or asynchronously (`asyncio.to_thread`) to prevent freezing the core `gotchi` service or triggering systemd watchdog timeouts.
-- **Fail-Safe Timeout**: Always ensure the local hunt command has a strict hardcoded system fallback (e.g. `timeout 650s ./gotchi wifi hunt`) so that the WiFi interface is guaranteed to recover even if the parent Python script encounters a runtime error.
+- **Fail-Safe Timeout**: Always ensure the local hunt command has a strict hardcoded system fallback (e.g. `gotchi network hunt --duration 600`) so that the WiFi interface is guaranteed to recover even if the parent Python script encounters a runtime error.
 - **Physical Fallback**: Advise your Commander that if the wireless network fails to recover, they can physically reconnect via BLE tethering or local Ethernet console to manually execute standard system network recovery.

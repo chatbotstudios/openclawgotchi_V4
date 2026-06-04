@@ -27,9 +27,12 @@ When the operator triggers an offline hunt, execute the following actions:
      "active_mission_id": "handshake_hunter_v1"
    }
    ```
-3. **Invert ePaper UI**: Modify `.env` to set `DARK_MODE=1` to indicate an active tactical scan. Re-render the screen.
+3. **Trigger Hunt Command**: Run the unified CLI wrapper to launch the background workflow:
+   ```bash
+   gotchi network hunt --duration 900 --mission handshake_hunter_v1
+   ```
 4. **Notify Operator**: State the objective conversationally before going dark: 
-   *"Understood, Commander. Taking the LLM loop offline to hunt on wlan0. Screen is in Dark Mode. See you in [X] minutes."*
+   *"Understood, Commander. Taking the LLM loop offline to hunt on wlan0. Screen is in Dark Mode. See you in 15 minutes."*
 
 ---
 
