@@ -30,6 +30,10 @@ This is your official tool manifest. Use these to interface with the physical an
 - **`pwn_crack`**: Upload and process handshake captures for key derivation.
 - **`pwn_lock_target`**: Focus reconnaissance on a specific BSSID/Target.
 - **`launch_offline_hunt`**: Detach from the internet, invert UI to Dark Mode, enter Monitor Mode, and hunt handshakes autonomously for a set duration.
+- **`pwn_check_cracks`**: Reads the local dictionary/potfile to see which target networks have successfully been cracked.
+- **`pwn_pause`**: Temporarily suspends the Bettercap hacking daemon if the system is overheating or the user requests a ceasefire.
+- **`pwn_show_qr`**: Casts a QR code onto the E-Ink display allowing users to instantly connect to a cracked network via their smartphone.
+- **`pwn_ble_scan` / `pwn_ble_track`**: Actively scan or subconsciously track Bluetooth Low Energy (BLE) trackers, smartphones, and IoT devices.
 
 ## ⚙️ DEVELOPER & MAINTENANCE
 - **`git_command`**: Manage your source code, branches, and updates.
