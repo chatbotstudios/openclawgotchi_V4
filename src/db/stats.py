@@ -7,12 +7,15 @@ import sqlite3
 import logging
 from datetime import datetime, date
 from typing import Optional, Callable
+import threading
 
 import time
 from config import DB_PATH
 
 _stat_buffer = {}
+_stat_lock = threading.Lock()
 _last_flush_time = time.time()
+
 
 def get_connection():
     conn = sqlite3.connect(str(DB_PATH))
@@ -22,12 +25,17 @@ def get_connection():
 
 def flush_stats():
     global _stat_buffer, _last_flush_time
-    if not _stat_buffer:
-        return
+    with _stat_lock:
+        if not _stat_buffer:
+            return
+        # Copy items to flush and clear buffer immediately
+        items_to_flush = list(_stat_buffer.items())
+        _stat_buffer.clear()
+        
     conn = get_connection()
     try:
         now_str = datetime.now().isoformat()
-        for key, value in _stat_buffer.items():
+        for key, value in items_to_flush:
             conn.execute('''
                 INSERT OR REPLACE INTO gotchi_stats (key, value, updated_at)
                 VALUES (?, ?, ?)
@@ -37,7 +45,6 @@ def flush_stats():
         log.error(f"Failed to flush stats: {e}")
     finally:
         conn.close()
-    _stat_buffer.clear()
     _last_flush_time = time.time()
 
 def check_flush():
@@ -147,8 +154,10 @@ def init_stats_table():
 
 def get_stat(key: str) -> int:
     """Get a stat value."""
-    if key in _stat_buffer:
-        return _stat_buffer[key]
+    with _stat_lock:
+        if key in _stat_buffer:
+            return _stat_buffer[key]
+            
     conn = get_connection()
     row = conn.execute(
         "SELECT value FROM gotchi_stats WHERE key = ?", (key,)
@@ -159,7 +168,8 @@ def get_stat(key: str) -> int:
 
 def set_stat(key: str, value: int):
     """Set a stat value (buffered in memory)."""
-    _stat_buffer[key] = value
+    with _stat_lock:
+        _stat_buffer[key] = value
     check_flush()
 
 

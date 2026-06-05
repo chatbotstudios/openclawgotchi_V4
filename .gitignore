@@ -2,8 +2,10 @@
 # OpenClawGotchi
 # ===================
 
-# Workspace — bot's personal "soul" (copy from templates/ to customize)
-workspace/
+# Templates — bot's personal "soul"
+templates/memory/
+templates/knowledge/
+templates/CHANGELOG.md
 
 # External skills (clone separately if needed)
 openclaw-skills/
@@ -93,10 +95,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 
-# ===================
-# Memory files (runtime)
-# ===================
-workspace/memory/
+
 
 # ===================
 # Runtime data

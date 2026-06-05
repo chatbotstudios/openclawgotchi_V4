@@ -71,27 +71,14 @@ echo "[2/5] Configuration..."
 node "${SCRIPT_DIR}/src/cli/wizard.mjs"
 
 # ============================================
-# STEP 3: Create workspace & Configure Git
+# STEP 3: Configure Git
 # ============================================
 echo ""
-echo "[3/5] Setting up workspace & git config..."
+echo "[3/5] Setting up git config..."
 
-# Prevent divergent branch errors on 'git pull' by defaulting to rebase
-if [ -d "${SCRIPT_DIR}/.git" ]; then
-    git -C "${SCRIPT_DIR}" config pull.rebase true
-fi
-
-if [ ! -d "${SCRIPT_DIR}/workspace" ]; then
-    cp -r "${SCRIPT_DIR}/templates" "${SCRIPT_DIR}/workspace"
-    echo "  ✅ Created workspace/ from templates"
-else
-    echo "  ✅ workspace/ already exists"
-    if [ ! -f "${SCRIPT_DIR}/workspace/missions/progressive.json" ]; then
-        mkdir -p "${SCRIPT_DIR}/workspace/missions"
-        cp "${SCRIPT_DIR}/templates/missions/progressive.json" "${SCRIPT_DIR}/workspace/missions/progressive.json"
-        echo "  ✅ Copied progressive.json to workspace/missions/"
-    fi
-fi
+# Set git config to avoid author identity errors during sync
+git config --global user.name "OpenClawGotchi"
+git config --global user.email "bot@openclaw.local"
 
 # ============================================
 # STEP 4: Install dependencies

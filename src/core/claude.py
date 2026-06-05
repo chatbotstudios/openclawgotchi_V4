@@ -1,7 +1,7 @@
 """
 Claude CLI connector.
 
-Note: Claude CLI automatically reads BOT_INSTRUCTIONS.md from cwd (workspace/).
+Note: Claude CLI automatically reads BOT_INSTRUCTIONS.md from cwd (templates/).
 We only pass user prompt + history. System context comes from the file.
 """
 

@@ -3,13 +3,13 @@ Knowledge Crystallization — autonomous synthesis of bot's experiences.
 
 Runs during heartbeat when 24h have passed since last crystallization.
 Reads recent logs + facts, extracts structured insights, saves to
-workspace/knowledge/ directory (organized by category).
+templates/knowledge/ directory (organized by category).
 """
 
 import logging
 from datetime import datetime, timedelta
 
-from config import WORKSPACE_DIR
+from config import PROJECT_DIR, WORKSPACE_DIR
 
 log = logging.getLogger(__name__)
 

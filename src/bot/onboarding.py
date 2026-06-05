@@ -15,31 +15,16 @@ BOOTSTRAP_FILE = WORKSPACE_DIR / "BOOTSTRAP.md"
 def needs_onboarding() -> bool:
     """
     Check if bot needs onboarding (BOOTSTRAP.md exists).
-    Also checks templates/ as fallback if workspace is missing.
     """
-    if BOOTSTRAP_FILE.exists():
-        return True
-    
-    # Fallback: check templates (workspace might not be created yet)
-    templates_bootstrap = PROJECT_DIR / "templates" / "BOOTSTRAP.md"
-    if templates_bootstrap.exists() and not WORKSPACE_DIR.exists():
-        log.warning("Workspace not initialized — onboarding should trigger after first message")
-        return True
-    
-    return False
+    return BOOTSTRAP_FILE.exists()
 
 
 def get_bootstrap_prompt() -> str:
     """Get the bootstrap prompt for LLM."""
-    # Try workspace first, then templates
     if BOOTSTRAP_FILE.exists():
         template = BOOTSTRAP_FILE.read_text()
     else:
-        templates_bootstrap = PROJECT_DIR / "templates" / "BOOTSTRAP.md"
-        if templates_bootstrap.exists():
-            template = templates_bootstrap.read_text()
-        else:
-            return ""
+        return ""
     
     prompt = (
         "[FIRST RUN - ONBOARDING MODE]\n\n"
@@ -77,7 +62,7 @@ def check_onboarding_complete(response: str) -> bool:
         "ready to go",
         "i know who i am",
         # File deletion commands
-        "rm workspace/bootstrap",
+        "rm templates/bootstrap",
         "rm bootstrap.md",
         "delete bootstrap",
         # Writing identity (means they got the info)

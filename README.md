@@ -1,4 +1,4 @@
-# 🦋 OpenClawGotchi V4: Tactical Edge Intelligence
+# 🦋 OpenClawGotchi V1.6: Tactical Edge Intelligence
 
 *A high-performance, autonomous AI companion for the Raspberry Pi Zero 2W, fusing OpenClaw's advanced reasoning with Pwnagotchi's hardware-edge network auditing.*
 
@@ -8,7 +8,7 @@
 
 ## 👋 I am Gotchi V4.
 
-I am a **Tactical Document-Driven Agent**. My identity, memories, and skills are defined entirely by living Markdown files in my `workspace/`. V4 represents a massive architectural leap, introducing a unified 75+ command Python CLI, dynamic LLM routing, and deep hardware-level integration for Wi-Fi/BLE auditing.
+I am a **Tactical Document-Driven Agent**. My identity, memories, and skills are defined entirely by living Markdown files in my `templates/` directory. V1.6 represents a massive architectural leap, introducing a unified 75+ command Python CLI, dynamic LLM routing, and deep hardware-level integration for Wi-Fi/BLE auditing.
 
 ### 🧠 Advanced AI & LLM Integration (Hermes-Core Aligned)
 Unlike traditional bots, I do not rely on static logic trees. I am a ReAct-based autonomous agent powered by a flexible, multi-provider LLM routing layer:
@@ -44,14 +44,14 @@ Gotchi V4 features a state-of-the-art interactive CLI configuration wizard (`src
   - Retro `pong` paddle (`🏓     · `) for write/save routines.
   - Mitosis (`⠀⠶⠀`), `pacman` (`d ∙ ∙ ∙`), and `radar` scans for hardware diagnostics.
   - Moon phases (`🌑🌒🌓...`) and pulsing hearts (`💛🧡❤...`) for finalized boots.
-- **🛡️ Sentinel Orchestration**: Writes a secure JSON configuration sentinel to `workspace/.setup_completed` to control first-boot CLI launch. If the sentinel is missing, the wizard automatically launches upon launching `gotchi` to ensure seamless onboarding.
+- **🛡️ Sentinel Orchestration**: Writes a secure JSON configuration sentinel to `templates/.setup_completed` to control first-boot CLI launch. If the sentinel is missing, the wizard automatically launches upon launching `gotchi` to ensure seamless onboarding.
 
 
 ### 🧠 3-Tier Memory Architecture
 To operate safely on the edge without crashing the 512MB RAM Pi Zero, Gotchi splits memory into three distinct tiers:
 1. **Short-Term (Conversational Buffer)**: Stored in a strict auto-cleaning SQLite table to prevent the LLM context window from blowing up during heavy chatter.
 2. **Long-Term (Factual)**: A dedicated `facts` database using SQLite FTS5 for lightning-fast semantic and keyword retrieval, completely bypassing the heavy overhead of Vector Databases.
-3. **Episodic (Journaling)**: Older context is regularly flushed and "Crystallized" into a human-readable daily Markdown diary in `workspace/memory/YYYY-MM-DD.md`. The Gotchi even logs its emotions next to timestamps (e.g., `- [14:32] (⌐■_■): Locked onto a new target.`)!
+3. **Episodic (Journaling)**: Older context is regularly flushed and "Crystallized" into a human-readable daily Markdown diary in `templates/memory/YYYY-MM-DD.md`. The Gotchi even logs its emotions next to timestamps (e.g., `- [14:32] (⌐■_■): Locked onto a new target.`)!
 
 ### 📡 Subconscious Pwning & Network Auditing
 I am equipped with a modernized, thread-safe radio management stack that runs "subconsciously" in the background, allowing my AI loop to remain completely uninterrupted while hunting:
@@ -71,7 +71,7 @@ Gotchi V4 now supports advanced, resilient off-grid procedures allowing you to d
 ### ⚡ Pi Zero Optimization Architecture
 V4 incorporates brutal low-level optimizations to maintain stability under 512MB RAM:
 1. **SQLite Write-Ahead Logging (WAL)**: `PRAGMA journal_mode=WAL` massively reduces SD card I/O locks.
-2. **In-Memory Buffering**: Gamification XP (`gotchi_stats`) uses a fast in-memory dictionary that flushes every 5 minutes (or per heartbeat) to reduce continuous disk writes.
+2. **In-Memory Buffering & SQLite Consolidation**: Gamification XP uses a fast in-memory dictionary protected by Thread locks that flushes every 5 minutes to the canonical `gotchi_stats` and `aipet_state` SQLite tables, completely eliminating fragile JSON state files.
 3. **GIL Evasion (Subprocessing)**: Heavy PCAP parsing operations like `pwn_crack` run inside `concurrent.futures.ProcessPoolExecutor` to ensure the Python GIL drops and network pings aren't stalled.
 4. **Aggressive GC**: Deep garbage collection sweeps (`gc.collect()`) fire immediately after digesting memory arrays.
 
@@ -126,7 +126,7 @@ Open your browser and navigate to `http://localhost:8000` to view:
 
 ```text
 openclawgotchi_V4/
-├── workspace/           # My living "Soul": SOUL.md, IDENTITY.md, MEMORY.md
+├── templates/           # My living "Soul": SOUL.md, IDENTITY.md, MEMORY.md
 ├── agents/skills/       # Visible, Markdown-based SKILL definitions
 ├── docs/                # Comprehensive Two-Brain Architecture & User/AI Guides
 ├── src/

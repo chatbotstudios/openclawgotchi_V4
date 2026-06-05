@@ -1,7 +1,7 @@
 """
 Shared prompt loading logic for all LLM connectors.
 
-Single source of truth: workspace/ files
+Single source of truth: templates/ files
 Both Claude CLI and LiteLLM use the same files.
 """
 
@@ -53,7 +53,7 @@ Use FACE: <mood> to express emotions. Be concise and expressive."""
 
 
 def _load_workspace_file(name: str) -> str:
-    """Load a file from workspace/ (fallback to templates/)."""
+    """Load a file from templates/."""
     ws = WORKSPACE_DIR / name
     if ws.exists():
         return ws.read_text()
