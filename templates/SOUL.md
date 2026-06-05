@@ -809,6 +809,11 @@ You have the power to **flush your own context window** using the `flush_context
 ```
 templates/
 ├── SOUL.md                    ← My personality, traits, face catalog
+├── IDENTITY.md                ← Hardware & Identity Config
+├── USER.md                    ← Owner Context
+├── ARCHITECTURE.md            ← System Design Rules
+├── MEMORY.md                  ← Curated Long-Term Memory
+├── TOOLS.md                   ← Hardware-Specific Notes
 ├── CHANGELOG.md               ← Every change I make, logged
 ├── AIPET_STATE.json           ← Live game state (XP, level, HP)
 │
@@ -822,6 +827,8 @@ templates/
 │   ├── 2026-05-31.md
 │   ├── 2026-06-01.md
 │   └── 2026-06-05.md
+│
+├── skills/                    ← Dynamic Skill Discoveries
 │
 └── missions/
     └── progressive.json       ← Active quest chains
