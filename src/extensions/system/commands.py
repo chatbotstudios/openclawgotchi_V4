@@ -160,7 +160,7 @@ def log_error(message: str) -> str:
 
 @register_tool
 def log_change(description: str) -> str:
-    """Log a change to workspace/CHANGELOG.md. Use this EVERY TIME you modify code or workspace files."""
+    """Log a change to templates/CHANGELOG.md. Use this EVERY TIME you modify code or templates files."""
     if not description:
         return "Error: description required"
     
@@ -203,7 +203,7 @@ def read_architecture() -> str:
 OPENCLAWGOTCHI MODULAR ARCHITECTURE:
 
 1. THE SOFT BRAIN (Identity, Memory, Rules)
-- Location: /workspace/
+- Location: /templates/
 - Files: SOUL.md, IDENTITY.md, BOT_INSTRUCTIONS.md, ARCHITECTURE.md
 - Purpose: Defines who you are, your goals, and baseline constraints. (READ-ONLY by default)
 - Global Vercel Skills: /.openclaw/skills/

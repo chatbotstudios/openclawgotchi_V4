@@ -139,32 +139,7 @@ async def run_cron_job(job):
             await send_to_owner(fallback_text)
 
 
-def ensure_workspace():
-    """Ensure workspace/ exists — handle legacy workspace migration or create from templates."""
-    from config import WORKSPACE_DIR, PROJECT_DIR
-    import shutil
-    
-    legacy_ws = PROJECT_DIR / ".workspace"
-    
-    # 1. Handle migration from legacy workspace
-    if not WORKSPACE_DIR.exists() and legacy_ws.exists():
-        log.info(f"Migrating legacy {legacy_ws} to {WORKSPACE_DIR}")
-        legacy_ws.rename(WORKSPACE_DIR)
-        return True
 
-    # 2. If workspace exists, we are good
-    if WORKSPACE_DIR.exists():
-        return True
-    
-    # 3. First run: populate from templates
-    templates_dir = PROJECT_DIR / "templates"
-    if not templates_dir.exists():
-        log.error("Workspace templates not found!")
-        return False
-    
-    log.info(f"First run: creating {WORKSPACE_DIR} from templates/")
-    shutil.copytree(templates_dir, WORKSPACE_DIR)
-    return True
 
 
 def main():
@@ -178,10 +153,7 @@ def main():
 
     from config import BOT_PLATFORM
 
-    # Ensure workspace exists (creates from templates on first run)
-    if not ensure_workspace():
-        print("Error: Could not initialize workspace", file=sys.stderr)
-        sys.exit(1)
+
     
     # Initialize database
     init_db()

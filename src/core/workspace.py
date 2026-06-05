@@ -20,7 +20,7 @@ CORE_FILES = [
 ]
 
 def _read_file(filename: str) -> Optional[str]:
-    """Read a file from workspace (priority) or templates."""
+    """Read a file from templates."""
     paths = [
         WORKSPACE_DIR / filename,
         PROJECT_DIR / "templates" / filename
@@ -99,7 +99,7 @@ def _scan_skills_and_workflows() -> str:
 
 def load_workspace_prompt(include_heartbeat: bool = False) -> str:
     """
-    Build the full system prompt block from workspace files.
+    Build the full system prompt block from templates files.
     This is the "Brain" of the OpenClaw agent.
     """
     parts = []

@@ -7,7 +7,7 @@ def _now_utc() -> str:
 
 class AIPETState(BaseModel):
     """
-    AIPET runtime state — persisted to workspace/AIPET_STATE.json.
+    AIPET runtime state — persisted to templates/AIPET_STATE.json.
 
     NOTE: `level`, `xp`, and `title` are write-through mirrors of the canonical
     gotchi_stats SQLite table (db/stats.py). They are kept here for fast access

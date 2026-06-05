@@ -20,7 +20,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../..');
 const ENV_FILE = path.join(ROOT_DIR, '.env');
-const SENTINEL_FILE = path.join(ROOT_DIR, 'workspace', '.setup_completed');
+const SENTINEL_FILE = path.join(ROOT_DIR, 'templates', '.setup_completed');
 
 // Curated ANSI Styling (Pink & Blue)
 const PINK = '\x1B[38;5;205m';
