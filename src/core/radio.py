@@ -42,6 +42,15 @@ def manage_ble_adapter(action: str, value: str = None) -> str:
     elif action == "scan":
         from extensions.pwn.ble import pwn_ble_scan
         return pwn_ble_scan()
+    elif action == "info":
+        res = subprocess.run(["bluetoothctl", "show"], capture_output=True, text=True)
+        return res.stdout if res.stdout else "No BLE info available."
+    elif action == "broadcast":
+        subprocess.run(["sudo", "hciconfig", "hci0", "pscan"], capture_output=True)
+        subprocess.run(["sudo", "hciconfig", "hci0", "leadv"], capture_output=True)
+        subprocess.run(["bluetoothctl", "discoverable", "on"], capture_output=True)
+        subprocess.run(["bluetoothctl", "pairable", "on"], capture_output=True)
+        return "BLE Broadcasting (Beacon) ENABLED. Device is now discoverable and pairable."
     return "Invalid BLE action."
 
 def manage_net(action: str, ssid: str = None, password: str = None) -> str:
