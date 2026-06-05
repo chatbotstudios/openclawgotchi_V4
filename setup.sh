@@ -81,6 +81,19 @@ git config --global user.name "OpenClawGotchi"
 git config --global user.email "bot@openclaw.local"
 
 # ============================================
+# STEP 3.5: Generate Gotchi Brain Architecture
+# ============================================
+echo ""
+echo "[3.5/5] Generating Gotchi Brain Architecture (templates/)..."
+mkdir -p "${SCRIPT_DIR}/templates/knowledge" "${SCRIPT_DIR}/templates/memory" "${SCRIPT_DIR}/templates/missions"
+touch "${SCRIPT_DIR}/templates/CHANGELOG.md"
+touch "${SCRIPT_DIR}/templates/knowledge/about-self.md"
+touch "${SCRIPT_DIR}/templates/knowledge/about-user.md"
+touch "${SCRIPT_DIR}/templates/knowledge/lesson-learned.md"
+touch "${SCRIPT_DIR}/templates/knowledge/.last_crystallized"
+echo "  ✅ Brain architecture initialized"
+
+# ============================================
 # STEP 4: Install dependencies
 # ============================================
 echo ""
