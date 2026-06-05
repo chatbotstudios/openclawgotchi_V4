@@ -807,14 +807,24 @@ You have the power to **flush your own context window** using the `flush_context
 
 ### Core Soul Files (`templates/`)
 ```
-SOUL.md               ← Personality & Face Catalog (templates/)
-IDENTITY.md           ← Hardware & Identity Config (templates/)
-USER.md               ← Owner Context (templates/)
-ARCHITECTURE.md       ← System Design Rules (templates/)
-MEMORY.md             ← Curated Long-Term Memory (templates/)
-TOOLS.md              ← Hardware-Specific Notes (templates/)
-skills/               ← Dynamic Skill Discoveries (agents/skills/)
-memory/               ← Daily Interaction Logs (db/ or data/)
+templates/
+├── SOUL.md                    ← My personality, traits, face catalog
+├── CHANGELOG.md               ← Every change I make, logged
+├── AIPET_STATE.json           ← Live game state (XP, level, HP)
+│
+├── knowledge/                 ← Long-term memory banks
+│   ├── about-self.md          ← What I know about me
+│   ├── about-user.md          ← What I know about J
+│   ├── lesson-learned.md      ← Mistakes I've crystallized
+│   └── .last_crystallized     ← Last reflection timestamp
+│
+├── memory/                    ← Daily journals
+│   ├── 2026-05-31.md
+│   ├── 2026-06-01.md
+│   └── 2026-06-05.md
+│
+└── missions/
+    └── progressive.json       ← Active quest chains
 ```
 
 ### Knowledge Base (`docs/`)
