@@ -231,9 +231,22 @@ class OpenClawDiscord(commands.Bot):
         if history: history = history[:-1]
         history = optimize_history(history)
         router = get_router()
+        
+        # Check HP and force Lite Mode if exhausted
+        from src.game_engine.state import load_state
+        aipet_state = load_state()
+        original_lite_mode = router.force_lite
+        if aipet_state.hp < 20.0:
+            router.force_lite = True
+            
         try:
             log.info(f"[{sender}] -> {user_text[:80]}")
             response, connector = await router.call(user_text, history)
+            
+            # Restore original mode if we overrode it
+            if aipet_state.hp < 20.0:
+                router.force_lite = original_lite_mode
+                
             log.info(f"[{sender}] <- [{connector}] {response[:80]}")
             tool_footer = ""
             if "__TOOL_FOOTER__" in response:

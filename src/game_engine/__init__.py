@@ -38,6 +38,25 @@ def init_aipet_tables():
             )
         ''')
         
+        # Singleton AIPET State table to replace JSON
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS aipet_state (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                hp REAL DEFAULT 100.0,
+                rp REAL DEFAULT 0.0,
+                missions_completed INTEGER DEFAULT 0,
+                badges TEXT DEFAULT '[]',
+                current_mood TEXT DEFAULT 'neutral',
+                last_updated TEXT
+            )
+        ''')
+        
+        # Insert default row if not exists
+        conn.execute('''
+            INSERT OR IGNORE INTO aipet_state (id, hp, rp, missions_completed, badges, current_mood, last_updated)
+            VALUES (1, 100.0, 0.0, 0, '[]', 'neutral', datetime('now'))
+        ''')
+        
         # Auto-migration for target, progress, and base_name columns
         try:
             conn.execute("SELECT target FROM aipet_missions LIMIT 1")

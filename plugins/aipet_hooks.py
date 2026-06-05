@@ -1,7 +1,7 @@
 import logging
 from hooks.runner import hook, HookEvent
 from src.game_engine.state import load_state, save_state
-from src.game_engine.vitals import calculate_hp, add_xp
+from src.game_engine.vitals import calculate_hp, add_xp, decay_mood
 from src.game_engine.missions import increment_mission_progress
 
 log = logging.getLogger(__name__)
@@ -22,6 +22,9 @@ def aipet_heartbeat_hook(event: HookEvent):
         state.hp = new_hp
         save_state(state)
         log.debug(f"AIPET HP updated to {new_hp:.1f}")
+
+    # Mood decay
+    decay_mood()
 
     # Example: Increment 'Ironclad Uptime' if uptime is good (in a real system, this increments by hours)
     if uptime_hours >= 1.0:

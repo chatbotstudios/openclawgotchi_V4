@@ -38,9 +38,39 @@ log = logging.getLogger(__name__)
 
 def calculate_hp(cpu: float, mem: float, uptime_hours: float, battery: float = 100.0) -> float:
     """Calculate the HP of the AIPET based on hardware vitals."""
-    hp = (uptime_hours * 1.5) + ((100 - cpu) * 0.4) + ((100 - mem) * 0.3) + (battery * 0.2)
+    # Base HP is 100. High CPU, memory, and extreme uptime deplete HP (simulating thermal/RAM exhaustion)
+    exhaustion = (uptime_hours * 0.5)  # Lose 0.5 HP per hour of uptime
+    load_stress = (cpu * 0.2) + (mem * 0.2)
+    battery_penalty = ((100 - battery) * 0.3)
+    
+    hp = 100.0 - exhaustion - load_stress - battery_penalty
     return max(0.0, min(100.0, hp))
 
+def regenerate_hp_on_sleep(hours: float = 8.0):
+    """Regenerate HP artificially without a full system reboot (e.g., during dream state)."""
+    # This would conceptually subtract from a tracked uptime offset, but since uptime is hardcoded
+    # to read from /proc/uptime, we'll instead add a direct temporary buff to the db state.
+    state = load_state()
+    state.hp = min(100.0, state.hp + (hours * 5.0))
+    save_state(state)
+    log.info(f"💤 AIPET rested for {hours}h. HP regenerated to {state.hp:.1f}.")
+
+def decay_mood():
+    """Slowly shift current_mood back to neutral if no interaction occurs."""
+    state = load_state()
+    if state.current_mood != "neutral":
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        try:
+            last_up = datetime.fromisoformat(state.last_updated)
+            hours_since = (now - last_up).total_seconds() / 3600
+            if hours_since > 4.0:
+                old_mood = state.current_mood
+                state.current_mood = "neutral"
+                save_state(state)
+                log.info(f"Mood decayed from {old_mood} to neutral due to inactivity.")
+        except Exception as e:
+            log.warning(f"Failed to parse last_updated for mood decay: {e}")
 
 # ── Canonical XP write path ───────────────────────────────────────────────────
 
