@@ -249,7 +249,7 @@ class LiteLLMConnector(LLMConnector):
                 }
 
                 # Pulse Buddy: Thinking
-                await asyncio.to_thread(pulse_buddy, "busy", "GOTCHI", f"Gotchi is thinking via {self.preset}...", **buddy_stats)
+                await asyncio.to_thread(pulse_buddy, "busy", f"GOTCHI-{self.preset}", f"Gotchi is thinking via {self.preset}...", **buddy_stats)
 
                 response = await asyncio.to_thread(completion, **kwargs)
                 msg = response.choices[0].message
@@ -263,7 +263,7 @@ class LiteLLMConnector(LLMConnector):
                 })
 
                 # Pulse Buddy: Success
-                await asyncio.to_thread(pulse_buddy, "celebrate", "GOTCHI", "Success!", **buddy_stats)
+                await asyncio.to_thread(pulse_buddy, "celebrate", f"GOTCHI-{self.preset}", "Success!", **buddy_stats)
                 
                 clean_msg = msg.model_dump() if hasattr(msg, "model_dump") else dict(msg)
                 clean_msg.pop("provider_specific_fields", None)
