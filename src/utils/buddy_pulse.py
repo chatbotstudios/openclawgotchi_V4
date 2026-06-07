@@ -2,7 +2,7 @@ import requests
 import sys
 
 # Update this to match your Buddy's IP on your network
-BUDDY_IP = "192.168.1.13"
+BUDDY_IP = "192.168.1.17"
 BUDDY_URL = f"http://{BUDDY_IP}:81/pulse"
 
 def pulse_buddy(status, model_name="GOTCHI", text="", tokens=None, level=None, approvals=None, denials=None, tools=None):

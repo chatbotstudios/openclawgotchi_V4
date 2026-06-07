@@ -1,6 +1,6 @@
 # Workspace Interaction Guide
 
-> This guide is intended for AI Agents navigating and modifying the OpenClawGotchi V3 `workspace/`.
+> This guide is intended for AI Agents navigating and modifying the OpenClawGotchi V4 `workspace/`.
 
 The `workspace/` directory is the core of the OpenClawGotchi's identity, memory, and behavior. It is a "living" document system. As an AI Agent interacting with this system, you must follow strict rules to maintain stability and personality consistency.
 
