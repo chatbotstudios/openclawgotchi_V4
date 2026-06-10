@@ -167,12 +167,30 @@ def setup():
 @click.command()
 @click.option('--port', default=8000, help="Localhost port to bind the server")
 def serve(port):
-    """Launch the localhost live web dashboard server."""
-    click.echo(f"Starting localhost live web dashboard on port {port}...")
+    """Launch the live web dashboard server."""
+    click.echo(f"Starting live web dashboard on port {port}...")
     from ui.web_dash import ThreadingHTTPServer, WebDashboardHandler
+    import socket
+    
+    # Try to get the actual network IP address
+    hostname = socket.gethostname()
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        local_ip = "127.0.0.1"
+
     try:
         server = ThreadingHTTPServer(("0.0.0.0", port), WebDashboardHandler)
-        click.secho(f"✓ Dashboard running at http://localhost:{port}", fg='bright_green', bold=True)
+        click.secho(f"✓ Dashboard running and bound to 0.0.0.0:{port}", fg='bright_green', bold=True)
+        click.echo("Access it from other devices using:")
+        if local_ip != "127.0.0.1":
+            click.secho(f"  ➜ Network IP : http://{local_ip}:{port}", fg='bright_cyan')
+        click.secho(f"  ➜ Hostname   : http://{hostname}.local:{port}", fg='bright_cyan')
+        click.secho(f"  ➜ Localhost  : http://localhost:{port}", fg='bright_cyan')
+        click.echo("")
         click.echo("Press Ctrl+C to stop the server.")
         server.serve_forever()
     except Exception as e:

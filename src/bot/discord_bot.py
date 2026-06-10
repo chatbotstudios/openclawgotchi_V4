@@ -241,7 +241,8 @@ class OpenClawDiscord(commands.Bot):
             
         try:
             log.info(f"[{sender}] -> {user_text[:80]}")
-            response, connector = await router.call(user_text, history)
+            async with message.channel.typing():
+                response, connector = await router.call(user_text, history)
             
             # Restore original mode if we overrode it
             if aipet_state.hp < 20.0:

@@ -31,10 +31,14 @@ def manage_ble_adapter(action: str, value: str = None) -> str:
     action = action.lower()
     
     if action == "on":
-        subprocess.run(["sudo", "hciconfig", "hci0", "up"])
+        subprocess.run(["sudo", "rfkill", "unblock", "bluetooth"], capture_output=True)
+        subprocess.run(["sudo", "bluetoothctl", "power", "on"], capture_output=True)
+        subprocess.run(["sudo", "hciconfig", "hci0", "up"], capture_output=True)
         return "Bluetooth Adapter: ONLINE"
     elif action == "off":
-        subprocess.run(["sudo", "hciconfig", "hci0", "down"])
+        subprocess.run(["sudo", "bluetoothctl", "power", "off"], capture_output=True)
+        subprocess.run(["sudo", "rfkill", "block", "bluetooth"], capture_output=True)
+        subprocess.run(["sudo", "hciconfig", "hci0", "down"], capture_output=True)
         return "Bluetooth Adapter: OFFLINE"
     elif action == "status":
         res = subprocess.run(["hciconfig"], capture_output=True, text=True)
