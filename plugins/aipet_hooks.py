@@ -39,6 +39,17 @@ def aipet_handshake_hook(event: HookEvent):
     # Increment mission progress
     increment_mission_progress("Handshake Hunter", 1, event=event)
 
+@hook("pwn.ble")
+def aipet_ble_hook(event: HookEvent):
+    """Hook to track BLE Phantom mission progress on each BLE scan."""
+    if event.action == "scan":
+        device_count = event.data.get("device_count", 0)
+        log.info(f"BLE scan completed — {device_count} devices found. Incrementing BLE Phantom.")
+        increment_mission_progress("BLE Phantom", 1, event=event)
+        # Award small XP for each scan with devices
+        if device_count > 0:
+            add_xp(3, source="ble_scan")
+
 @hook("message")
 def aipet_message_hook(event: HookEvent):
     """Hook to track reasoning, Chatterbox, and Night Owl interactions."""

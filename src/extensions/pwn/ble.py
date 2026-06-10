@@ -4,6 +4,7 @@ import datetime
 from requests.auth import HTTPBasicAuth
 from sdk.tool_builder import register_tool
 from config import BETTERCAP_URL, BETTERCAP_USER, BETTERCAP_PASS
+from hooks.runner import run_hook, HookEvent
 
 BLE_LOG_DIR = "handshakes/BLE"
 
@@ -65,6 +66,17 @@ def pwn_ble_scan() -> str:
             
         output = "\n".join(lines)
         _log_event("scans.log", output)
+        
+        # Fire BLE scan event for mission hooks
+        try:
+            run_hook(HookEvent(
+                event_type="pwn.ble",
+                action="scan",
+                data={"device_count": len(devices), "devices": sorted_devs[:5]}
+            ))
+        except Exception:
+            pass  # Don't fail the scan if hook fails
+        
         return output
     except Exception as e:
         return f"BLE Scan Error: {e}"
