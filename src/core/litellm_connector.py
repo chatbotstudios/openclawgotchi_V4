@@ -39,10 +39,29 @@ def _get_cron_target_chat_id() -> Optional[int]:
     return _cron_target_chat_id.get()
 
 def _format_tool_action(func_name: str, args: dict, result: str) -> str:
-    icon = "🔧"
     if func_name == "show_face":
         mood = args.get("mood", "?")
         return f"😎 face: {mood}"
+        
+    icon = "🔧"
+    if func_name.startswith("pwn_") or func_name == "launch_offline_hunt":
+        icon = "🕵️"
+    elif func_name.startswith("net_") or func_name.startswith("manage_wifi") or func_name.startswith("tether_") or func_name.startswith("manage_ble"):
+        icon = "📡"
+    elif func_name.startswith("remember_") or func_name.startswith("recall_") or func_name == "write_daily_log" or func_name == "flush_context":
+        icon = "🧠"
+    elif "cron" in func_name or "schedule" in func_name or "reminder" in func_name:
+        icon = "⏰"
+    elif func_name in ["read_file", "write_file", "list_directory", "list_tree", "restore_from_backup"]:
+        icon = "📁"
+    elif "face" in func_name or "status" in func_name or func_name == "set_llm_mode":
+        icon = "👾"
+    elif func_name in ["list_available_missions", "accept_mission", "get_mission_status"]:
+        icon = "🎮"
+    elif func_name == "check_mail":
+        icon = "✉️"
+    else:
+        icon = "⚙️"
     
     args_str = ", ".join(f"{k}={str(v)[:20]}" for k, v in list(args.items())[:2])
     ok = "✓" if "Error" not in result else "✗"

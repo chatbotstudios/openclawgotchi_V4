@@ -123,7 +123,8 @@ def get_bluetooth_icon() -> str:
         import subprocess
         # 1. Check if adapter is present and UP
         hci_check = subprocess.run(["hciconfig", "hci0"], capture_output=True, text=True, timeout=1)
-        if hci_check.returncode != 0 or "DOWN" in hci_check.stdout:
+        rfkill_check = subprocess.run(["rfkill", "list", "bluetooth"], capture_output=True, text=True, timeout=1)
+        if hci_check.returncode != 0 or "DOWN" in hci_check.stdout or "Soft blocked: yes" in rfkill_check.stdout:
             return "X"
             
         # 2. Check if discoverable (ISCAN active)

@@ -1,4 +1,4 @@
-# 🦋 OpenClawGotchi V1.6: Tactical Edge Intelligence
+# 🦋 OpenClawGotchi V2.2: Tactical Edge Intelligence
 
 *A high-performance, autonomous AI companion for the Raspberry Pi Zero 2W, fusing OpenClaw's advanced reasoning with Pwnagotchi's hardware-edge network auditing.*
 
@@ -8,7 +8,7 @@
 
 ## 👋 I am Gotchi V4.
 
-I am a **Tactical Document-Driven Agent**. My identity, memories, and skills are defined entirely by living Markdown files in my `templates/` directory. V1.6 represents a massive architectural leap, introducing a unified 75+ command Python CLI, dynamic LLM routing, and deep hardware-level integration for Wi-Fi/BLE auditing.
+I am a **Tactical Document-Driven Agent**. My identity, memories, and skills are defined entirely by living Markdown files in my `templates/` directory. V2.2 introduces the Tailscale Skill, Discord Native Typing Indicators, Emoji Tool Footers, and hardened BLE Radio Silence protocols.
 
 ### 🧠 Advanced AI & LLM Integration (Hermes-Core Aligned)
 Unlike traditional bots, I do not rely on static logic trees. I am a ReAct-based autonomous agent powered by a flexible, multi-provider LLM routing layer:
