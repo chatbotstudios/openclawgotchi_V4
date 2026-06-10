@@ -1,6 +1,6 @@
 import logging
 from core.missions.models import Mission
-from db.stats import add_xp
+from src.game_engine.vitals import add_xp
 from utils.buddy_pulse import pulse_buddy
 
 log = logging.getLogger(__name__)

@@ -150,5 +150,29 @@
 
   {"name": "The Great Radio Odyssey", "base_name": null, "category": "Epic", "target": 5, "xp_reward": 450, "source": "multi"},
   {"name": "Cortex Ascension", "base_name": null, "category": "Epic", "target": 25, "xp_reward": 500, "source": "multi"},
-  {"name": "Swarm Overlord Protocol", "base_name": null, "category": "Epic", "target": 5, "xp_reward": 600, "source": "multi"}
+  {"name": "Swarm Overlord Protocol", "base_name": null, "category": "Epic", "target": 5, "xp_reward": 600, "source": "multi"},
+
+  {"name": "Tool Master v1", "base_name": "Tool Master", "category": "Tool Mastery", "target": 5, "xp_reward": 20, "source": "auto"},
+  {"name": "Tool Master v2", "base_name": "Tool Master", "category": "Tool Mastery", "target": 15, "xp_reward": 50, "source": "auto"},
+  {"name": "Tool Master v3", "base_name": "Tool Master", "category": "Tool Mastery", "target": 40, "xp_reward": 100, "source": "auto"},
+  {"name": "Tool Master v4", "base_name": "Tool Master", "category": "Tool Mastery", "target": 100, "xp_reward": 190, "source": "auto"},
+  {"name": "Tool Master v5", "base_name": "Tool Master", "category": "Tool Mastery", "target": 250, "xp_reward": 380, "source": "auto"},
+
+  {"name": "Multi-Tool Sage v3", "base_name": "Multi-Tool Sage", "category": "Tool Mastery", "target": 4, "xp_reward": 140, "source": "auto"},
+  {"name": "Tool Orchestrator v4", "base_name": "Tool Orchestrator", "category": "Tool Mastery", "target": 6, "xp_reward": 260, "source": "auto"},
+
+  {"name": "Token Devourer v1", "base_name": "Token Devourer", "category": "Cortex", "target": 10000, "xp_reward": 20, "source": "auto"},
+  {"name": "Token Devourer v2", "base_name": "Token Devourer", "category": "Cortex", "target": 50000, "xp_reward": 50, "source": "auto"},
+  {"name": "Token Devourer v3", "base_name": "Token Devourer", "category": "Cortex", "target": 250000, "xp_reward": 100, "source": "auto"},
+  {"name": "Token Devourer v4", "base_name": "Token Devourer", "category": "Cortex", "target": 1000000, "xp_reward": 250, "source": "auto"},
+  {"name": "Token Devourer v5", "base_name": "Token Devourer", "category": "Cortex", "target": 5000000, "xp_reward": 500, "source": "auto"},
+
+  {"name": "Deep Reasoner v1", "base_name": "Deep Reasoner", "category": "Cortex", "target": 5, "xp_reward": 30, "source": "auto"},
+  {"name": "Deep Reasoner v2", "base_name": "Deep Reasoner", "category": "Cortex", "target": 15, "xp_reward": 75, "source": "auto"},
+  {"name": "Deep Reasoner v3", "base_name": "Deep Reasoner", "category": "Cortex", "target": 50, "xp_reward": 150, "source": "auto"},
+  {"name": "Deep Reasoner v4", "base_name": "Deep Reasoner", "category": "Cortex", "target": 150, "xp_reward": 300, "source": "auto"},
+  {"name": "Deep Reasoner v5", "base_name": "Deep Reasoner", "category": "Cortex", "target": 500, "xp_reward": 600, "source": "auto"},
+
+  {"name": "Context Weaver", "base_name": null, "category": "Cortex", "target": 1, "xp_reward": 200, "source": "auto"},
+  {"name": "Synthetic Epiphany", "base_name": null, "category": "Cortex", "target": 1, "xp_reward": 350, "source": "auto"}
 ]
