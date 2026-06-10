@@ -72,9 +72,9 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 
 The V4 Architecture implements a deeply integrated RPG-style Game Engine:
 
-- **Vitals (XP/HP)**: The `vitals.py` engine manages the Gotchi's health and experience. HP is calculated directly from hardware telemetry (uptime, CPU, RAM). XP is gained through interaction, triggering automatic Level-Ups with scaling thresholds.
+- **Vitals (XP/HP)**: The `vitals.py` engine manages the Gotchi's health and experience. HP is calculated directly from hardware telemetry (uptime, CPU, RAM). XP is gained through interaction, triggering automatic Level-Ups with scaling thresholds. All subsystems MUST route XP additions through the centralized `vitals.add_xp()` proxy to ensure the SQLite database perfectly mirrors to `AIPET_STATE.json` and cleanly triggers E-Ink display notifications.
 - **Hook-Driven Progression**: Mission tracking is decoupled from core bot logic. `plugins/aipet_hooks.py` listens to event hooks (`message`, `command`, `pwn.handshake`) and silently increments SQLite trackers in the background.
-- **5-Tier Scaling Matrix**: All 50+ gamified missions use a strict escalating XP curve (v1 = 15 XP, v2 = 50 XP, v3 = 100 XP, v4 = 250 XP, v5 = 500 XP).
+- **5-Tier Scaling Matrix**: All 50+ gamified missions use a strict escalating XP curve (v1 = 15 XP, v2 = 50 XP, v3 = 100 XP, v4 = 250 XP, v5 = 500 XP). This encompasses operational missions, **Tool Mastery** tracking (chaining 6+ tools for bonus XP), and **AI "Thinking"** metrics (Deep Reasoner, Context Weaver).
 - **Asynchronous Broadcasting**: When a mission completes or a Level Up occurs, the engine generates notification strings (`"🎉 LEVEL UP!"`). These are instantly flashed to the E-Paper display via `show_face`, and appended seamlessly to the bottom of the next LLM response on Discord and Telegram.
 - **Autonomy:** The LLM Brain has native tools (`list_available_missions`, `get_mission_status`, `accept_mission`) to autonomously find and execute maintenance tasks.
 

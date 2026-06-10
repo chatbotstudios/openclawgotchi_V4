@@ -117,9 +117,9 @@ OpenClawGotchi follows a **Workspace-First** philosophy. The agent's identity, b
 3. **New Plugins**: 
     - Create a Python file in `plugins/` (e.g., `plugins/my_plugin.py`) and use the `@hook` decorator to subscribe to events.
 4. **Core Logic**: Edit relevant modules in `src/`.
-5. **Missions / Quests**: You can use the Mission System to automate LLM chores. Check `docs/development/MISSIONS.md` for schema details. Missions exist in SQLite but are bootstrapped via `workspace/missions/progressive.json`.
+5. **Missions / Quests**: You can use the Mission System to automate LLM chores. Check `docs/development/MISSIONS.md` for schema details. Missions exist in SQLite but are bootstrapped via `workspace/missions/progressive.json`. Tracked missions include advanced tracks like **Tool Mastery** and **AI/LLM Thinking** (Deep Reasoning).
 6. **Gamification (Game Engine)**: The V4 Architecture implements an RPG-style Game Engine:
-    - **XP (Experience)**: Earned organically through the Hook System (`plugins/aipet_hooks.py`) via user commands and messages. Missions follow a standardized 5-tier scaling matrix (15, 50, 100, 250, 500 XP).
+    - **XP (Experience)**: Earned organically through the Hook System (`plugins/aipet_hooks.py`) via user commands and messages. Missions follow a standardized 5-tier scaling matrix (15, 50, 100, 250, 500 XP). **All XP additions MUST be routed through the canonical `src.game_engine.vitals.add_xp` proxy** to maintain state synchronization and trigger displays.
     - **HP (Health Points)**: Calculated dynamically in `vitals.py` based on hardware telemetry (uptime, CPU load, memory, battery).
     - **Notifications**: Level-ups and mission completions generate async broadcast strings that are dynamically appended to Telegram and Discord LLM responses, and immediately flash the E-Paper display.
 
