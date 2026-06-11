@@ -216,7 +216,7 @@ def launch_offline_hunt(duration_minutes: int) -> str:
     This disconnects from the internet (entering monitor mode) for the given duration.
     It runs safely in the background and will automatically reconnect when finished.
     """
-    from src.game_engine.state import load_state
+    from game_engine.state import load_state
     state = load_state()
     if state.level < 8:
         return f"Level 8 Required! You are currently Level {state.level}. Earn more XP to unlock autonomous hunts."

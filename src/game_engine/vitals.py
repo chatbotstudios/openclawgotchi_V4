@@ -19,7 +19,7 @@ import logging
 from datetime import datetime, timezone
 
 from config import DB_PATH
-from src.game_engine.state import load_state, save_state
+from game_engine.state import load_state, save_state
 
 # ── Re-export canonical read helpers so game-engine callers import from here ─
 from db.stats import (                          # noqa: F401  (intentional re-exports)

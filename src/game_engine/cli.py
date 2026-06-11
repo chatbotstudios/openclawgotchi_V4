@@ -4,9 +4,9 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, BarColumn, TextColumn
 from datetime import datetime, timezone
-from src.game_engine.state import load_state, save_state
-from src.game_engine.vitals import add_xp, xp_to_reach_level, regenerate_hp_on_sleep
-from src.game_engine.missions import get_missions, trigger_dream
+from game_engine.state import load_state, save_state
+from game_engine.vitals import add_xp, xp_to_reach_level, regenerate_hp_on_sleep
+from game_engine.missions import get_missions, trigger_dream
 import sqlite3
 from config import DB_PATH
 from core.cli.utils import format_header

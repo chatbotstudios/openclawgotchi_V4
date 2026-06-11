@@ -105,7 +105,7 @@ def _do_pwn_crack(pcap_path: str) -> str:
 
 @register_tool
 def pwn_crack(pcap_path: str) -> str:
-    from src.game_engine.state import load_state
+    from game_engine.state import load_state
     state = load_state()
     if state.hp < 20.0:
         return f"Gotchi is too exhausted (HP: {state.hp:.1f}) to run heavy cryptographic operations. Let it rest or reboot!"
@@ -203,7 +203,7 @@ def pwn_pause(minutes: int) -> str:
 @register_tool
 def pwn_lock_target(bssid: str) -> str:
     """Locks the Subconscious Pwn daemon to only attack a specific target BSSID. Pass empty string to clear lock."""
-    from src.game_engine.state import load_state
+    from game_engine.state import load_state
     state = load_state()
     if state.level < 5:
         return f"Level 5 Required! You are currently Level {state.level}. Earn more XP to unlock targeted operations."

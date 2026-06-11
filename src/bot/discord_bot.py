@@ -233,7 +233,7 @@ class OpenClawDiscord(commands.Bot):
         router = get_router()
         
         # Check HP and force Lite Mode if exhausted
-        from src.game_engine.state import load_state
+        from game_engine.state import load_state
         aipet_state = load_state()
         original_lite_mode = router.force_lite
         if aipet_state.hp < 20.0:
@@ -330,7 +330,7 @@ async def cmd_status(interaction: discord.Interaction):
     stats = get_stats()
     
     # Load actual autonomous AIPET game state
-    from src.game_engine.state import load_state
+    from game_engine.state import load_state
     aipet_state = load_state()
     level = aipet_state.level
     xp = aipet_state.xp
