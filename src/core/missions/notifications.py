@@ -30,7 +30,13 @@ def notify_discord_dream(dream_text: str):
     from config import DISCORD_CHANNEL_ID
     payload = {"content": f"💭 **Dream Generated:**\n{dream_text}"}
     t = threading.Thread(target=_send_discord_webhook, args=(payload, DISCORD_CHANNEL_ID))
-    t.daemon = True
+    t.start()
+
+def notify_discord_bounty_minted(name: str, xp_reward: int):
+    """Notify heartbeat channel when the LLM invents a new procedural mission."""
+    from config import DISCORD_HEARTBEATS_CHANNEL
+    payload = {"content": f"🌀 **New Mission Minted from the Dream:** `{name}` (+{xp_reward} XP)"}
+    t = threading.Thread(target=_send_discord_webhook, args=(payload, DISCORD_HEARTBEATS_CHANNEL))
     t.start()
 
 def notify_discord_mission(mission: Mission, new_status: str):
@@ -48,5 +54,4 @@ def notify_discord_mission(mission: Mission, new_status: str):
     
     # Run in a background thread to prevent blocking SQLite or CLI
     t = threading.Thread(target=_send_discord_webhook, args=(payload,))
-    t.daemon = True
     t.start()
