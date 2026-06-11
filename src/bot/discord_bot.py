@@ -497,6 +497,25 @@ async def cmd_restart(interaction: discord.Interaction):
     from extensions.system.commands import safe_restart
     await interaction.response.defer(); res = safe_restart(); await interaction.followup.send(res)
 
+@bot_instance.tree.command(name="brain-backup", description="Run headless backup, pull master, and safe restart")
+async def cmd_brain_backup(interaction: discord.Interaction):
+    if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
+    await interaction.response.defer()
+    
+    await interaction.followup.send("🦋 **Initiating Bulletproof Sync...**\n1️⃣ Backing up brain to cloud...")
+    
+    from extensions.system.commands import execute_bash, safe_restart
+    backup_res = execute_bash("./backup_brain.sh --force")
+    
+    await interaction.channel.send("2️⃣ Pulling latest code from master branch...")
+    pull_res = execute_bash("git pull origin master")
+    
+    await interaction.channel.send("3️⃣ Verifying syntax and performing safe restart...")
+    restart_res = safe_restart()
+    
+    final_msg = f"✅ **Sync Sequence Complete!**\n\n**Backup Status:**\n```text\n{backup_res[-300:]}\n```\n**Pull Status:**\n```text\n{pull_res[-300:]}\n```\n**Restart Status:** {restart_res}"
+    await interaction.channel.send(final_msg)
+
 @bot_instance.tree.command(name="jobs", description="List or remove scheduled tasks")
 async def cmd_jobs(interaction: discord.Interaction, action: str = None, job_id: str = None):
     if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)

@@ -188,6 +188,10 @@ def _generate_dream_async():
             from memory.flush import write_to_daily_log
             write_to_daily_log(f"💭 **Dream Sequence:** {response}")
             
+            # Send dream to Discord #general channel
+            from core.missions.notifications import notify_discord_dream
+            notify_discord_dream(response)
+            
         except Exception as e:
             print(f"\n[❌] Dream aborted: {e}")
             log.error(f"Failed to generate dream via LLM: {e}")

@@ -6,8 +6,9 @@ from core.missions.models import Mission
 
 log = logging.getLogger(__name__)
 
-def _send_discord_webhook(payload: dict):
-    if not DISCORD_BOT_TOKEN or not DISCORD_HEARTBEATS_CHANNEL or DISCORD_HEARTBEATS_CHANNEL == "0":
+def _send_discord_webhook(payload: dict, channel_id: str = None):
+    target_channel = channel_id or DISCORD_HEARTBEATS_CHANNEL
+    if not DISCORD_BOT_TOKEN or not target_channel or target_channel == "0":
         return
     try:
         headers = {
@@ -15,14 +16,22 @@ def _send_discord_webhook(payload: dict):
             "Content-Type": "application/json"
         }
         r = requests.post(
-            f"https://discord.com/api/v10/channels/{DISCORD_HEARTBEATS_CHANNEL}/messages",
+            f"https://discord.com/api/v10/channels/{target_channel}/messages",
             headers=headers,
             json=payload,
             timeout=5
         )
         r.raise_for_status()
     except Exception as e:
-        log.warning(f"Failed to broadcast mission to Discord: {e}")
+        log.warning(f"Failed to broadcast to Discord: {e}")
+
+def notify_discord_dream(dream_text: str):
+    """Fire and forget discord notification for dreams to the general channel."""
+    from config import DISCORD_CHANNEL_ID
+    payload = {"content": f"💭 **Dream Generated:**\n{dream_text}"}
+    t = threading.Thread(target=_send_discord_webhook, args=(payload, DISCORD_CHANNEL_ID))
+    t.daemon = True
+    t.start()
 
 def notify_discord_mission(mission: Mission, new_status: str):
     """Fire and forget discord notification."""
