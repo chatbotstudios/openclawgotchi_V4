@@ -29,7 +29,11 @@ class LLMRouter:
             pro_api_base = LLM_PRESETS[DEFAULT_PRO_PRESET].get("api_base")
             
         # Pro Mode
-        self.pro_llm = LiteLLMConnector(model=DEFAULT_PRO_MODEL, api_base=pro_api_base)
+        self.pro_llm = LiteLLMConnector(
+            model=DEFAULT_PRO_MODEL, 
+            api_base=pro_api_base,
+            preset=DEFAULT_PRO_PRESET
+        )
         
         from config import _env_flag
         self.force_lite = _env_flag("LLM_FORCE_LITE", True)  # Load persisted mode choice

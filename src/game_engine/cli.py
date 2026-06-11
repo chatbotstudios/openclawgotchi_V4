@@ -3,8 +3,9 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, BarColumn, TextColumn
-from src.game_engine.state import load_state
-from src.game_engine.vitals import add_xp, xp_to_reach_level
+from datetime import datetime, timezone
+from src.game_engine.state import load_state, save_state
+from src.game_engine.vitals import add_xp, xp_to_reach_level, regenerate_hp_on_sleep
 from src.game_engine.missions import get_missions, trigger_dream
 import sqlite3
 from config import DB_PATH
@@ -126,4 +127,66 @@ def inject(name, xp_reward, category):
         console.print(f"[bold green]Successfully injected bounty mission '{name}' for {xp_reward} XP![/bold green]")
     except Exception as e:
         console.print(f"[bold red]Failed to inject mission: {e}[/bold red]")
+
+@aipet.command(name="set-mood")
+@click.argument('mood')
+def set_mood(mood):
+    """Set the AIPET's current mood."""
+    state = load_state()
+    valid_moods = ["neutral", "happy", "sad", "angry", "dreaming", "stealth", "excited", "confused", "tired"]
+    mood_clean = mood.lower().strip()
+    if mood_clean not in valid_moods:
+        console.print(f"[bold red]Invalid mood. Valid options: {', '.join(valid_moods)}[/bold red]")
+        return
+    old_mood = state.current_mood
+    state.current_mood = mood_clean
+    save_state(state)
+    console.print(f"[bold green]Mood changed from '{old_mood}' to '{mood_clean}'.[/bold green]")
+
+@aipet.command(name="sleep")
+@click.argument('hours', type=float)
+def sleep_cmd(hours):
+    """Put the AIPET to sleep for N hours to regenerate HP."""
+    if hours <= 0 or hours > 24:
+        console.print("[bold red]Hours must be between 0 and 24.[/bold red]")
+        return
+    regenerate_hp_on_sleep(hours)
+    state = load_state()
+    console.print(f"[bold cyan]AIPET slept for {hours} hours. HP is now {state.hp:.1f}/100.0.[/bold cyan]")
+
+@aipet.command(name="award-badge")
+@click.argument('badge_name')
+@click.argument('description')
+def award_badge(badge_name, description):
+    """Mint a new Badge or Milestone for the AIPET."""
+    state = load_state()
+    for b in state.badges:
+        if b.get("name") == badge_name:
+            console.print(f"[bold red]Badge '{badge_name}' already exists.[/bold red]")
+            return
+    new_badge = {
+        "name": badge_name,
+        "description": description,
+        "date": datetime.now(timezone.utc).isoformat()
+    }
+    state.badges.append(new_badge)
+    save_state(state)
+    console.print(f"[bold green]Minted Badge: {badge_name} - {description}[/bold green]")
+
+@aipet.command(name="badges")
+def badges():
+    """View all earned Badges and Milestones."""
+    state = load_state()
+    if not state.badges:
+        console.print("[yellow]No badges earned yet.[/yellow]")
+        return
+    table = Table(title="AIPET Legacy Badges")
+    table.add_column("No.", style="dim")
+    table.add_column("Badge", style="cyan")
+    table.add_column("Description", style="white")
+    table.add_column("Date", style="magenta")
+    
+    for idx, b in enumerate(state.badges, 1):
+        table.add_row(str(idx), b.get("name", ""), b.get("description", ""), b.get("date", "")[:10])
+    console.print(table)
 
