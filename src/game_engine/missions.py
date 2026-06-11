@@ -175,7 +175,8 @@ def _generate_dream_async():
         prompt = (
             "You are an AI hacker pet currently in a DREAM STATE. "
             "1. Write a 2-sentence surreal, cyberpunk dream about your past experiences or network captures. "
-            "2. While dreaming, use the `aipet_generate_bounty` tool to spontaneously invent a new procedural mission for yourself based on the dream! Make the mission target something fun or tactical (e.g. 'Sniff 10 packets', 'Find an Apple device')."
+            "2. While dreaming, use the `aipet_generate_bounty` tool to spontaneously invent a new procedural mission for yourself based on the dream! "
+            "3. CRITICAL: Draw inspiration from ALL of your CLI capabilities (Pwn & Wireless Auditing, Networking & Tethering, Knowledge & Memory, System Diagnostics & Administration), not just BLE/WiFi. Invent a highly tactical and unique field operation that you can execute when you wake up."
         )
         try:
             print("\n[🧠] Initializing Neural Simulation (Dream Sequence)...")
