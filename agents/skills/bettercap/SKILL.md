@@ -16,6 +16,7 @@ The unit's "Subconscious" is a background Bettercap process. The "Nervous System
 ### Bluetooth (BLE) Reconnaissance
 - **`pwn_ble_scan`**: Lists nearby BLE devices with signal strength (RSSI).
 - **`pwn_ble_track`**: Sets a target MAC for "Hot/Cold" proximity tracking on the E-Ink display.
+- **AirTag Detection**: Seamlessly integrated. Bettercap `ble.recon` allows the Gotchi to detect Apple tracking devices. Use alongside the `ble_airtag` skill for specific tracking.
 - **`pwn_ble_purge`**: Resets the BLE environment to clear noise.
 
 ### System Control (The "Hands")
@@ -52,8 +53,8 @@ The user can interact with these systems via the SSH CLI. If the user asks for a
 6. Once cracked, use `net_connect(ssid, password)` to join the network.
 
 ### Procedure B: The Proximity Hunt (BLE)
-1. Run `pwn_ble_scan` to map the room.
-2. Identify a target device (e.g., a Flipper Zero or high-value Apple device).
+1. Run `pwn_ble_scan` to map the room. (Can also be used in conjunction with the `ble_airtag` skill to specifically sniff for Apple tracking payloads).
+2. Identify a target device (e.g., a Flipper Zero, unknown smartphone, or suspected AirTag).
 3. Execute `pwn_ble_track(mac_address)`.
 4. Physically move around. Watch the E-Ink display for the **"Tracking"** face and the visual signal bars (█░░░░).
 5. "HOT!" indicates the target is within 2-3 meters.
