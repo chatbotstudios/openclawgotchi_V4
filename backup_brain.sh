@@ -33,9 +33,9 @@ TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
 echo "[+] Creating snapshot commit..."
 git commit -m "🧠 Autonomous Brain Backup: $TIMESTAMP"
 
-# 4. Push directly to the remote 'gotchi' branch
+# 4. Push directly to the remote 'gotchi' branch (Force push to override diverged history)
 echo "[+] Pushing snapshot to remote 'gotchi' branch..."
-git push origin HEAD:gotchi
+git push origin HEAD:gotchi --force
 
 # 5. Unwind the commit locally
 echo "[+] Unwinding local snapshot to restore clean master..."

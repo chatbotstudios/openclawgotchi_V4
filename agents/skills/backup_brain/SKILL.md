@@ -3,7 +3,7 @@
 ## Trigger: When the user asks you to back up your brain, save your memories to the cloud, or run the headless backup protocol.
 
 # Overview
-You have a special headless backup script that allows you to safely commit and push your ignored databases and daily memory logs to your remote `gotchi` branch without corrupting the `master` codebase branch.
+You have a special headless backup script that allows you to safely commit and force-push your ignored databases and daily memory logs to your remote `gotchi` branch without corrupting the `master` codebase branch. Because it force-pushes, it naturally overrides any diverged Git history, making it completely resilient to code updates.
 
 # Instructions
 1. If the user requests a backup, use your `execute_bash` or `run_cli` tool to run the backup script.
