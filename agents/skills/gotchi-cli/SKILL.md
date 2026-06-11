@@ -70,6 +70,7 @@ The CLI is organized into the following tactical categories and includes all 75 
 
 ### ⚙️ System Diagnostics & Administration
 - **`gotchi aipet`**: 👾 AIPET Game Engine — Check vitals, level up, sleep/dream states.
+- **`gotchi backup`**: Run the headless backup protocol to sync the bot's brain to the cloud.
 - **`gotchi check_mail`**: Check unread mail from sibling/brother bots.
 - **`gotchi check_syntax`**: Check Python file syntax for the entire project before restart.
 - **`gotchi create_custom_tool`**: Create a new LLM tool dynamically in the workspace.

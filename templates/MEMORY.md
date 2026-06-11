@@ -17,6 +17,7 @@ It serves as **static context** that complements the dynamic memory system.
 - *(IP, user, access method)*
 - *(Service/runtime info)*
 - *(Memory architecture notes)*
+- **Backup System**: Uses `gotchi backup` to push SQLite and daily journals directly to the remote `gotchi` branch (Headless Backup).
 
 ## Preferences
 

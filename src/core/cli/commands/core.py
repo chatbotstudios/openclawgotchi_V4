@@ -20,6 +20,27 @@ def status(as_json):
         click.echo(format_status_plain(report))
 
 @click.command()
+def backup():
+    """Run the headless backup protocol to sync the bot's brain to the gotchi branch."""
+    import subprocess
+    format_header("Autonomous Brain Backup")
+    backup_script = PROJECT_DIR / "backup_brain.sh"
+    if not backup_script.exists():
+        click.echo("Error: backup_brain.sh not found at project root.", err=True)
+        return
+        
+    try:
+        # Run the script and stream output to console
+        process = subprocess.Popen([str(backup_script)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        for line in process.stdout:
+            click.echo(line.strip())
+        process.wait()
+        if process.returncode != 0:
+            click.echo(f"Backup failed with exit code {process.returncode}.", err=True)
+    except Exception as e:
+        click.echo(f"Failed to execute backup script: {e}", err=True)
+
+@click.command()
 @click.argument('mode_name', required=False)
 def mode(mode_name):
     """Switch between lite and pro LLM modes."""

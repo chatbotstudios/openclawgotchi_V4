@@ -53,7 +53,7 @@ class CategorizedGroup(click.Group):
                 "list", "execute_bash", "run_cli", "git_command", "manage_service",
                 "check_syntax", "restart_self", "safe_restart", "health_check", "log_error",
                 "log_change", "read_architecture", "create_custom_tool", "read_vercel_skill",
-                "check_mail", "get_status_report", "get_system_time", "set_llm_mode", "aipet"
+                "check_mail", "get_status_report", "get_system_time", "set_llm_mode", "aipet", "backup"
             ]
         }
         
@@ -94,8 +94,11 @@ def cli():
     """🦋 OPENCLAWGOTCHI V3 — Tactical CLI Interface"""
     pass
 
+from core.cli.commands.core import status, doctor, logs, restart, dash, clear, list_tools, ui, mode, help_cmd, run_bot, setup, serve, backup
+
 # Register core commands
 cli.add_command(status)
+cli.add_command(backup)
 cli.add_command(doctor)
 cli.add_command(logs)
 cli.add_command(restart)

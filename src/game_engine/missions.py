@@ -166,8 +166,36 @@ def increment_mission_progress(base_name: str, amount: int = 1, event=None):
     except Exception as e:
         log.error(f"Failed to increment mission progress: {e}")
 
+def _generate_dream_async():
+    import asyncio
+    from core.router import get_router
+    
+    async def _run():
+        router = get_router()
+        prompt = (
+            "You are an AI hacker pet currently in a DREAM STATE. "
+            "1. Write a 2-sentence surreal, cyberpunk dream about your past experiences or network captures. "
+            "2. While dreaming, use the `aipet_generate_bounty` tool to spontaneously invent a new procedural mission for yourself based on the dream! Make the mission target something fun or tactical (e.g. 'Sniff 10 packets', 'Find an Apple device')."
+        )
+        try:
+            response, _ = await router.call(prompt, history=[])
+            log.info(f"💭 Dream generated: {response}")
+            
+            # Save dream to daily log
+            from memory.flush import write_to_daily_log
+            write_to_daily_log(f"💭 **Dream Sequence:** {response}")
+            
+        except Exception as e:
+            log.error(f"Failed to generate dream via LLM: {e}")
+            
+    # Run the async function in a new event loop for this thread
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(_run())
+    loop.close()
+
 def trigger_dream():
-    """Manually invokes a dream session, awarding XP and altering mood."""
+    """Manually invokes a dream session, awarding XP, altering mood, and generating procedural content."""
     add_xp(60, source="dream_session")
     increment_mission_progress("Synthetic Strategist", 1)
     
@@ -175,7 +203,11 @@ def trigger_dream():
     state.current_mood = "dreaming"
     save_state(state)
     
-    log.info("💭 AIPET entered Dream State.")
+    log.info("💭 AIPET entered Dream State. Initializing procedural dream generation...")
+    
+    import threading
+    t = threading.Thread(target=_generate_dream_async, daemon=True)
+    t.start()
 
 # Initialize progressive missions on module load
 load_progressive_missions()

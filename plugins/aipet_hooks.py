@@ -1,8 +1,8 @@
 import logging
 from hooks.runner import hook, HookEvent
-from src.game_engine.state import load_state, save_state
-from src.game_engine.vitals import calculate_hp, add_xp, decay_mood
-from src.game_engine.missions import increment_mission_progress
+from game_engine.state import load_state, save_state
+from game_engine.vitals import calculate_hp, add_xp, decay_mood
+from game_engine.missions import increment_mission_progress
 
 log = logging.getLogger(__name__)
 
