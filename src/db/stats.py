@@ -314,7 +314,7 @@ def check_daily_xp():
     last_daily = get_stat("last_daily_xp")
     
     if today > last_daily:
-        from src.game_engine.vitals import add_xp as engine_add_xp
+        from game_engine.vitals import add_xp as engine_add_xp
         engine_add_xp(XP_DAY_ALIVE, "daily survival")
         set_stat("last_daily_xp", today)
         log.info(f"Daily XP awarded! Day {get_days_alive()}")
@@ -327,21 +327,21 @@ def check_daily_xp():
 def on_message_answered():
     """Call when bot answers a message."""
     increment_stat("messages_answered")
-    from src.game_engine.vitals import add_xp as engine_add_xp
+    from game_engine.vitals import add_xp as engine_add_xp
     engine_add_xp(XP_MESSAGE, "message")
 
 
 def on_task_completed():
     """Call when a task is completed."""
     increment_stat("tasks_completed")
-    from src.game_engine.vitals import add_xp as engine_add_xp
+    from game_engine.vitals import add_xp as engine_add_xp
     engine_add_xp(XP_TASK, "task")
 
 
 def on_brother_chat():
     """Call when interacting with brother."""
     increment_stat("brother_chats")
-    from src.game_engine.vitals import add_xp as engine_add_xp
+    from game_engine.vitals import add_xp as engine_add_xp
     engine_add_xp(XP_BROTHER_CHAT, "brother")
 
 
@@ -349,14 +349,14 @@ def on_tool_use(count: int = 1):
     """Call when bot uses tools in a response."""
     if count > 0:
         increment_stat("tools_used", count)
-        from src.game_engine.vitals import add_xp as engine_add_xp
+        from game_engine.vitals import add_xp as engine_add_xp
         engine_add_xp(XP_TOOL_USE * count, f"tools x{count}")
 
 
 def on_heartbeat():
     """Call on successful heartbeat."""
     increment_stat("heartbeats")
-    from src.game_engine.vitals import add_xp as engine_add_xp
+    from game_engine.vitals import add_xp as engine_add_xp
     engine_add_xp(XP_HEARTBEAT, "heartbeat")
     check_daily_xp()
     flush_stats()  # Guarantee flush on heartbeat

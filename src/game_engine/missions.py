@@ -4,8 +4,8 @@ import json
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
 from config import DB_PATH, WORKSPACE_DIR, MISSIONS_DIR
-from src.game_engine.vitals import add_xp
-from src.game_engine.state import load_state, save_state
+from game_engine.vitals import add_xp
+from game_engine.state import load_state, save_state
 
 log = logging.getLogger(__name__)
 
@@ -178,7 +178,10 @@ def _generate_dream_async():
             "2. While dreaming, use the `aipet_generate_bounty` tool to spontaneously invent a new procedural mission for yourself based on the dream! Make the mission target something fun or tactical (e.g. 'Sniff 10 packets', 'Find an Apple device')."
         )
         try:
+            print("\n[🧠] Initializing Neural Simulation (Dream Sequence)...")
             response, _ = await router.call(prompt, history=[])
+            
+            print(f"\n[💭] Dream Generated:\n{response}\n")
             log.info(f"💭 Dream generated: {response}")
             
             # Save dream to daily log
@@ -186,6 +189,7 @@ def _generate_dream_async():
             write_to_daily_log(f"💭 **Dream Sequence:** {response}")
             
         except Exception as e:
+            print(f"\n[❌] Dream aborted: {e}")
             log.error(f"Failed to generate dream via LLM: {e}")
             
     # Run the async function in a new event loop for this thread
@@ -203,11 +207,10 @@ def trigger_dream():
     state.current_mood = "dreaming"
     save_state(state)
     
-    log.info("💭 AIPET entered Dream State. Initializing procedural dream generation...")
+    log.info("💭 AIPET entered Dream State. Processing the day's patterns and generating synthetic XP...")
     
-    import threading
-    t = threading.Thread(target=_generate_dream_async, daemon=True)
-    t.start()
+    # Run synchronously so the CLI process doesn't exit before the LLM finishes
+    _generate_dream_async()
 
 # Initialize progressive missions on module load
 load_progressive_missions()

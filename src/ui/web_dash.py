@@ -2169,7 +2169,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
 
             elif action == "telegram_uplink":
                 try:
-                    from src.game_engine.vitals import add_xp as engine_add_xp
+                    from game_engine.vitals import add_xp as engine_add_xp
                     engine_add_xp(40, "telegram_uplink")
                     add_system_log("[Uplink] Dispatching Telegram webhook ping to servers... ✓ Uplink stable! (+40 XP)")
                     message = "Telegram uplink verified. +40 XP granted!"
@@ -2179,7 +2179,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
 
             elif action == "discord_uplink":
                 try:
-                    from src.game_engine.vitals import add_xp as engine_add_xp
+                    from game_engine.vitals import add_xp as engine_add_xp
                     engine_add_xp(40, "discord_uplink")
                     add_system_log("[Uplink] Synchronizing Discord telemetry handshake... ✓ Stream bound! (+40 XP)")
                     message = "Discord guild synchronized. +40 XP granted!"
@@ -2189,7 +2189,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
 
             elif action == "github_uplink":
                 try:
-                    from src.game_engine.vitals import add_xp as engine_add_xp
+                    from game_engine.vitals import add_xp as engine_add_xp
                     engine_add_xp(40, "github_uplink")
                     add_system_log("[Uplink] Pulling remote repo metadata via AGENT_GITHUB_PAT... ✓ Sync complete! (+40 XP)")
                     message = "GitHub metadata synchronized. +40 XP granted!"
@@ -2200,7 +2200,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             elif action == "brave_search":
                 try:
                     query = params.get('query', [None])[0] or "cybernetics"
-                    from src.game_engine.vitals import add_xp as engine_add_xp
+                    from game_engine.vitals import add_xp as engine_add_xp
                     engine_add_xp(40, "brave_search")
                     add_system_log(f"[Cyberspace] Scanned Brave index query: '{query}' -> Found 8 node references (+40 XP)")
                     message = f"Cyberspace query '{query}' synchronized. +40 XP granted!"
@@ -2279,7 +2279,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
                     parse_and_execute_commands(response)
                     
                     # Award dynamic reward XP on query success!
-                    from src.game_engine.vitals import add_xp as engine_add_xp
+                    from game_engine.vitals import add_xp as engine_add_xp
                     engine_add_xp(25, "web_query")
                     
                     success = True

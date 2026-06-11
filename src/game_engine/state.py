@@ -3,8 +3,8 @@ import logging
 import json
 from datetime import datetime, timezone
 from config import DB_PATH
-from src.game_engine.models import AIPETState
-from src.db.stats import get_level_progress
+from game_engine.models import AIPETState
+from db.stats import get_level_progress
 
 log = logging.getLogger(__name__)
 

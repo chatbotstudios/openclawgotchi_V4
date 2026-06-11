@@ -213,7 +213,7 @@ def generate_canvas(mood="happy", status_text="") -> Image:
     # EXTRAS (y: 92)
     # ----------------------------------------------------
     try:
-        from src.game_engine.state import load_state
+        from game_engine.state import load_state
         state = load_state()
         extras_str = f"HP♥{int(state.hp)}  RP♦0"
     except Exception:
@@ -228,8 +228,8 @@ def generate_canvas(mood="happy", status_text="") -> Image:
     draw.line((0, HEIGHT - FOOTER_H, WIDTH, HEIGHT - FOOTER_H), fill=fg_color)
     
     try:
-        from src.game_engine.state import load_state
-        from src.game_engine.vitals import xp_to_reach_level
+        from game_engine.state import load_state
+        from game_engine.vitals import xp_to_reach_level
         state = load_state()
         lv_str = f"Lv{state.level}"
         

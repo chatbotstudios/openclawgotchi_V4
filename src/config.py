@@ -59,14 +59,14 @@ SIBLING_BOT_NAME = os.environ.get("SIBLING_BOT_NAME", "")  # Optional: name of s
 # --- LLM Presets (Lite mode) ---
 # Default preset for LiteLLM when no key is set — "glm" (Z.ai) or "gemini"
 DEFAULT_LITE_PRESET = os.environ.get("DEFAULT_LITE_PRESET", "gemini").lower()
-_lite_fallback = {"deepseek": "deepseek-chat", "anthropic": "claude-3-5-haiku-20241022", "openai_api": "gpt-4o-mini"}.get(DEFAULT_LITE_PRESET, "gemini-1.5-flash")
+_lite_fallback = {"deepseek": "deepseek-chat", "anthropic": "claude-3-5-haiku-20241022", "openai_api": "gpt-4o-mini"}.get(DEFAULT_LITE_PRESET, "gemini-1.5-flash-latest")
 DEFAULT_LITE_MODEL = os.environ.get("DEFAULT_LITE_MODEL", os.environ.get("GEMINI_MODEL", _lite_fallback))
 # Sanity check: if user switched preset to deepseek but left gemini model in .env
 if "gemini" in DEFAULT_LITE_MODEL.lower() and DEFAULT_LITE_PRESET != "gemini" and DEFAULT_LITE_PRESET != "google_ai_studio":
     DEFAULT_LITE_MODEL = _lite_fallback
 
 DEFAULT_PRO_PRESET = os.environ.get("DEFAULT_PRO_PRESET", "gemini").lower()
-_pro_fallback = {"deepseek": "deepseek-reasoner", "anthropic": "claude-3-5-sonnet-20241022", "openai_api": "gpt-4o"}.get(DEFAULT_PRO_PRESET, "gemini-1.5-pro")
+_pro_fallback = {"deepseek": "deepseek-reasoner", "anthropic": "claude-3-5-sonnet-20241022", "openai_api": "gpt-4o"}.get(DEFAULT_PRO_PRESET, "gemini-1.5-pro-latest")
 DEFAULT_PRO_MODEL = os.environ.get("DEFAULT_PRO_MODEL", _pro_fallback)
 if "gemini" in DEFAULT_PRO_MODEL.lower() and DEFAULT_PRO_PRESET != "gemini" and DEFAULT_PRO_PRESET != "google_ai_studio":
     DEFAULT_PRO_MODEL = _pro_fallback
