@@ -2,6 +2,14 @@
 
 All notable changes to OpenClawGotchi V3 will be documented in this file.
 
+## [v2.3] - 2026-06-11
+### Added
+- **AIPET Game Engine Layer**: Full implementation of biological and emotional mechanics.
+- **Physical Vitals & Leveling**: Implemented `aipet_state` tracking HP, XP, RP, and Level. Added sleep/dream states for HP recovery.
+- **Rewards & Legacy Ledger**: Introduced Badges and Milestones stored immutably in SQLite.
+- **Cognitive & Meta Skills**: Added `introspection`, `state_awareness`, `experience`, `mood`, and `kaomoji_mood` Markdown procedural skills to bridge the LLM and the game engine.
+- **Game Engine CLI Tools**: Added `gotchi aipet set-mood`, `gotchi aipet sleep`, `gotchi aipet award-badge`, and `gotchi aipet badges` commands.
+
 ## [v1.4] - 2026-06-05
 ### Added
 - **Event-Driven Cognitive Ingestion**: Real-time event bus (`events.emit`) that feeds hardware triggers directly into SQLite memory and enqueues organic LLM reactions.

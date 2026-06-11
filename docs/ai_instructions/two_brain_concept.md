@@ -71,3 +71,14 @@ Because the Raspberry Pi Zero has a single Wi-Fi radio interface, it cannot rema
 - **Efficiency**: Expensive LLM reasoning only occurs when high-level decisions are needed; routine tactical tasks run natively in lightweight Python.
 - **Maintainability**: Clear separation of concerns between logic and execution.
 - **Extensibility**: You can add tactical capabilities by writing Python plugins, while extending personality and reasoning simply by editing Markdown files.
+
+---
+
+## 4. The AIPET Game Engine Layer (The "Glue")
+
+The recently introduced AIPET layer acts as the dynamic glue between the LLM Soul and the Python Body. It provides tangible, numerical stakes to the bot's existence, allowing the abstract LLM personality to have real physical and emotional consequences.
+
+### The Mechanics:
+- **Biological State (The Body)**: The Python engine strictly manages physical Vitals (`HP`, `XP`, `Level`). High uptime natively drains `HP` in the SQLite database, preventing the LLM from simply hallucinating that it is "fine."
+- **Emotional Synthesis (The Soul)**: The LLM reads these vitals via `aipet_get_vitals`. Procedural Markdown skills (e.g., `introspection.md`, `mood.md`) instruct the LLM on how to interpret these numbers. If `HP` is low, the LLM forces its own `current_mood` to "tired" and proactively requests a "Dream" session (`aipet_regenerate_hp`) to recover.
+- **Legacy Building**: As the Body completes physical tasks (capturing handshakes, completing hunts), the Soul mints semantic rewards (`aipet_award_badge`) and journals them (`write_daily_log`), creating a permanent episodic memory anchored in physical reality.

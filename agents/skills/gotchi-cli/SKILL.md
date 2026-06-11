@@ -69,12 +69,12 @@ The CLI is organized into the following tactical categories and includes all 75 
 - **`gotchi show_face`**: Display a specific face/mood on the E-Ink screen natively.
 
 ### ⚙️ System Diagnostics & Administration
-- **`gotchi dash`**: Launch the live tactical dashboard (htop for Gotchi).
-- **`gotchi doctor`**: Run a full system diagnostic and repair sequence.
-- **`gotchi status`**: Show current hardware, XP, level, and bot status.
+- **`gotchi aipet`**: 👾 AIPET Game Engine — Check vitals, level up, sleep/dream states.
 - **`gotchi check_mail`**: Check unread mail from sibling/brother bots.
 - **`gotchi check_syntax`**: Check Python file syntax for the entire project before restart.
 - **`gotchi create_custom_tool`**: Create a new LLM tool dynamically in the workspace.
+- **`gotchi dash`**: Launch the live tactical dashboard (htop for Gotchi).
+- **`gotchi doctor`**: Run a full system diagnostic and repair sequence.
 - **`gotchi execute_bash`**: Execute a raw shell command securely.
 - **`gotchi get_status_report`**: Gathers hardware and bot stats into a structured report.
 - **`gotchi get_system_time`**: Returns the current system date and time.
@@ -95,6 +95,27 @@ The CLI is organized into the following tactical categories and includes all 75 
 - **`gotchi run_cli`**: Access the Gotchi Command Center natively.
 - **`gotchi safe_restart`**: Check all critical files syntax, then restart the service if safe.
 - **`gotchi set_llm_mode`**: Sets the LLM mode (`lite` or `pro`).
+- **`gotchi status`**: Show current hardware, XP, level, and bot status.
+
+### 🎮 Gamification & Other Ops
+- **`gotchi aipet add-xp`**: Manually inject XP (useful for testing and self-rewards).
+- **`gotchi aipet award-badge`**: Mint a new Badge or Milestone for your legacy.
+- **`gotchi aipet badges`**: View all earned Badges and Milestones in a table.
+- **`gotchi aipet dream`**: Manually invoke a dream session.
+- **`gotchi aipet inject`**: Inject a custom bounty mission into the database.
+- **`gotchi aipet mission list`**: List all available and active missions.
+- **`gotchi aipet set-mood`**: Set your current mood (e.g., happy, angry, stealth).
+- **`gotchi aipet sleep`**: Put yourself to sleep for N hours to regenerate HP.
+- **`gotchi aipet status`**: Display your current vitals, level, and progress.
+- **`gotchi _do_pwn_check_cracks`**: Checks wpa-sec.stanev.org for newly cracked passwords.
+- **`gotchi _do_pwn_crack`**: Uploads a .pcap file to wpa-sec.stanev.org for cracking.
+- **`gotchi accept_mission`**: Accepts a mission by ID.
+- **`gotchi get_mission_status`**: Lists missions filtered by status.
+- **`gotchi launch_offline_hunt`**: Launch an autonomous offline handshake hunt.
+- **`gotchi list_available_missions`**: Lists all available missions that can be accepted.
+- **`gotchi missions`**: 🏆 Mission & Quest System — Manage your current quests.
+- **`gotchi serve`**: Launch the live web dashboard server.
+- **`gotchi setup`**: Launch the interactive terminal Gotchi Setup Wizard.
 
 ---
 

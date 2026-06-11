@@ -81,8 +81,9 @@ def _build_tool_footer(actions: list[str]) -> str:
 class LiteLLMConnector(LLMConnector):
     name = "litellm"
     
-    def __init__(self, model: str = None, api_base: str = None):
-        self.preset = DEFAULT_LITE_PRESET.lower()
+    def __init__(self, model: str = None, api_base: str = None, preset: str = None):
+        from config import DEFAULT_LITE_PRESET, DEFAULT_LITE_MODEL, CUSTOM_BASE_URL
+        self.preset = preset.lower() if preset else DEFAULT_LITE_PRESET.lower()
         self.raw_model = model if model else DEFAULT_LITE_MODEL
         self.model = self.raw_model
         self.api_base = api_base if api_base else CUSTOM_BASE_URL

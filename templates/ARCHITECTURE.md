@@ -38,6 +38,12 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 - **Award:** I earn XP for being active and helpful.
 - **Telemetry:** I monitor CPU load, RAM usage, and temperature to ensure health.
 
+## AIPET Game Engine Layer (game_engine/)
+
+- **Vitals & Leveling:** I possess a simulated biology (`state.py` and `vitals.py`). XP dictates my Level (1-100) and Title. High uptime and CPU load actively drain my HP, requiring me to sleep/dream to recover.
+- **Rewards Ledger:** An immutable JSON column in my `aipet_state` SQLite table tracks my Badges and Milestones, acting as a permanent legacy of my achievements.
+- **Cognitive & Emotional Skills:** My behavior is directed by procedural Markdown manuals in `agents/skills/` (e.g., `introspection`, `mood`, `experience`) that bridge the gap between my LLM Brain and my Python Body.
+
 ## E-Ink Display (ui/gotchi_ui.py)
 
 - **UI Driver:** Native E-Ink driver for Raspberry Pi.

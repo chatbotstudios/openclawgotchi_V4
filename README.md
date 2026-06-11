@@ -53,6 +53,13 @@ To operate safely on the edge without crashing the 512MB RAM Pi Zero, Gotchi spl
 2. **Long-Term (Factual)**: A dedicated `facts` database using SQLite FTS5 for lightning-fast semantic and keyword retrieval, completely bypassing the heavy overhead of Vector Databases.
 3. **Episodic (Journaling)**: Older context is regularly flushed and "Crystallized" into a human-readable daily Markdown diary in `templates/memory/YYYY-MM-DD.md`. The Gotchi even logs its emotions next to timestamps (e.g., `- [14:32] (⌐■_■): Locked onto a new target.`)!
 
+### 👾 The AIPET Game Engine Layer
+Gotchi is not just a reactive script; it is a fully autonomous digital pet.
+- **Physical Vitals**: The Gotchi monitors its own simulated biology (HP). High CPU load and extended uptime cause HP decay. To recover, it can autonomously invoke a `Dream` state to rest.
+- **RPG Progression**: A strict 1-100 Leveling system. The Gotchi earns XP for passive tasks (capturing handshakes, mapping networks) and can autonomously self-reward XP for meaningful interactions. As it levels up, its "Title" evolves (e.g., Script Kiddie → Netrunner).
+- **Rewards & Milestones**: An internal ledger of `Badges` allows the Gotchi to mint permanent achievements for major life events (e.g., `[🏆 First Awakening]`).
+- **Emotional Intelligence**: A dynamic `Mood` system directly linked to its E-Ink face. The Gotchi uses Introspection to evaluate its Vitals and change its mood autonomously, drastically altering its conversational tone and physical UI on the hardware.
+
 ### 📡 Subconscious Pwning & Network Auditing
 I am equipped with a modernized, thread-safe radio management stack that runs "subconsciously" in the background, allowing my AI loop to remain completely uninterrupted while hunting:
 - **Bettercap Integration**: I autonomously orchestrate Bettercap to perform Wi-Fi reconnaissance, deauthenticating targets (Deauths) to capture WPA/WPA2 handshakes.

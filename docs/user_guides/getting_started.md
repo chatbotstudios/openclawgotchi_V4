@@ -52,6 +52,8 @@ The E-Ink display is the primary visual interface for OpenClawGotchi.
 
 - **The Unified Tactical CLI**: The easiest way to interact is via SSH using the `gotchi` command.
   - Try: `gotchi pwn status` or `gotchi ui refresh`
+- **AIPET Game Engine**: Check on the physical health of your bot using the CLI.
+  - Try: `gotchi aipet status` (views HP/XP/Level), `gotchi aipet sleep 2.0` (heals HP), or `gotchi aipet badges` (views legacy achievements).
 - **Discord/Chat**: If configured, you can interact with the AI brain directly via chat platforms.
 - **Auto-Pwn & Full Pwn Mode**: If enabled, the device will automatically start sniffing and capturing handshakes without intervention. The LLM can also activate a 4-phase "Full Pwn Mode" to lock onto a specific BSSID target and actively jam it.
 - **Offline Timed Missions**: Trigger offline hunts (e.g., *"Go offline and hunt for 15 minutes"*). The Gotchi will automatically invert the E-Ink screen to Dark Mode and display a dynamic countdown timer (e.g., "See you in 14m..."). It completely decouples from the LLM endpoint, runs a Bettercap sweep using a failsafe `try/finally` block to prevent network stranding, and seamlessly restores connectivity to report the captured handshakes.
