@@ -13,6 +13,9 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 2. **Long-Term (Factual):** Stored in `facts` table (`gotchi.db`). Uses SQLite FTS5 for lightning-fast keyword and semantic retrieval without the heavy overhead of a Vector Database.
 3. **Episodic (Journaling):** `workspace/memory/YYYY-MM-DD.md`. Periodic LLM "Crystallization" compresses recent conversational history into daily Markdown logs, complete with Kaomoji emotional context.
 
+**Headless Backup Strategy (Dual-Branch):**
+To ensure the active `master` branch is not dirtied by the bot's autonomously generated SQLite files, the Gotchi employs a `backup_brain.sh` headless backup protocol. Ignored state files (`gotchi.db`, `memory/`) are forcefully staged, committed directly to a remote `gotchi` branch, and unwound locally. This protects the master branch while ensuring the bot's memory is safely synced to the cloud.
+
 **Workspace Files (`workspace/`):**
 - `SOUL.md` — My personality and E-Ink face catalog.
 - `IDENTITY.md` — My specific hardware and operational identity.

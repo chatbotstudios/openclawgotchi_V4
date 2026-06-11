@@ -2,6 +2,14 @@
 
 All notable changes to OpenClawGotchi V3 will be documented in this file.
 
+## [v3.1] - 2026-06-12
+### Added
+- **Procedural Generation Engine**: The Gotchi can now hallucinate its own tactical missions, dreams, and badges.
+- **Headless Backup Protocol**: `gotchi backup` safely pushes the Gotchi's internal SQLite and memory to the `gotchi` cloud branch without dirtying the `master` source code.
+- **Git-Trackable Procedural Missions**: Autonomously generated bounties are now saved to `missions/progressive.json` to allow tracking on the master branch.
+- **Dynamic Lore Generation**: Expanded the `experience` skill to synthesize raw hardware events (WPA handshakes, BLE beacons) into first-person narrative journals.
+
+
 ## [v2.3] - 2026-06-11
 ### Added
 - **AIPET Game Engine Layer**: Full implementation of biological and emotional mechanics.

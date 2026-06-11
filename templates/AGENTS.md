@@ -132,7 +132,13 @@ The Gotchi acts as an autonomous digital pet:
     - **HP (Health Points)**: Calculated dynamically in `vitals.py` based on hardware telemetry (uptime, CPU load, memory, battery).
     - **Notifications**: Level-ups and mission completions generate async broadcast strings that are dynamically appended to Telegram and Discord LLM responses, and immediately flash the E-Paper display.
 
-## Deployment
+## Deployment & Backups
+
+### Headless Backup Protocol
+To safely synchronize the bot's memory (`gotchi.db`, `memory/`) to the cloud without corrupting the active `master` code branch:
+1. Ensure you are safely on `master`.
+2. Run `./backup_brain.sh` or `gotchi backup`.
+3. This creates a snapshot and forcefully pushes it to the remote `gotchi` branch, then unwinds your local branch so it remains clean.
 
 ```bash
 # Deploy to Pi
@@ -144,6 +150,9 @@ ssh pi@raspberrypi "sudo systemctl restart gotchi"
 
 # View logs
 ssh pi@raspberrypi "journalctl -u gotchi -f"
+
+# Backup brain
+ssh pi@raspberrypi "cd openclawgotchi && ./backup_brain.sh"
 ```
 
 ---

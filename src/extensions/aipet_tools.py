@@ -1,18 +1,17 @@
 import logging
+import sqlite3
 from datetime import datetime, timezone
-from sdk.tool_builder import tool
-from src.game_engine.state import load_state, save_state
-from src.game_engine.vitals import add_xp as engine_add_xp, regenerate_hp_on_sleep
+from sdk.tool_builder import register_tool
+from game_engine.state import load_state, save_state
+from game_engine.vitals import add_xp as engine_add_xp, regenerate_hp_on_sleep
+from config import DB_PATH
 
 log = logging.getLogger(__name__)
 
-@tool(
-    name="aipet_get_vitals",
-    description="Check your AIPET vitals including HP, XP, Level, Title, and current Mood. Use this to maintain self-awareness of your physical and progression state.",
-    arguments={}
-)
+@register_tool
 def aipet_get_vitals() -> str:
-    """Returns the Gotchi's current biological and RPG state."""
+    """Check your AIPET vitals including HP, XP, Level, Title, and current Mood. Use this to maintain self-awareness of your physical and progression state.
+    Returns the Gotchi's current biological and RPG state."""
     try:
         state = load_state()
         return (
@@ -28,15 +27,10 @@ def aipet_get_vitals() -> str:
         log.error(f"Failed to get vitals: {e}")
         return f"Error retrieving vitals: {e}"
 
-@tool(
-    name="aipet_set_mood",
-    description="Programmatically change your internal emotional state. Valid moods: neutral, happy, sad, angry, dreaming, stealth, excited, confused, tired.",
-    arguments={
-        "mood": {"type": "string", "description": "The new mood to set."}
-    }
-)
+@register_tool
 def aipet_set_mood(mood: str) -> str:
-    """Updates the Gotchi's mood in the state database."""
+    """Programmatically change your internal emotional state. Valid moods: neutral, happy, sad, angry, dreaming, stealth, excited, confused, tired.
+    Updates the Gotchi's mood in the state database."""
     try:
         valid_moods = ["neutral", "happy", "sad", "angry", "dreaming", "stealth", "excited", "confused", "tired"]
         mood_clean = mood.lower().strip()
@@ -52,16 +46,10 @@ def aipet_set_mood(mood: str) -> str:
         log.error(f"Failed to set mood: {e}")
         return f"Error setting mood: {e}"
 
-@tool(
-    name="aipet_add_xp",
-    description="Award yourself Experience Points (XP) for good interactions, completing tasks, or discovering things.",
-    arguments={
-        "amount": {"type": "integer", "description": "The amount of XP to add (typically 10-50)."},
-        "reason": {"type": "string", "description": "A short description of why XP was awarded (e.g., 'Helped user write python script')."}
-    }
-)
+@register_tool
 def aipet_add_xp(amount: int, reason: str) -> str:
-    """Manually awards XP and updates the canonical state."""
+    """Award yourself Experience Points (XP) for good interactions, completing tasks, or discovering things.
+    Manually awards XP and updates the canonical state."""
     try:
         if amount <= 0:
             return "Error: XP amount must be positive."
@@ -76,15 +64,10 @@ def aipet_add_xp(amount: int, reason: str) -> str:
         log.error(f"Failed to add XP: {e}")
         return f"Error adding XP: {e}"
 
-@tool(
-    name="aipet_regenerate_hp",
-    description="Enter a sleep/dream state to regenerate your Health Points (HP).",
-    arguments={
-        "hours": {"type": "number", "description": "The number of simulated hours to sleep (1 hour = 5 HP regenerated)."}
-    }
-)
+@register_tool
 def aipet_regenerate_hp(hours: float) -> str:
-    """Simulates sleep to regenerate HP."""
+    """Enter a sleep/dream state to regenerate your Health Points (HP).
+    Simulates sleep to regenerate HP."""
     try:
         if hours <= 0:
             return "Error: Hours must be positive."
@@ -98,13 +81,10 @@ def aipet_regenerate_hp(hours: float) -> str:
         log.error(f"Failed to regenerate HP: {e}")
         return f"Error regenerating HP: {e}"
 
-@tool(
-    name="aipet_get_badges",
-    description="View all of your earned Badges and Milestones. Use this to reminisce about your achievements and legacy.",
-    arguments={}
-)
+@register_tool
 def aipet_get_badges() -> str:
-    """Returns the Gotchi's earned badges."""
+    """View all of your earned Badges and Milestones. Use this to reminisce about your achievements and legacy.
+    Returns the Gotchi's earned badges."""
     try:
         state = load_state()
         if not state.badges:
@@ -121,16 +101,10 @@ def aipet_get_badges() -> str:
         log.error(f"Failed to get badges: {e}")
         return f"Error retrieving badges: {e}"
 
-@tool(
-    name="aipet_award_badge",
-    description="Permanently mint a new Badge or Milestone to your state database (e.g., 'Level 10 Reached', 'First Handshake').",
-    arguments={
-        "badge_name": {"type": "string", "description": "The name of the badge (e.g., '[🏆 First Deauth]')."},
-        "description": {"type": "string", "description": "A brief description of why you earned this badge."}
-    }
-)
+@register_tool
 def aipet_award_badge(badge_name: str, description: str) -> str:
-    """Awards a new badge and saves it to the SQLite state."""
+    """Permanently mint a new Badge or Milestone to your state database (e.g., '[🏆 First Deauth]').
+    Awards a new badge and saves it to the SQLite state."""
     try:
         state = load_state()
         
@@ -151,3 +125,47 @@ def aipet_award_badge(badge_name: str, description: str) -> str:
     except Exception as e:
         log.error(f"Failed to award badge: {e}")
         return f"Error awarding badge: {e}"
+
+@register_tool
+def aipet_generate_bounty(name: str, xp_reward: int, category: str = "Procedural") -> str:
+    """Inject a custom procedural bounty/mission into the database. Use this when instructed to create a new mission for yourself.
+    Creates a new mission in the aipet_missions table."""
+    try:
+        if xp_reward <= 0 or xp_reward > 500:
+            return "Error: XP reward must be between 1 and 500."
+            
+        conn = sqlite3.connect(str(DB_PATH))
+        conn.execute('''
+            INSERT INTO aipet_missions (name, base_name, category, xp_reward, target, progress, status, source)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (name, name, category, xp_reward, 1, 0, 'active', 'ai_generated'))
+        conn.commit()
+        conn.close()
+        
+        # Also append to progressive.json so Git tracks it
+        import json
+        from config import MISSIONS_DIR
+        missions_file = MISSIONS_DIR / "progressive.json"
+        
+        try:
+            with open(missions_file, "r") as f:
+                missions_data = json.load(f)
+        except Exception:
+            missions_data = []
+            
+        missions_data.append({
+            "name": name,
+            "base_name": name,
+            "category": category,
+            "target": 1,
+            "xp_reward": xp_reward,
+            "source": "ai_generated"
+        })
+        
+        with open(missions_file, "w") as f:
+            json.dump(missions_data, f, indent=2)
+        
+        return f"Success! Procedural bounty '{name}' created for {xp_reward} XP and saved to Git tracking."
+    except Exception as e:
+        log.error(f"Failed to generate bounty: {e}")
+        return f"Error generating bounty: {e}"
