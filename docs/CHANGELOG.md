@@ -2,6 +2,12 @@
 
 All notable changes to OpenClawGotchi V3 will be documented in this file.
 
+## [v3.2] - 2026-06-12
+### Added
+- **Discord Bulletproof Sync**: Added `/brain-backup` slash command in Discord for one-click brain backups, code pulls, and safe daemon restarts.
+- **Dream Webhook Notifications**: Gotchi dreams are now broadcasted directly to the Discord #general channel as they happen.
+- **Enhanced Procedural Dreams**: Prompts refined to draw from all Gotchi capabilities (Networking, Pwn, Diagnostics) rather than just BLE/WiFi.
+
 ## [v3.1] - 2026-06-12
 ### Added
 - **Procedural Generation Engine**: The Gotchi can now hallucinate its own tactical missions, dreams, and badges.
