@@ -265,7 +265,7 @@ def generate_canvas(mood="happy", status_text="") -> Image:
         
         percent = xp_in_level / xp_needed_this_level if xp_needed_this_level > 0 else 0
         blocks = min(10, round(percent * 10))
-        bar_str = f"[{'■'*blocks}{'□'*(10-blocks)}]"
+        bar_str = f"[{'■'*blocks}{' '*(10-blocks)}]"
         
         def format_xp(val):
             if val >= 1000:
