@@ -111,7 +111,7 @@ def cli():
     """🦋 OPENCLAWGOTCHI V3 — Tactical CLI Interface"""
     pass
 
-from core.cli.commands.core import status, doctor, logs, restart, dash, clear, list_tools, ui, mode, help_cmd, run_bot, setup, serve, backup
+from core.cli.commands.core import backup
 
 # Register core commands
 cli.add_command(status)
