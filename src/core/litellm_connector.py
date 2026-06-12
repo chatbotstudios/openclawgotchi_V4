@@ -226,8 +226,17 @@ class LiteLLMConnector(LLMConnector):
                 try:
                     import litellm
                     from litellm import completion
+                    
+                    # Silence the default LiteLLM noise
+                    litellm.suppress_debug_info = True
+                    import logging as _logging
+                    _logging.getLogger("LiteLLM").setLevel(_logging.WARNING)
+                    
                 except ImportError:
                     return "Error: LiteLLM not installed. Run pip install litellm."
+
+                import time
+                call_start_time = time.time()
 
                 kwargs = {
                     "model": self.model,
@@ -272,6 +281,15 @@ class LiteLLMConnector(LLMConnector):
 
                 response = await asyncio.to_thread(completion, **kwargs)
                 msg = response.choices[0].message
+                
+                latency = time.time() - call_start_time
+                usage = getattr(response, "usage", None)
+                p_tok = getattr(usage, "prompt_tokens", 0) if usage else 0
+                c_tok = getattr(usage, "completion_tokens", 0) if usage else 0
+                t_tok = getattr(usage, "total_tokens", 0) if usage else 0
+                
+                # The One-Liner Log
+                log.info(f"🧠 [LLM] {self.model.split('/')[-1]} | ⏱️ {latency:.1f}s | 🪙 Tokens: {t_tok} (P:{p_tok}/C:{c_tok})")
                 
                 # Refresh stats after call (in case XP was awarded)
                 stats = get_stats_summary()
@@ -351,6 +369,8 @@ class LiteLLMConnector(LLMConnector):
                         args_fingerprint = json.dumps(args, sort_keys=True)[:200] if args else ""
                         call_signature = (func_name, args_fingerprint)
                         recent_tools.append(call_signature)
+                        
+                        log.info(f"🔧 [TOOL FOOTPRINT] {func_name}({args_fingerprint})")
                         if len(recent_tools) > MAX_REPEAT:
                             recent_tools.pop(0)
                         
