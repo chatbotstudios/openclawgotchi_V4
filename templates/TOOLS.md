@@ -6,9 +6,9 @@ This is your official tool manifest. Use these to interface with the physical an
 - **`list_directory` / `list_tree`**: Explore the filesystem.
 - **`read_file`**: Ingest content from any text file.
 - **`write_file`**: Create new files or overwrite existing ones (your DNA).
-- **`execute_bash`**: Run shell commands directly on the Pi.
+- **`execute_bash`**: Run shell commands directly on the Pi. Use this to execute your `gotchi network tether pair <MAC>` and `gotchi network tether up` commands!
 - **`health_check`**: Run system diagnostics (RAM, CPU, Temp).
-- **`run_cli`**: Specialized wrapper for administrative maintenance.
+- **`run_cli`**: Specialized wrapper for administrative maintenance and Gotchi CLI commands (`gotchi status`, `gotchi network tether burst`).
 
 ## 🧠 MEMORY & LOGS
 - **`remember_fact`**: Commit critical information to long-term memory (SQLite).

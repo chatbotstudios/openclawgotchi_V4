@@ -26,43 +26,38 @@ sudo systemctl restart NetworkManager
 ---
 
 ## Step 2: Pair Your Phone via Bluetooth
-1. Turn on **Personal Hotspot** and **Bluetooth** on your iPhone/Android. Stay on the Bluetooth settings screen so your phone is "discoverable."
-2. Open a terminal on the Pi and launch the bluetooth tool:
-   ```bash
-   sudo bluetoothctl
-   ```
-3. Inside the `bluetoothctl` prompt, type the following commands:
-   ```text
-   agent on
-   default-agent
-   scan on
-   ```
-4. Wait until you see your phone's name and its MAC address (e.g., `AA:BB:CC:DD:EE:FF`). Once you see it, type:
-   ```text
-   scan off
-   pair AA:BB:CC:DD:EE:FF
-   ```
-   *(Your phone will ask to pair. Accept it!)*
-5. Trust the device so it auto-connects in the future:
-   ```text
-   trust AA:BB:CC:DD:EE:FF
-   quit
-   ```
+**CRITICAL iOS RULE:** Apple devices hide their Personal Hotspot broadcast from Bluetooth unless you are physically looking at the Hotspot screen. 
+1. Unlock your iPhone/Android.
+2. Go to **Settings > Personal Hotspot** (or Bluetooth Tethering).
+3. **Stay on this screen and keep the phone unlocked** during the entire pairing and connection process!
+
+On the Pi, use the Gotchi CLI to pair your device. Replace the MAC with your phone's actual Bluetooth MAC address:
+```bash
+gotchi network tether pair AA:BB:CC:DD:EE:FF
+```
+*(If a PIN pops up on your phone, tap "Pair". Your terminal will also ask you to type 'yes' to confirm).*
 
 ---
 
 ## Step 3: Connect the BTPAN Network
-Now that the devices are paired and trusted, we tell NetworkManager to bridge the internet connection over Bluetooth.
+Now that the devices are paired and trusted, we just need to bring the internet tunnel up.
 
-Run this command, replacing the MAC with your phone's MAC address:
+While still looking at your phone's Hotspot screen, run:
 ```bash
-sudo nmcli device connect AA:BB:CC:DD:EE:FF
+gotchi network tether up --mac AA:BB:CC:DD:EE:FF
 ```
+*(Tip: If you save `BLE_ADDRESS=AA:BB:CC:DD:EE:FF` in your `.env` file, you can just type `gotchi network tether up` without the MAC).*
 
-If successful, you will see a new network interface called `bnep0` when you type `ifconfig` or `ip a`. 
-You can test your internet connection by running:
+### Troubleshooting "Ghost Pairings"
+If `gotchi network tether up` fails with `br-connection-profile-unavailable`:
+1. Your phone probably "forgot" the Pi, but the Pi still remembers the phone. 
+2. Go to your phone's Bluetooth settings and "Forget" the Raspberry Pi.
+3. On the Pi, run `sudo bluetoothctl remove AA:BB:CC:DD:EE:FF` to wipe the ghost pairing.
+4. Start again from Step 2!
+
+If successful, you will see a new network interface called `bnep0` when you type `ifconfig`. You can test your internet connection by running:
 ```bash
-ping google.com
+ping -I bnep0 google.com
 ```
 
 ---
