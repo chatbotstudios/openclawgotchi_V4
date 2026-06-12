@@ -502,19 +502,34 @@ async def cmd_brain_backup(interaction: discord.Interaction):
     if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
     await interaction.response.defer()
     
-    await interaction.followup.send("🦋 **Initiating Bulletproof Sync...**\n1️⃣ Backing up brain to cloud...")
+    from core.router import get_router
+    from hardware.display import parse_and_execute_commands
     
-    from extensions.system.commands import execute_bash, safe_restart
-    backup_res = execute_bash("./backup_brain.sh --force")
+    router = get_router()
+    prompt = "Hey Gotchi, run your headless backup to save your brain, then pull the latest from the master branch, and do a safe restart."
     
-    await interaction.channel.send("2️⃣ Pulling latest code from master branch...")
-    pull_res = execute_bash("git pull origin master")
-    
-    await interaction.channel.send("3️⃣ Verifying syntax and performing safe restart...")
-    restart_res = safe_restart()
-    
-    final_msg = f"✅ **Sync Sequence Complete!**\n\n**Backup Status:**\n```text\n{backup_res[-300:]}\n```\n**Pull Status:**\n```text\n{pull_res[-300:]}\n```\n**Restart Status:** {restart_res}"
-    await interaction.channel.send(final_msg)
+    try:
+        log.info(f"[/brain-backup] Routing prompt to LLM: {prompt}")
+        response, connector = await router.call(prompt, history=[])
+        
+        tool_footer = ""
+        if "__TOOL_FOOTER__" in response:
+            parts = response.split("__TOOL_FOOTER__", 1)
+            response = parts[0].rstrip()
+            tool_footer = parts[1].strip()
+            
+        clean_text, cmds = parse_and_execute_commands(response)
+        
+        if tool_footer:
+            clean_text += f"\n\n{tool_footer}"
+            
+        if not clean_text.strip():
+            clean_text = "Backup sequence initiated."
+            
+        await interaction.followup.send(clean_text[:2000])
+    except Exception as e:
+        log.error(f"Brain backup routing failed: {e}")
+        await interaction.followup.send(f"❌ LLM Router failed: {e}")
 
 @bot_instance.tree.command(name="jobs", description="List or remove scheduled tasks")
 async def cmd_jobs(interaction: discord.Interaction, action: str = None, job_id: str = None):
