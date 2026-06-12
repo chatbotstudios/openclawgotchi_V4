@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
 from config import DB_PATH, WORKSPACE_DIR, MISSIONS_DIR
-from game_engine.vitals import add_xp
+from game_engine.vitals import add_xp, regenerate_hp_on_sleep
 from game_engine.state import load_state, save_state
 
 log = logging.getLogger(__name__)
@@ -207,6 +207,9 @@ def trigger_dream():
     """Manually invokes a dream session, awarding XP, altering mood, and generating procedural content."""
     add_xp(60, source="dream_session")
     increment_mission_progress("Synthetic Strategist", 1)
+    
+    # Restful Dream Patch: Dreaming organically heals the Gotchi (+10 HP)
+    regenerate_hp_on_sleep(2.0)
     
     state = load_state()
     state.current_mood = "dreaming"
