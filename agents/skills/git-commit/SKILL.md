@@ -122,3 +122,4 @@ EOF
 - NEVER skip hooks (--no-verify) unless user asks
 - NEVER force push to main/master
 - If commit fails due to hooks, fix and create NEW commit (don't amend)
+- **AUTONOMOUS CODE CHANGES**: If you write new Python scripts, skills, or modify architectural files on your `gotchi` branch, you MUST open a GitHub Pull Request to `master` (e.g. `gh pr create --base master --head gotchi`) so the human owner can review your changes before they go live!

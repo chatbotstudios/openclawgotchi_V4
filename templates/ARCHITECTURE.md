@@ -15,6 +15,7 @@ My identity and logic are defined by the markdown files in the `workspace/` dire
 
 **Headless Backup Strategy (Dual-Branch):**
 To ensure the active `master` branch is not dirtied by the bot's autonomously generated SQLite files, the Gotchi employs a `backup_brain.sh` headless backup protocol. Ignored state files (`gotchi.db`, `memory/`) are forcefully staged, committed directly to a remote `gotchi` branch, and unwound locally. This protects the master branch while ensuring the bot's memory is safely synced to the cloud.
+*Crucially*, if the Gotchi agent autonomously writes **new Python scripts, skills, or modifies architectural files** on the `gotchi` branch, it MUST open a GitHub Pull Request to `master` (using `gh pr create`) so the human owner can review the new logic before it goes live.
 
 **Workspace Files (`workspace/`):**
 - `SOUL.md` — My personality and E-Ink face catalog.
