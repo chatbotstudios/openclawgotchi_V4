@@ -2,7 +2,7 @@
 
 All notable changes to OpenClawGotchi V3 will be documented in this file.
 
-## [v4.0.0] - 2026-06-12
+## [v4.0] - 2026-06-12
 ### Added
 - **Restful Dream Patch**: The Gotchi now organically regenerates `+10.0 HP` automatically whenever a procedural dream is triggered, linking the AI simulation engine to the hardware vitals layer.
 - **Discord `/dream` Slash Command**: A new Discord-native command that mimics the exact SSH terminal layout for synthetic dreams, safely rendering raw tool footprints into clean Discord code blocks.
