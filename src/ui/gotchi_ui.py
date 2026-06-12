@@ -193,11 +193,11 @@ def generate_canvas(mood="happy", status_text="") -> Image:
     # ----------------------------------------------------
     # HEADER (y: 0 to 15)
     # ----------------------------------------------------
-    mode_tag = " [L]" if "MODE: L" in status_text else " [P]" if "MODE: P" in status_text else ""
+    mode_tag = "[L]" if "MODE: L" in status_text else "[P]" if "MODE: P" in status_text else ""
     
     # WIFI & BLE Icons
     ble_icon = get_bluetooth_icon()
-    left_header = f"{BOT_NAME}>{mode_tag}  ▂▃▅ {ble_icon}"
+    left_header = f"{BOT_NAME}>  ▂▃▅ {ble_icon} {mode_tag}".strip()
     draw.text((2, 1), left_header, font=font_bold, fill=fg_color)
     
     # Condensed Stats: C:9 T:45 M:1.7G
