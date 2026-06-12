@@ -264,11 +264,13 @@ def generate_canvas(mood="happy", status_text="") -> Image:
         xp_needed_this_level = xp_needed_total - xp_base
         
         percent = xp_in_level / xp_needed_this_level if xp_needed_this_level > 0 else 0
-        blocks = min(10, int(percent * 10))
+        blocks = min(10, round(percent * 10))
         bar_str = f"[{'■'*blocks}{'□'*(10-blocks)}]"
         
         def format_xp(val):
-            return f"{val//1000}K" if val >= 1000 else str(val)
+            if val >= 1000:
+                return f"{val/1000:.1f}K".replace(".0K", "K")
+            return str(val)
             
         xp_str = f"XP{bar_str}{format_xp(xp_in_level)}/{format_xp(xp_needed_this_level)}"
     except Exception as e:
