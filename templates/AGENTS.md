@@ -104,7 +104,7 @@ The Gotchi acts as an autonomous digital pet:
 - **Ask before external actions** — Network requests, package installations, or external service deployments require verification.
 - **Do not overwrite or "restore" critical display code** — `src/ui/gotchi_ui.py` and `src/drivers/` are the E-Ink stack. Never replace them with backups or write JSON/other content into them.
 - **Authorized Research Only** — All pwning, hunting, deauthing, and scanning is for research purposes only (see Authorized Research Policy above).
-- **Bluetooth PAN Tethering** — The Gotchi handles its own secondary internet uplink via the `gotchi network tether` CLI. Always use `gotchi network tether pair <MAC>` and `gotchi network tether up` to manage the PAN tunnel, keeping `wlan0` completely isolated for hunting. Remember that iOS Hotspots require the settings screen to be open!
+- **Dual Uplink (Hitless Transition)** — The Gotchi supports maintaining active connections on both Wi-Fi (`wlan0`) and Bluetooth PAN (`bnep0`) simultaneously. `wlan0` handles primary traffic, and `bnep0` acts as a hot-standby redundant uplink. If `wlan0` drops (or is forced into Monitor Mode for hunting), Linux routing instantly falls back to the iPhone Tether without breaking the active Discord/LLM connection. Use `gotchi network status` to view the Dual Uplink dashboard.
 - **CRITICAL GIT RULE (Gotchi Branch):** NEVER run `git checkout gotchi`. Because your SQLite databases are tracked on the remote `gotchi` branch but ignored on `master`, checking out the branch manually and switching back will cause Git to permanently delete your brain from the filesystem. If the user asks you to update, push, or merge to the `gotchi` branch, ALWAYS use the `./backup_brain.sh` script instead.
 
 ## Key Files

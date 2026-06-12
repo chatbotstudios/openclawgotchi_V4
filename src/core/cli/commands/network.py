@@ -7,6 +7,62 @@ def network():
     """Radio and Networking commands."""
     pass
 
+@network.command(name="status")
+def network_status():
+    """Display Dual Uplink Network Status."""
+    import subprocess
+    from core.cli.utils import format_header
+    
+    # Get wlan0 IP
+    try:
+        wlan0_res = subprocess.run(["ip", "-4", "addr", "show", "wlan0"], capture_output=True, text=True)
+        wlan0_ip = None
+        for line in wlan0_res.stdout.split('\\n'):
+            if "inet " in line:
+                wlan0_ip = line.split()[1].split('/')[0]
+                break
+    except:
+        wlan0_ip = None
+        
+    # Get bnep0 IP
+    try:
+        bnep0_res = subprocess.run(["ip", "-4", "addr", "show", "bnep0"], capture_output=True, text=True)
+        bnep0_ip = None
+        for line in bnep0_res.stdout.split('\\n'):
+            if "inet " in line:
+                bnep0_ip = line.split()[1].split('/')[0]
+                break
+    except:
+        bnep0_ip = None
+        
+    # Get SSID
+    try:
+        ssid_res = subprocess.run(["iwgetid", "-r"], capture_output=True, text=True)
+        ssid = ssid_res.stdout.strip()
+        if not ssid:
+            ssid = "Unknown"
+    except:
+        ssid = "Unknown"
+        
+    format_header("CONNECTION STATUS — DUAL UPLINK")
+    
+    wlan0_status = f"{ssid}\\n→ {wlan0_ip} ✅" if wlan0_ip else "OFFLINE ❌"
+    bnep0_status = f"bnep0 (iPhone Hotspot)\\n→ {bnep0_ip} ✅" if bnep0_ip else "OFFLINE ❌"
+    
+    click.echo(f"📶 Wi-Fi:  {wlan0_status}")
+    click.echo(f"📱 BLE Tether:  {bnep0_status}")
+    click.echo("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    
+    if wlan0_ip and bnep0_ip:
+        click.echo("\\nDual uplink active, Commander!")
+        click.echo("Both pipes are live. Wi-Fi's handling primary traffic, BLE tether's standing by as redundant uplink.")
+    elif wlan0_ip:
+        click.echo("\\nWi-Fi is active. BLE Tether is offline.")
+    elif bnep0_ip:
+        click.echo("\\nBLE Tether is active. Wi-Fi is offline or in hunting mode.")
+    else:
+        click.echo("\\nALL SYSTEMS OFFLINE.")
+
 @network.group()
 def wifi():
     """Wi-Fi radio management."""

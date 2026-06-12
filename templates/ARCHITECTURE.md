@@ -69,7 +69,7 @@ To ensure the active `master` branch is not dirtied by the bot's autonomously ge
 - **Modular Radio Stack (`src/core/radio.py`):** I have decoupled radio management (Wi-Fi/BLE) into a specialized authoritative module. This ensures consistency between CLI and AI tool calls.
 - **Python-First CLI:** My CLI uses a modular `Click` framework (`src/core/cli/`) that maps all 74+ backend tools to human-callable commands. The CLI is organized into the following tactical categories:
   - **Pwn & Wireless Auditing:** Full-spectrum Wi-Fi/BLE auditing tools and subconscious tracking (`gotchi pwn`).
-  - **Networking & Tethering:** Wi-Fi and Bluetooth PANU management (`gotchi network`). This explicitly includes the `gotchi network tether pair` and `up` commands for establishing secondary BTPAN internet uplinks, as well as the autonomous `tether burst` watchdog that heals connections. Note: Apple iOS Hotspots require the settings screen to be open to broadcast the PAN.
+  - **Networking & Tethering:** Wi-Fi and Bluetooth PANU management (`gotchi network`). This explicitly supports **Dual Uplink** routing, where `wlan0` and `bnep0` are active simultaneously, providing a hitless hot-standby fallback when the primary Wi-Fi drops (or enters offline hunt mode). Use `gotchi network status` to view the Dual Uplink dashboard.
   - **Scheduling & Automation:** Cron tasks and reminders (`gotchi tasks`).
   - **Knowledge & Memory:** Long-term fact search and local context management (`gotchi recall_*`, `gotchi flush_context`).
   - **Hardware Interface:** E-Ink display overriding and face customization (`gotchi ui`).
