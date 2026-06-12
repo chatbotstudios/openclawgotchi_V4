@@ -2,6 +2,15 @@
 
 All notable changes to OpenClawGotchi V3 will be documented in this file.
 
+## [v3.3] - 2026-06-12
+### Fixed
+- **Architectural Workspace Path**: Fixed a critical bug where `config.py` hardcoded the `templates/` directory instead of the live `workspace/` directory, restoring daily memory logging.
+- **Dream Notification Threading**: Removed daemon flags from Discord webhooks so that CLI commands natively wait for network requests to finish before exiting, ensuring dreams successfully post to `#general`.
+- **Badge Schema Validation**: Resolved Pydantic crash in `AIPETState` during dream sequences by updating `badges` type validation to accept dictionary objects.
+- **Flat-File Logging**: Initialized FileHandlers across both the background daemon and CLI to ensure a persistent `gotchi.log` is captured in the `data/` directory.
+- **CLI Log Pollution**: Silenced raw Python `INFO` logs on the CLI stream to ensure clean, interactive outputs during `gotchi aipet dream`.
+- **Bounty Webhooks**: Added `#heartbeats` discord notifications when the Gotchi autonomously mints new procedural bounties.
+
 ## [v3.2] - 2026-06-12
 ### Added
 - **Discord Bulletproof Sync**: Added `/brain-backup` slash command in Discord for one-click brain backups, code pulls, and safe daemon restarts.
