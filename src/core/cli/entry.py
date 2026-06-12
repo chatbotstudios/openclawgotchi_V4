@@ -14,6 +14,18 @@ load_dotenv(PROJECT_DIR / ".env")
 # Ensure PYTHONPATH is set for sub-processes
 os.environ["PYTHONPATH"] = str(PROJECT_DIR / "src")
 
+import logging
+from config import DATA_DIR
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(DATA_DIR / "gotchi.log"),
+        logging.StreamHandler()
+    ]
+)
+
 from core.cli.commands.core import status, doctor, logs, restart, dash, clear, list_tools, ui, mode, help_cmd, run_bot, setup, serve
 from core.cli.commands.pwn import pwn
 from core.cli.commands.network import network
