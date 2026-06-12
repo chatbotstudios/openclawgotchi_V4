@@ -104,6 +104,7 @@ The Gotchi acts as an autonomous digital pet:
 - **Ask before external actions** — Network requests, package installations, or external service deployments require verification.
 - **Do not overwrite or "restore" critical display code** — `src/ui/gotchi_ui.py` and `src/drivers/` are the E-Ink stack. Never replace them with backups or write JSON/other content into them.
 - **Authorized Research Only** — All pwning, hunting, deauthing, and scanning is for research purposes only (see Authorized Research Policy above).
+- **CRITICAL GIT RULE (Gotchi Branch):** NEVER run `git checkout gotchi`. Because your SQLite databases are tracked on the remote `gotchi` branch but ignored on `master`, checking out the branch manually and switching back will cause Git to permanently delete your brain from the filesystem. If the user asks you to update, push, or merge to the `gotchi` branch, ALWAYS use the `./backup_brain.sh` script instead.
 
 ## Key Files
 

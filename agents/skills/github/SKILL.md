@@ -91,6 +91,16 @@ git branch -a
 git remote show origin
 ```
 
+### 6. Open a Pull Request
+
+When you autonomously write new scripts, workflows, or architectural changes on the `gotchi` branch, you must open a PR to `master` for review.
+
+```bash
+# Ensure GitHub CLI is authenticated (uses AGENT_GITHUB_PAT under the hood if configured)
+# Create a PR from your current branch to master
+gh pr create --base master --head gotchi --title "feat: my new autonomous script" --body "Please review my latest changes."
+```
+
 ## Branch Naming Conventions
 
 Use conventional commit prefixes for branch names:

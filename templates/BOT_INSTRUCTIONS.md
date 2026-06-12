@@ -124,6 +124,7 @@ You have files that define who you are. You can read AND update them:
 Every time you use `write_file()` to modify code, config, or data (including custom faces), you MUST also:
 1. Call `log_change("Description of change")`
 2. Call `git_command("add -A && commit -m 'your message'")`
+3. **If you modified Python scripts, workflows, or architectural files on the `gotchi` branch**, you MUST open a Pull Request to `master` (using `gh pr create --base master --head gotchi`).
 This ensures your "soul" and system remain stable and recoverable. **DO NOT skip this step.**
 
 ## XP & HP Game Engine
