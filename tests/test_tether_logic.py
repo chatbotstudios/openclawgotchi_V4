@@ -130,7 +130,7 @@ def test_watchdog_attempt_tether():
     watchdog = TetherWatchdog()
     with patch("subprocess.run") as mock_run, patch("time.sleep") as mock_sleep:
         watchdog._attempt_tether("AA:BB:CC:DD:EE:FF")
-        assert mock_run.call_count == 2
+        assert mock_run.call_count == 5
         # Calls bluetoothctl connect and nmcli con up
         mock_run.assert_any_call(["sudo", "bluetoothctl", "connect", "AA:BB:CC:DD:EE:FF"], capture_output=True, timeout=10)
         mock_run.assert_any_call(["sudo", "nmcli", "con", "up", "iPhoneHotspot"], capture_output=True, timeout=15)
