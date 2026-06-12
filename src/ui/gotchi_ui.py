@@ -234,15 +234,20 @@ def generate_canvas(mood="happy", status_text="") -> Image:
     
     draw.line((0, HEADER_H, WIDTH, HEADER_H), fill=fg_color)
 
+    def format_xp(val):
+        if val >= 1000:
+            return f"{val/1000:.1f}K".replace(".0K", "K")
+        return str(val)
+
     # ----------------------------------------------------
     # EXTRAS (y: 92)
     # ----------------------------------------------------
     try:
         from game_engine.state import load_state
         state = load_state()
-        extras_str = f"HP♥{int(state.hp)}  RP♦0"
+        extras_str = f"XP♦{format_xp(state.xp)}  HP♥{int(state.hp)}"
     except Exception:
-        extras_str = "HP♥?  RP♦0"
+        extras_str = "XP♦?  HP♥?"
         
     extras_bbox = draw.textbbox((0, 0), extras_str, font=font_ui)
     draw.text((WIDTH - (extras_bbox[2] - extras_bbox[0]) - 2, HEIGHT - FOOTER_H - 14), extras_str, font=font_ui, fill=fg_color)
@@ -266,11 +271,6 @@ def generate_canvas(mood="happy", status_text="") -> Image:
         percent = xp_in_level / xp_needed_this_level if xp_needed_this_level > 0 else 0
         blocks = min(10, round(percent * 10))
         bar_str = f"[{'■'*blocks}{' '*(10-blocks)}]"
-        
-        def format_xp(val):
-            if val >= 1000:
-                return f"{val/1000:.1f}K".replace(".0K", "K")
-            return str(val)
             
         xp_str = f"XP{bar_str}{format_xp(xp_in_level)}/{format_xp(xp_needed_this_level)}"
     except Exception as e:
