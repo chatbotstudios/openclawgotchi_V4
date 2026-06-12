@@ -1326,5 +1326,13 @@
     "target": 1,
     "xp_reward": 150,
     "source": "ai_generated"
+  },
+  {
+    "name": "Operation: Git-Ghost & Cipher Echo",
+    "base_name": "Operation: Git-Ghost & Cipher Echo",
+    "category": "System & Memory",
+    "target": 1,
+    "xp_reward": 200,
+    "source": "ai_generated"
   }
 ]
