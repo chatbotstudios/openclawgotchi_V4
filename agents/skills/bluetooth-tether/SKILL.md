@@ -23,7 +23,7 @@ When the operator triggers any of the phrases above:
     ```bash
     gotchi network tether burst --duration 180
     ```
-3.  **Establish Bond/Tunnel**: Perform a connection attempt to the paired host MAC using the `tether_up` tool.
+3.  **Establish Bond/Tunnel**: Perform a connection attempt to the paired host MAC using the `gotchi network tether up` tool.
 
 ### 2. The "Hotspot Screen" Paradox
 **CRITICAL**: iOS and many Android versions only broadcast their tethering availability while the **Settings > Personal Hotspot** screen is actively open. 
@@ -31,9 +31,9 @@ When the operator triggers any of the phrases above:
 
 ### 2. Connection Orchestration
 The agent should follow this sequence for a successful link:
-1.  **Verify Bond**: Ensure the device is trusted via `gotchi tether pair`.
-2.  **Pulse Connect**: Always issue a Bluetooth `connect` command *before* attempting to bring up the NetworkManager profile. This "wakes" the iPhone's listener.
-3.  **Activate Tunnel**: Use `gotchi tether up` which leverages the `panu` (Personal Area Network User) protocol.
+1.  **Verify Bond**: Ensure the device is trusted via `gotchi network tether pair <MAC>`.
+2.  **Pulse Connect**: The `gotchi network tether up` command automatically handles the "wake" pulse before attempting NetworkManager.
+3.  **Activate Tunnel**: Handled autonomously by `gotchi network tether up` which leverages the `panu` (Personal Area Network User) protocol.
 
 ### 3. Interface Awareness
 Successful tethering creates the **`bnep0`** interface.
@@ -46,7 +46,7 @@ The following environment configurations in `.env` govern Bluetooth tethering de
 - **`BLE_ADDRESS`**: The static MAC address of the target mobile device (e.g. `D0:3F:AA:14:C9:29`).
 - **`BLE_TETHER_PASSWORD`**: Hotspot/PAN PIN if needed for legacy compatibility.
 
-*Note on Pairing PINs*: During the initial `gotchi tether_pair` flow, a 6-digit Secure Simple Pairing (SSP) code is displayed. The user must tap "Pair" on the phone or confirm on the terminal. Once paired and trusted, no PIN or code entry is required for subsequent connections or watchdog pulses.
+*Note on Pairing PINs*: During the initial `gotchi network tether pair` flow, a 6-digit Secure Simple Pairing (SSP) code is displayed. The user must tap "Pair" on the phone or confirm on the terminal. Once paired and trusted, no PIN or code entry is required for subsequent connections or watchdog pulses.
 
 ### 5. Magnetic Watchdog (Autonomous Recovery)
 The unit features a background pulse that monitors internet connectivity:
@@ -63,5 +63,9 @@ If `gotchi doctor` or `bluetoothctl` report that the daemon is offline, the serv
 ### 2. Firmware Awareness
 The unit requires `pi-bluetooth` and `bluez-firmware` to correctly initialize the radio on boot. If pairing fails consistently despite a powered controller, verify firmware stack integrity.
 
-### 3. Self-Healing
-If the bot loses its primary Wi-Fi connection and a paired tethering host is nearby, it should autonomously attempt a `gotchi tether up` to restore its cognitive link to the cloud.
+### 3. Ghost Pairings (org.bluez.Error.Failed br-connection-profile-unavailable)
+If the connection fails with a `profile-unavailable` error even when the Hotspot screen is open, the iPhone has likely "forgotten" the pairing but the Gotchi has not. 
+*   **Reflex**: Instruct the user to "Forget" the device on their phone, run `sudo bluetoothctl remove <MAC>` to wipe the ghost pairing, and re-run `gotchi network tether pair <MAC>`.
+
+### 4. Self-Healing
+If the bot loses its primary Wi-Fi connection and a paired tethering host is nearby, it should autonomously attempt a `gotchi network tether up` to restore its cognitive link to the cloud.

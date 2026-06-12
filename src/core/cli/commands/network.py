@@ -70,6 +70,66 @@ def tether_burst(duration):
     watchdog.restart_burst()
     click.echo(f"🧲 Tether Burst Mode started ({duration}s).")
 
+@tether.command(name="pair")
+@click.argument('mac')
+def tether_pair(mac):
+    """Pair and trust a Bluetooth tethering device."""
+    import subprocess
+    click.echo(f"🧲 Launching pairing agent for {mac}...")
+    click.echo("⚠️ If a PIN appears, type 'yes' and hit Enter, then tap 'Pair' on your phone.")
+    
+    try:
+        subprocess.run(["sudo", "bluetoothctl", "pair", mac])
+        click.echo(f"🧲 Trusting {mac}...")
+        subprocess.run(["sudo", "bluetoothctl", "trust", mac])
+        click.echo("✅ Pairing sequence complete. Run 'gotchi network tether up' to connect.")
+    except Exception as e:
+        click.echo(f"❌ Error during pairing: {e}")
+
+@tether.command(name="up")
+@click.option('--mac', default=None, help="MAC address of the phone.")
+def tether_up(mac):
+    """Bring up the Bluetooth PAN tethering tunnel."""
+    import subprocess
+    import time
+    from config import load_env
+    
+    target_mac = mac
+    if not target_mac:
+        # Try to pull from .env
+        env = load_env()
+        target_mac = env.get("BLE_ADDRESS")
+        
+    if not target_mac:
+        # Try to pull from existing NM profile
+        try:
+            res = subprocess.run(["nmcli", "-g", "bluetooth.bdaddr", "connection", "show", "iPhoneHotspot"], capture_output=True, text=True)
+            target_mac = res.stdout.strip()
+        except:
+            pass
+            
+    if not target_mac:
+        click.echo("❌ Error: No MAC address provided and BLE_ADDRESS not set in .env")
+        return
+        
+    click.echo(f"🧲 Waking up {target_mac}...")
+    subprocess.run(["sudo", "bluetoothctl", "connect", target_mac], capture_output=True)
+    time.sleep(2)
+    
+    click.echo("🧲 Bringing up NetworkManager profile 'iPhoneHotspot'...")
+    res = subprocess.run(["sudo", "nmcli", "connection", "up", "iPhoneHotspot"], capture_output=True, text=True)
+    
+    if res.returncode == 0:
+        click.echo("✅ Tethering tunnel established!")
+    else:
+        if "unknown connection" in res.stderr.lower():
+            click.echo("⚠️ Profile not found. Creating 'iPhoneHotspot' NetworkManager profile...")
+            subprocess.run(["sudo", "nmcli", "connection", "add", "type", "bluetooth", "ifname", "*", "con-name", "iPhoneHotspot", "bluetooth.bdaddr", target_mac, "bluetooth.type", "panu"])
+            subprocess.run(["sudo", "nmcli", "connection", "up", "iPhoneHotspot"])
+            click.echo("✅ Profile created and tunnel established!")
+        else:
+            click.echo(f"❌ Failed to bring up tunnel: {res.stderr}")
+
 @network.command(name="hunt")
 @click.option('--duration', default=900, type=int, help="Duration of offline hunt in seconds (default 900 / 15m).")
 @click.option('--mission', default="handshake_hunter_v1", type=str, help="Associated mission ID.")
