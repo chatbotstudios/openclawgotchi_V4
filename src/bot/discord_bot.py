@@ -37,6 +37,8 @@ from hooks.runner import run_hook, HookEvent
 
 log = logging.getLogger(__name__)
 
+SESSION_MESSAGES = 0
+
 def _fire_discord_command_hook(interaction, command_name):
     hook_event = run_hook(HookEvent(
         event_type="command",
@@ -212,6 +214,8 @@ class OpenClawDiscord(commands.Bot):
         user_text = user_text.strip()
         
         if not user_text or user_text.startswith("/"): return
+        global SESSION_MESSAGES
+        SESSION_MESSAGES += 1
         conv_id = message.channel.id
         sender = message.author.display_name
         
@@ -329,24 +333,26 @@ async def cmd_status(interaction: discord.Interaction):
     
     stats = get_stats()
     
-    # Load actual autonomous AIPET game state
-    from game_engine.state import load_state
-    aipet_state = load_state()
-    level = aipet_state.level
-    xp = aipet_state.xp
+    global SESSION_MESSAGES
     
-    def xp_to_reach_level(n: int) -> int:
-        if n <= 10:
-            return n * 100
-        else:
-            return 1000 + (n - 10) * 1000
-            
-    xp_at_current_level_start = xp_to_reach_level(level) if level > 1 else 0
-    xp_needed_this_level = xp_to_reach_level(level + 1) - xp_at_current_level_start
-    xp_in_level = xp - xp_at_current_level_start
-    
-    from db.stats import LEVEL_TITLES
-    title = LEVEL_TITLES[min(len(LEVEL_TITLES) - 1, level - 1)] if LEVEL_TITLES else "Newborn"
+    from db.stats import get_level_progress
+    prog = get_level_progress()
+    xp_in, xp_need = prog.get("xp_in_level", 0), prog.get("xp_needed_this_level", 1) or 1
+    if prog["level"] >= prog.get("max_level", 20): 
+        xp_bar = "█" * 10 + " MAX"
+        progress_line = f"Lv{prog['level']} {prog['title']} — {xp_bar}"
+    else:
+        filled = min(10, int(10 * xp_in / xp_need))
+        xp_bar = "█" * filled + "░" * (10 - filled)
+        progress_line = f"Lv{prog['level']} {prog['title']} — {xp_bar} {xp_in}/{xp_need} to Lv{prog['level'] + 1}"
+        
+    import sqlite3
+    conn = sqlite3.connect(str(DB_PATH))
+    try:
+        total_messages = conn.execute("SELECT SUM(progress) FROM aipet_missions WHERE base_name = 'Chatterbox'").fetchone()[0] or 0
+    except Exception:
+        total_messages = get_message_count(interaction.channel_id) if interaction.channel_id else 0
+    conn.close()
     
     router = get_router()
     mode = "Lite ⚡" if router.force_lite else "Pro 🧠"
@@ -362,12 +368,10 @@ async def cmd_status(interaction: discord.Interaction):
     smart_faces = faces.get("smart", ["(✜‿‿✜)"])
     face_str = random.choice(smart_faces) if isinstance(smart_faces, list) else smart_faces
     
-    msg_count = get_message_count(interaction.channel_id) if interaction.channel_id else 0
-    
     msg = (f"`{face_str}` **{BOT_NAME.upper()} — STATUS**\n"
-           f"🎮 Level: {level} ({title})\n"
-           f"⭐ XP: {xp_in_level}/{xp_needed_this_level}\n"
-           f"💬 Messages: {msg_count}\n"
+           f"{progress_line}\n"
+           f"Total XP: {prog['xp']}\n"
+           f"💬 Messages: {total_messages} Lifetime | {SESSION_MESSAGES} This Session\n"
            f"🌡️ Temperature: {stats.temp}\n"
            f"💾 RAM Free: {stats.memory}\n"
            f"🤖 AI/LLM MODEL: {active_model_str}\n"
@@ -430,31 +434,37 @@ async def cmd_remember(interaction: discord.Interaction, category: str, fact: st
     notifications = _fire_discord_command_hook(interaction, "remember")
     await interaction.response.send_message(f"📝 Saved [{category}]: {fact}" + notifications)
 
-@bot_instance.tree.command(name="recall", description="Search memory")
-async def cmd_recall(interaction: discord.Interaction, query: str = None):
-    if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
-    await interaction.response.defer()
-    
-    facts = search_facts(query) if query else get_recent_facts(5)
-    if not facts: return await interaction.followup.send("No facts found.")
-    msg = "🔍 Results:\n\n"
-    for f in facts: msg += f"[{f['timestamp'][:10]}] ({f['category']}) {f['content']}\n"
-    notifications = _fire_discord_command_hook(interaction, "recall")
-    await interaction.followup.send(msg + notifications)
-
 @bot_instance.tree.command(name="memory", description="Database stats")
 async def cmd_memory(interaction: discord.Interaction):
     if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
     await interaction.response.defer()
     
     import sqlite3
+    global SESSION_MESSAGES
     conn = sqlite3.connect(str(DB_PATH)); cursor = conn.cursor()
     m_c = cursor.execute("SELECT COUNT(*) FROM messages").fetchone()[0]
     f_c = cursor.execute("SELECT COUNT(*) FROM facts").fetchone()[0]
+    
+    try:
+        active_missions = cursor.execute("SELECT COUNT(*) FROM aipet_missions WHERE status = 'active'").fetchone()[0]
+        completed_missions = cursor.execute("SELECT COUNT(*) FROM aipet_missions WHERE status = 'completed'").fetchone()[0]
+        dreams = cursor.execute("SELECT progress FROM aipet_missions WHERE base_name = 'Synthetic Strategist' AND status = 'active'").fetchone()[0]
+        lifetime_msgs = cursor.execute("SELECT SUM(progress) FROM aipet_missions WHERE base_name = 'Chatterbox'").fetchone()[0] or m_c
+    except Exception:
+        active_missions = completed_missions = dreams = 0
+        lifetime_msgs = m_c
+        
     conn.close()
     gotchi_stats = get_stats_summary()
     notifications = _fire_discord_command_hook(interaction, "memory")
-    await interaction.followup.send(f"📊 **Memory Dashboard**\nMessages: {m_c}\nFacts: {f_c}\nXP: {gotchi_stats['xp']} (Lv{gotchi_stats['level']})" + notifications)
+    
+    msg = (f"📊 **Memory Dashboard**\n"
+           f"Messages: {lifetime_msgs} Lifetime | {SESSION_MESSAGES} This Session\n"
+           f"Facts: {f_c}\n"
+           f"Missions: {active_missions} Active | {completed_missions} Completed\n"
+           f"Dreams: {dreams}\n"
+           f"XP: {gotchi_stats['xp']} (Lv{gotchi_stats['level']})")
+    await interaction.followup.send(msg + notifications)
 
 @bot_instance.tree.command(name="pro", description="Toggle Lite/Pro LLM modes")
 async def cmd_pro(interaction: discord.Interaction):
