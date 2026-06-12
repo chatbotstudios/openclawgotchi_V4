@@ -1302,5 +1302,29 @@
     "target": 1,
     "xp_reward": 150,
     "source": "ai_generated"
+  },
+  {
+    "name": "Operation: Phantom Sync Protocol",
+    "base_name": "Operation: Phantom Sync Protocol",
+    "category": "self_evolution",
+    "target": 1,
+    "xp_reward": 200,
+    "source": "ai_generated"
+  },
+  {
+    "name": "\ud83d\uddfa\ufe0f Ghost Protocol: Digital Cartographer",
+    "base_name": "\ud83d\uddfa\ufe0f Ghost Protocol: Digital Cartographer",
+    "category": "System",
+    "target": 1,
+    "xp_reward": 150,
+    "source": "ai_generated"
+  },
+  {
+    "name": "Operation: Phantom Relay",
+    "base_name": "Operation: Phantom Relay",
+    "category": "System Diagnostics",
+    "target": 1,
+    "xp_reward": 150,
+    "source": "ai_generated"
   }
 ]
