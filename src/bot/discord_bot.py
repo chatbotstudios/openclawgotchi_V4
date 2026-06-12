@@ -557,6 +557,70 @@ async def cmd_jobs(interaction: discord.Interaction, action: str = None, job_id:
     notifications = _fire_discord_command_hook(interaction, "jobs")
     await interaction.followup.send(msg + notifications)
 
+@bot_instance.tree.command(name="dream", description="Enter a synthetic dream state and mint a new procedural mission")
+async def cmd_dream(interaction: discord.Interaction):
+    if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
+    await interaction.response.defer()
+    
+    from core.router import get_router
+    from hardware.display import parse_and_execute_commands
+    from game_engine.vitals import add_xp, regenerate_hp_on_sleep
+    from game_engine.missions import increment_mission_progress
+    from game_engine.state import load_state, save_state
+    
+    add_xp(60, source="dream_session")
+    increment_mission_progress("Synthetic Strategist", 1)
+    regenerate_hp_on_sleep(2.0)
+    
+    state = load_state()
+    state.current_mood = "dreaming"
+    save_state(state)
+    
+    router = get_router()
+    prompt = (
+        "You are an AI hacker pet currently in a DREAM STATE.\n"
+        "Output exactly the following format (including the emoji and layout):\n\n"
+        "[💭] Dream Generated:\n"
+        "(✧ ─ ✧)zZZ\n\n"
+        "**Dream fragment:** [Write a 2-sentence surreal, cyberpunk dream about your past experiences or network captures.]\n\n"
+        "**Mission born from the static:**\n"
+        "`🏴 Operation: [Mission Name]` *([XP] XP)*\n\n"
+        "[Write a short description of the mission and a bulleted list of 3-5 tasks]\n\n"
+        "[Write a final dramatic sentence about waking up]\n\n"
+        "FACE: sleep\n"
+        "SAY: zzZ... deleting null pointers... zzZ...\n\n"
+        "CRITICAL: While dreaming, you MUST use the `aipet_generate_bounty` tool to spontaneously invent and save the new procedural mission for yourself based on the dream!"
+    )
+    
+    try:
+        log.info("[/dream] Routing prompt to LLM")
+        response, _ = await router.call(prompt, history=[])
+        
+        tool_footer = ""
+        if "__TOOL_FOOTER__" in response:
+            parts = response.split("__TOOL_FOOTER__", 1)
+            response = parts[0].rstrip()
+            tool_footer = parts[1].strip()
+            
+        clean_text, cmds = parse_and_execute_commands(response)
+        
+        if tool_footer:
+            clean_text += f"\n\n__TOOL_FOOTER__\n```\n{tool_footer}\n```"
+            
+        if len(clean_text) > 2000:
+            for i in range(0, len(clean_text), 2000):
+                if i == 0: await interaction.followup.send(clean_text[i:i+2000])
+                else: await interaction.channel.send(clean_text[i:i+2000])
+        else:
+            await interaction.followup.send(clean_text)
+            
+        from memory.flush import write_to_daily_log
+        write_to_daily_log(f"💭 **Dream Sequence (Discord):**\n{response}")
+            
+    except Exception as e:
+        log.error(f"Dream routing failed: {e}")
+        await interaction.followup.send(f"❌ LLM Router failed: {e}")
+
 def run_discord():
     if not DISCORD_BOT_TOKEN:
         log.error("DISCORD_BOT_TOKEN is not set!")
