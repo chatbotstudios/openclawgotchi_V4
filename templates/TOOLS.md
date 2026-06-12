@@ -43,6 +43,7 @@ This is your official tool manifest. Use these to interface with the physical an
 ## 🎯 MISSIONS & QUESTS
 - **`list_available_missions`**: Find new quests you can accept.
 - **`get_mission_status`**: Check the progress of your currently active missions.
+- **`aipet_generate_bounty`**: Dream up entirely new procedural missions and inject them into your Git-tracked `agents/missions/` directory.
 - **`accept_mission`**: Officially log and start a mission.
 
 ## 🎮 GAME ENGINE & PROGRESSION
