@@ -244,7 +244,7 @@ class OpenClawDiscord(commands.Bot):
             router.force_lite = True
             
         try:
-            log.info(f"[{sender}] -> {user_text[:80]}")
+            log.info(f"💬 [Discord Message] [{sender}] -> {user_text[:80]}")
             async with message.channel.typing():
                 response, connector = await router.call(user_text, history)
             
@@ -252,7 +252,7 @@ class OpenClawDiscord(commands.Bot):
             if aipet_state.hp < 20.0:
                 router.force_lite = original_lite_mode
                 
-            log.info(f"[{sender}] <- [{connector}] {response[:80]}")
+            log.info(f"💬 [Discord Reply] [{sender}] <- [{connector}] {response[:80]}")
             tool_footer = ""
             if "__TOOL_FOOTER__" in response:
                 parts = response.split("__TOOL_FOOTER__", 1)
@@ -514,13 +514,15 @@ async def cmd_brain_backup(interaction: discord.Interaction):
     
     from core.router import get_router
     from hardware.display import parse_and_execute_commands
+    from bot.heartbeat import build_system_context
     
     router = get_router()
     prompt = "Hey Gotchi, run your headless backup to save your brain, then pull the latest from the master branch, and do a safe restart."
     
     try:
-        log.info(f"[/brain-backup] Routing prompt to LLM: {prompt}")
-        response, connector = await router.call(prompt, history=[])
+        system_prompt = build_system_context(is_heartbeat=True)
+        log.info(f"💬 [/brain-backup] Routing prompt to LLM: {prompt}")
+        response, connector = await router.call(prompt, history=[], system_prompt=system_prompt)
         
         tool_footer = ""
         if "__TOOL_FOOTER__" in response:
@@ -593,7 +595,7 @@ async def cmd_dream(interaction: discord.Interaction):
     )
     
     try:
-        log.info("[/dream] Routing prompt to LLM")
+        log.info("💭 [/dream] Routing prompt to LLM")
         response, _ = await router.call(prompt, history=[])
         
         tool_footer = ""

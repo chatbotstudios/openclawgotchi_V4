@@ -403,8 +403,8 @@ async def send_heartbeat(send_message_func=None):
         if response is None:
             async with router.lock:
                 response, connector = await router.call(prompt, [], system_prompt=system_prompt)
-        
-        log.info(f"Heartbeat [{connector}]: {response[:100]}")
+        # 7. Print and run hook
+        log.info(f"💓 [Heartbeat] [{connector}]: {response[:100]}")
         
         clean_text, commands = parse_and_execute_commands(response)
         reflection_text = _sanitize_reflection_text(clean_text)

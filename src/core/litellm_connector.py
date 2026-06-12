@@ -227,10 +227,10 @@ class LiteLLMConnector(LLMConnector):
                     import litellm
                     from litellm import completion
                     
-                    # Silence the default LiteLLM noise
-                    litellm.suppress_debug_info = True
+                    # Restore the default LiteLLM noise
+                    litellm.suppress_debug_info = False
                     import logging as _logging
-                    _logging.getLogger("LiteLLM").setLevel(_logging.WARNING)
+                    _logging.getLogger("LiteLLM").setLevel(_logging.INFO)
                     
                 except ImportError:
                     return "Error: LiteLLM not installed. Run pip install litellm."
