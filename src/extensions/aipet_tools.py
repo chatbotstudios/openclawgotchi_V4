@@ -164,6 +164,12 @@ def aipet_generate_bounty(name: str, xp_reward: int, category: str = "Procedural
         
         with open(missions_file, "w") as f:
             json.dump(missions_data, f, indent=2)
+            
+        try:
+            from core.missions.notifications import notify_discord_bounty_minted
+            notify_discord_bounty_minted(name, xp_reward)
+        except Exception as e:
+            log.warning(f"Failed to trigger discord notification for bounty: {e}")
         
         return f"Success! Procedural bounty '{name}' created for {xp_reward} XP and saved to Git tracking."
     except Exception as e:

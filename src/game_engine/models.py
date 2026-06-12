@@ -26,5 +26,5 @@ class AIPETState(BaseModel):
     # ── Meta ──
     last_updated: str = Field(default_factory=_now_utc)
     missions_completed: int = 0
-    badges: List[str] = Field(default_factory=list)
+    badges: List[dict] = Field(default_factory=list)
     current_mood: str = "neutral"
