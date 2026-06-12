@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 # Add src/ to PYTHONPATH programmatically
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from core.offline_hunter import OfflineHunter
+from core.offline_hunter import OfflineHunter, CHUNK_SLEEP
 
 def test_offline_hunter_flow(tmp_path):
     # Setup temp paths for testing
@@ -20,7 +20,7 @@ def test_offline_hunter_flow(tmp_path):
     
     hunter = OfflineHunter(project_dir=tmp_path)
     
-    with patch("subprocess.run") as mock_run, patch("time.sleep") as mock_sleep:
+    with patch("subprocess.run") as mock_run, patch(f"{OfflineHunter.__module__}.time.sleep") as mock_sleep:
         # Mock show_face CLI refreshes and network changes
         mock_run.return_value = MagicMock(returncode=0)
         
@@ -36,10 +36,13 @@ def test_offline_hunter_flow(tmp_path):
         state_data = json.loads(state_file.read_text())
         assert state_data["is_offline_hunting"] is False
         assert state_data["original_dark_mode"] == "0"
-        assert state_data["active_mission_id"] == "handshake_hunter_v2"
+        assert state_data["active_mission_id"] == ""
         
-        # Sleep was called with target duration
-        mock_sleep.assert_called_with(120)
+        # Sleep was called in 15-second chunks: 120 // 15 = 8 calls
+        expected_chunks = 120 // CHUNK_SLEEP
+        assert mock_sleep.call_count == expected_chunks + 1  # +1 for the post-hunt 15s wifi wait
+        mock_sleep.assert_any_call(CHUNK_SLEEP)
+        mock_sleep.assert_any_call(15)  # post-hunt wifi wait
         
         # Commands run: ui refresh (hunting), wifi off, wifi on, ui refresh (happy)
         assert mock_run.call_count == 4

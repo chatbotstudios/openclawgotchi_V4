@@ -12,6 +12,8 @@ ENV_PATH = PROJECT_DIR / ".env"
 
 log = logging.getLogger("OfflineHunter")
 
+CHUNK_SLEEP = 15  # Sleep in 15-second chunks for responsiveness
+
 class OfflineHunter:
     """
     Handles the orchestration of a timed offline hunt session:
@@ -75,6 +77,7 @@ class OfflineHunter:
     def run_hunt(self, duration_seconds: int, mission_id: str = "handshake_hunter_v1"):
         """
         Launches the offline hunt. Designed to run as a non-blocking background task.
+        Sleeps in 15-second chunks so the loop can be responsive to abort signals.
         """
         orig_dark = self._get_env_var("DARK_MODE", "0")
         
@@ -98,28 +101,29 @@ class OfflineHunter:
             # Put wlan0 into monitor mode using the radio wrapper
             subprocess.run(["python3", "-m", "core.cli.entry", "network", "wifi", "off"], cwd=str(self.project_dir), capture_output=True)
             
-            # 4. Wait/Sleep for the duration of the hunt
-            log.info(f"Offline hunt active. Sleeping for {duration_seconds} seconds...")
-            time.sleep(duration_seconds)
+            # 4. Wait/Sleep in 15-second chunks for the duration of the hunt
+            log.info(f"Offline hunt active. Sleeping in {CHUNK_SLEEP}s chunks for {duration_seconds}s total...")
+            chunks = max(1, duration_seconds // CHUNK_SLEEP)
+            for _ in range(chunks):
+                time.sleep(CHUNK_SLEEP)
             
         finally:
-            # 5. Restore managed mode and client Wi-Fi
-            log.info("Hunt complete. Restoring managed mode...")
+            # 5. Restore managed mode and client connectivity
+            log.info("Restoring network connectivity...")
             subprocess.run(["python3", "-m", "core.cli.entry", "network", "wifi", "on"], cwd=str(self.project_dir), capture_output=True)
             
-            log.info("Waiting 15 seconds for NetworkManager to connect to Wi-Fi...")
+            # Give NetworkManager a moment to grab an IP
             time.sleep(15)
             
-            # Restore original Dark Mode UI preferences
+            # 6. Restore original dark mode setting
             self._set_env_var("DARK_MODE", orig_dark)
+            self._trigger_ui_refresh("happy", "Back online!") if orig_dark == "0" else self._trigger_ui_refresh("intense", "Stealth mode...")
             
-            # Clear offline hunting state
-            state = self._read_state()
+            # 7. Clear hunt state
             state["is_offline_hunting"] = False
+            state["original_dark_mode"] = orig_dark
+            state["active_mission_id"] = ""
             self._write_state(state)
-            
-            # Re-render UI
-            self._trigger_ui_refresh("happy", "Back online. Uploading hunt data...")
             
             # Post-process handshakes / reporting
             self.report_results(duration_seconds, mission_id, was_target_locked)
