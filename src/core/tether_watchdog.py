@@ -35,7 +35,7 @@ class TetherWatchdog:
         try:
             cmd = "sudo nmcli -g bluetooth.bdaddr connection show iPhoneHotspot"
             res = subprocess.run(cmd.split(), capture_output=True, text=True)
-            return res.stdout.strip()
+            return res.stdout.strip().replace("\\", "")
         except:
             return ""
 

@@ -160,7 +160,7 @@ def tether_up(mac):
         # Try to pull from existing NM profile
         try:
             res = subprocess.run(["nmcli", "-g", "bluetooth.bdaddr", "connection", "show", "iPhoneHotspot"], capture_output=True, text=True)
-            target_mac = res.stdout.strip()
+            target_mac = res.stdout.strip().replace("\\", "")
         except:
             pass
             
