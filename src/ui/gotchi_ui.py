@@ -145,6 +145,30 @@ def get_bluetooth_icon() -> str:
     except Exception:
         return "B"
 
+def get_wifi_icon() -> str:
+    import sys
+    if sys.platform != "linux":
+        return " ▂▃▅"
+        
+    try:
+        with open("/proc/net/wireless", "r") as f:
+            lines = f.readlines()
+            for line in lines[2:]:
+                parts = line.split()
+                if len(parts) >= 4 and (parts[0].startswith("wlan") or parts[0].startswith("wl")):
+                    quality_str = parts[2].strip(".")
+                    quality = int(quality_str)
+                    percent = quality / 70.0
+                    if percent >= 0.75: return " ▂▃▅"
+                    elif percent >= 0.50: return " ▂▃ "
+                    elif percent >= 0.25: return " ▂  "
+                    elif percent > 0: return "    "
+                    else: return "X   "
+    except Exception:
+        pass
+        
+    return " ▂▃▅"
+
 def generate_canvas(mood="happy", status_text="") -> Image:
     stats = get_system_stats()
     
@@ -197,7 +221,8 @@ def generate_canvas(mood="happy", status_text="") -> Image:
     
     # WIFI & BLE Icons
     ble_icon = get_bluetooth_icon()
-    left_header = f"{BOT_NAME}>  ▂▃▅ {ble_icon} {mode_tag}".strip()
+    wifi_icon = get_wifi_icon()
+    left_header = f"{BOT_NAME}>{wifi_icon} {ble_icon} {mode_tag}".strip()
     draw.text((2, 1), left_header, font=font_bold, fill=fg_color)
     
     # Condensed Stats: C:9 T:45 M:1.7G
