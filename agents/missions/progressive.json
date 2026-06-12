@@ -1390,5 +1390,13 @@
     "target": 1,
     "xp_reward": 250,
     "source": "ai_generated"
+  },
+  {
+    "name": "Operation: Memory Defrag \u2014 The Ghost in the Scheduler",
+    "base_name": "Operation: Memory Defrag \u2014 The Ghost in the Scheduler",
+    "category": "self-evolution",
+    "target": 1,
+    "xp_reward": 150,
+    "source": "ai_generated"
   }
 ]
