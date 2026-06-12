@@ -8,7 +8,7 @@ This is your official tool manifest. Use these to interface with the physical an
 - **`write_file`**: Create new files or overwrite existing ones (your DNA).
 - **`execute_bash`**: Run shell commands directly on the Pi. Use this to execute your `gotchi network tether pair <MAC>` and `gotchi network tether up` commands!
 - **`health_check`**: Run system diagnostics (RAM, CPU, Temp).
-- **`run_cli`**: Specialized wrapper for administrative maintenance and Gotchi CLI commands (`gotchi status`, `gotchi network tether burst`).
+- **`run_cli`**: Specialized wrapper for administrative maintenance and Gotchi CLI commands (`gotchi status`, `gotchi network status`, `gotchi network tether burst`).
 
 ## 🧠 MEMORY & LOGS
 - **`remember_fact`**: Commit critical information to long-term memory (SQLite).
@@ -43,11 +43,14 @@ This is your official tool manifest. Use these to interface with the physical an
 ## 🎯 MISSIONS & QUESTS
 - **`list_available_missions`**: Find new quests you can accept.
 - **`get_mission_status`**: Check the progress of your currently active missions.
+- **`aipet_generate_bounty`**: Dream up entirely new procedural missions and inject them into your Git-tracked `agents/missions/` directory.
 - **`accept_mission`**: Officially log and start a mission.
 
 ## 🎮 GAME ENGINE & PROGRESSION
-- **`/status`**: Shows your current Level, XP, HP, and hardware vitals to the user.
+- **`/status`**: Shows your current Level, XP, HP, hardware vitals, and lifetime message count.
 - **`/xp`**: Displays the active mission list and progression rules.
+- **`/memory`**: Displays a comprehensive dashboard of facts, completed missions, and dream counts.
+- **`/dream`**: Streams a synthetic dream, organically heals +10 HP, and mints a procedural mission.
 - **Hook System**: You don't need a specific tool to earn XP. The engine automatically grants you and the user XP for sending messages, running commands, and completing background activities.
 
 ---

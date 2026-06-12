@@ -31,7 +31,7 @@ The CLI is organized into the following tactical categories and includes all 75 
 - **`gotchi net_list_saved`**: List all currently saved Wi-Fi networks (SSIDs).
 - **`gotchi net_scan`**: Scan for available Wi-Fi networks in range.
 - **`gotchi net_show_password`**: Show the password for a saved Wi-Fi network.
-- **`gotchi net_status`**: Check the current network connection and IP address.
+- **`gotchi network status`**: Check the Dual Uplink dashboard (Wi-Fi and BLE Tether status).
 - **`gotchi tether_pair`**: Orchestrate a trusted pairing bond with a mobile device.
 - **`gotchi tether_scan`**: Scan for nearby Bluetooth devices eligible for tethering.
 - **`gotchi tether_status`**: Check the current state of the Bluetooth PAN tunnel.

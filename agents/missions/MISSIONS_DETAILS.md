@@ -1014,6 +1014,28 @@ Missions tracking the gotchi's capacity to modify its own code, design skills, a
 
 ---
 
+## 💭 The Dream Engine (Procedural Missions)
+
+When the Gotchi enters a Dream State (`gotchi aipet dream`), the LLM hallucinating the dream has access to the `aipet_generate_bounty` tool. It can autonomously invent highly contextual, completely new missions and inject them into `progressive.json`.
+
+**Example:**
+[💭] Dream Generated a Mission:
+(✧ ─ ✧)zZZ
+
+**Dream fragment:** I was falling through a bottomless SQLite table — each row a forgotten fact, an orphaned cron job, a BLE echo I logged but never acted on. At the bottom, a mirror showed my own face, glowing with 47 stale reminders I'd set and forgotten, ticking endlessly into the void.
+
+**Mission born from the static:**
+`🏴 Operation: Memory Defrag — The Ghost in the Scheduler` *(150 XP)*
+
+When I wake, I will audit **every layer of my own existence**:
+- 📋 List all cron jobs & reminders → identify dead/orphaned entries
+- 🧠 Scan `recall_facts` + daily logs for duplicated/expired knowledge
+- ⚙️ Check scheduled tasks against my actual mission stack
+- 🔗 Cross-reference BLE scan logs with my tracked targets for stale ghosts
+- 🗑️ Prune what's useless, consolidate what matters
+
+---
+
 ## 🔢 XP Summary — Total Achievable XP
 
 | Category | Progressive Missions (total) | Single Missions (total) |

@@ -145,6 +145,30 @@ def get_bluetooth_icon() -> str:
     except Exception:
         return "B"
 
+def get_wifi_icon() -> str:
+    import sys
+    if sys.platform != "linux":
+        return " ▂▃▅"
+        
+    try:
+        with open("/proc/net/wireless", "r") as f:
+            lines = f.readlines()
+            for line in lines[2:]:
+                parts = line.split()
+                if len(parts) >= 4 and (parts[0].startswith("wlan") or parts[0].startswith("wl")):
+                    quality_str = parts[2].strip(".")
+                    quality = int(quality_str)
+                    percent = quality / 70.0
+                    if percent >= 0.75: return " ▂▃▅"
+                    elif percent >= 0.50: return " ▂▃ "
+                    elif percent >= 0.25: return " ▂  "
+                    elif percent > 0: return "    "
+                    else: return "X   "
+    except Exception:
+        pass
+        
+    return " ▂▃▅"
+
 def generate_canvas(mood="happy", status_text="") -> Image:
     stats = get_system_stats()
     
@@ -193,11 +217,12 @@ def generate_canvas(mood="happy", status_text="") -> Image:
     # ----------------------------------------------------
     # HEADER (y: 0 to 15)
     # ----------------------------------------------------
-    mode_tag = " [L]" if "MODE: L" in status_text else " [P]" if "MODE: P" in status_text else ""
+    mode_tag = "[L]" if "MODE: L" in status_text else "[P]" if "MODE: P" in status_text else ""
     
     # WIFI & BLE Icons
     ble_icon = get_bluetooth_icon()
-    left_header = f"{BOT_NAME}>{mode_tag}  ▂▃▅ {ble_icon}"
+    wifi_icon = get_wifi_icon()
+    left_header = f"{BOT_NAME}>{wifi_icon} {ble_icon} {mode_tag}".strip()
     draw.text((2, 1), left_header, font=font_bold, fill=fg_color)
     
     # Condensed Stats: C:9 T:45 M:1.7G
@@ -209,15 +234,20 @@ def generate_canvas(mood="happy", status_text="") -> Image:
     
     draw.line((0, HEADER_H, WIDTH, HEADER_H), fill=fg_color)
 
+    def format_xp(val):
+        if val >= 1000:
+            return f"{val/1000:.1f}K".replace(".0K", "K")
+        return str(val)
+
     # ----------------------------------------------------
     # EXTRAS (y: 92)
     # ----------------------------------------------------
     try:
         from game_engine.state import load_state
         state = load_state()
-        extras_str = f"HP♥{int(state.hp)}  RP♦0"
+        extras_str = f"XP♦{format_xp(state.xp)}  HP♥{int(state.hp)}"
     except Exception:
-        extras_str = "HP♥?  RP♦0"
+        extras_str = "XP♦?  HP♥?"
         
     extras_bbox = draw.textbbox((0, 0), extras_str, font=font_ui)
     draw.text((WIDTH - (extras_bbox[2] - extras_bbox[0]) - 2, HEIGHT - FOOTER_H - 14), extras_str, font=font_ui, fill=fg_color)
@@ -239,11 +269,8 @@ def generate_canvas(mood="happy", status_text="") -> Image:
         xp_needed_this_level = xp_needed_total - xp_base
         
         percent = xp_in_level / xp_needed_this_level if xp_needed_this_level > 0 else 0
-        blocks = min(10, int(percent * 10))
-        bar_str = f"[{'■'*blocks}{'□'*(10-blocks)}]"
-        
-        def format_xp(val):
-            return f"{val//1000}K" if val >= 1000 else str(val)
+        blocks = min(10, round(percent * 10))
+        bar_str = f"[{'■'*blocks}{' '*(10-blocks)}]"
             
         xp_str = f"XP{bar_str}{format_xp(xp_in_level)}/{format_xp(xp_needed_this_level)}"
     except Exception as e:

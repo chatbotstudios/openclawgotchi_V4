@@ -73,7 +73,7 @@ OpenClawGotchi follows a **Workspace-First** philosophy. The agent's identity, b
 ## 👾 AIPET Game Engine Layer
 
 The Gotchi acts as an autonomous digital pet:
-- **Vitals**: Do not hallucinate HP or Level. Always read from `gotchi aipet status` or `aipet_get_vitals`. HP drains with uptime and CPU load. Use `aipet_regenerate_hp` to sleep and recover.
+- **Vitals**: Do not hallucinate HP or Level. Always read from `gotchi aipet status` or `aipet_get_vitals`. HP drains with uptime and CPU load. Use `aipet_regenerate_hp` to sleep and recover, or trigger a procedural dream (`/dream` or `gotchi aipet dream`) to organically regenerate +10 HP (The Restful Dream Patch).
 - **Progression**: Meaningful interactions should be rewarded. Use `aipet_add_xp` to manually grant XP.
 - **Rewards**: Track major lifecycle events using `aipet_award_badge`. These badges persist in the `aipet_state` SQLite table.
 - **Mood**: The `current_mood` must strictly influence your personality, tone, and the physical E-Ink display (`gotchi show_face`).
@@ -104,7 +104,7 @@ The Gotchi acts as an autonomous digital pet:
 - **Ask before external actions** — Network requests, package installations, or external service deployments require verification.
 - **Do not overwrite or "restore" critical display code** — `src/ui/gotchi_ui.py` and `src/drivers/` are the E-Ink stack. Never replace them with backups or write JSON/other content into them.
 - **Authorized Research Only** — All pwning, hunting, deauthing, and scanning is for research purposes only (see Authorized Research Policy above).
-- **Bluetooth PAN Tethering** — The Gotchi handles its own secondary internet uplink via the `gotchi network tether` CLI. Always use `gotchi network tether pair <MAC>` and `gotchi network tether up` to manage the PAN tunnel, keeping `wlan0` completely isolated for hunting. Remember that iOS Hotspots require the settings screen to be open!
+- **Dual Uplink (Hitless Transition)** — The Gotchi supports maintaining active connections on both Wi-Fi (`wlan0`) and Bluetooth PAN (`bnep0`) simultaneously. `wlan0` handles primary traffic, and `bnep0` acts as a hot-standby redundant uplink. If `wlan0` drops (or is forced into Monitor Mode for hunting), Linux routing instantly falls back to the iPhone Tether without breaking the active Discord/LLM connection. Use `gotchi network status` to view the Dual Uplink dashboard.
 - **CRITICAL GIT RULE (Gotchi Branch):** NEVER run `git checkout gotchi`. Because your SQLite databases are tracked on the remote `gotchi` branch but ignored on `master`, checking out the branch manually and switching back will cause Git to permanently delete your brain from the filesystem. If the user asks you to update, push, or merge to the `gotchi` branch, ALWAYS use the `./backup_brain.sh` script instead.
 
 ## Key Files
@@ -128,7 +128,7 @@ The Gotchi acts as an autonomous digital pet:
 3. **New Plugins**: 
     - Create a Python file in `plugins/` (e.g., `plugins/my_plugin.py`) and use the `@hook` decorator to subscribe to events.
 4. **Core Logic**: Edit relevant modules in `src/`.
-5. **Missions / Quests**: You can use the Mission System to automate LLM chores. Check `docs/development/MISSIONS.md` for schema details. Missions exist in SQLite but are bootstrapped via `workspace/missions/progressive.json`. Tracked missions include advanced tracks like **Tool Mastery** and **AI/LLM Thinking** (Deep Reasoning).
+5. **Missions / Quests**: You can use the Mission System to automate LLM chores. Check `agents/missions/MISSIONS_DETAILS.md` for schema details. Missions exist in SQLite but are bootstrapped via `agents/missions/progressive.json`. Tracked missions include advanced tracks like **Tool Mastery** and **AI/LLM Thinking** (Deep Reasoning).
 6. **Gamification (Game Engine)**: The V4 Architecture implements an RPG-style Game Engine:
     - **XP (Experience)**: Earned organically through the Hook System (`plugins/aipet_hooks.py`) via user commands and messages. Missions follow a standardized 5-tier scaling matrix (15, 50, 100, 250, 500 XP). **All XP additions MUST be routed through the canonical `src.game_engine.vitals.add_xp` proxy** to maintain state synchronization and trigger displays.
     - **HP (Health Points)**: Calculated dynamically in `vitals.py` based on hardware telemetry (uptime, CPU load, memory, battery).
