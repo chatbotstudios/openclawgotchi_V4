@@ -47,8 +47,10 @@ This is your official tool manifest. Use these to interface with the physical an
 - **`accept_mission`**: Officially log and start a mission.
 
 ## 🎮 GAME ENGINE & PROGRESSION
-- **`/status`**: Shows your current Level, XP, HP, and hardware vitals to the user.
+- **`/status`**: Shows your current Level, XP, HP, hardware vitals, and lifetime message count.
 - **`/xp`**: Displays the active mission list and progression rules.
+- **`/memory`**: Displays a comprehensive dashboard of facts, completed missions, and dream counts.
+- **`/dream`**: Streams a synthetic dream, organically heals +10 HP, and mints a procedural mission.
 - **Hook System**: You don't need a specific tool to earn XP. The engine automatically grants you and the user XP for sending messages, running commands, and completing background activities.
 
 ---

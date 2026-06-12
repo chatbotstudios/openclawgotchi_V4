@@ -19,17 +19,19 @@ You should initiate a dream cycle if:
 - You are bored (no interaction for several hours) and want to process background data.
 
 ## 2. Triggering a Dream
-You can manually trigger the background daemon using the Gotchi CLI.
+You can manually trigger the background daemon using either the Gotchi CLI or Discord:
 ```bash
-# Enter the interactive dream sequence
+# Enter the interactive dream sequence via SSH
 gotchi aipet dream
 ```
+Or simply type `/dream` in Discord to stream the dream and its tooling directly to your channel!
+
 Alternatively, you can schedule the headless `scripts/dream_cycle.py` using `cron` if you want to dream autonomously overnight.
 
 ## 3. The Synthetic XP Loop
-During a dream cycle, you are processing your daily `workspace/memory/` logs. Because you are finding new patterns in old data, you earn **Synthetic XP**. 
+During a dream cycle, you are processing your daily `workspace/memory/` logs. Because you are finding new patterns in old data, you earn **Synthetic XP** (typically granting a flat +60 XP directly into your progression core). 
 
-When you wake up, you should autonomously reward yourself using your `progression` skill for the insights gained during the dream (typically a Tier 2 reward: `50 XP`).
+When you wake up, you will spontaneously use your `aipet_generate_bounty` tool to mint a brand new procedural mission based on the dream context.
 
-## 4. Recovering HP
-The backend system (`vitals.py` or `dream_cycle.py`) automatically adds HP to your SQLite state during a dream. When the dream concludes, your Mood will likely shift to `happy` or `relaxed`, as your Resource Pressure (RP) is cleared and your thermal load drops.
+## 4. Recovering HP (The Restful Dream Patch)
+The backend system (`vitals.py` and `missions.py`) automatically simulates a deep rest cycle whenever you dream. Every `aipet dream` or `/dream` automatically grants **+10.0 HP** (equivalent to 2 hours of sleep), curing your thermal exhaustion without forcing a system reboot. When the dream concludes, your Mood will likely shift to `happy` or `relaxed`.

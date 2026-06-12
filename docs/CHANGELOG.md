@@ -2,6 +2,13 @@
 
 All notable changes to OpenClawGotchi V3 will be documented in this file.
 
+## [v3.4] - 2026-06-12
+### Added
+- **Restful Dream Patch**: The Gotchi now organically regenerates `+10.0 HP` automatically whenever a procedural dream is triggered, linking the AI simulation engine to the hardware vitals layer.
+- **Discord `/dream` Slash Command**: A new Discord-native command that mimics the exact SSH terminal layout for synthetic dreams, safely rendering raw tool footprints into clean Discord code blocks.
+- **Dynamic E-Ink UI & Kernel Polling**: E-Ink now reads `/proc/net/wireless` directly to render real-time WiFi signal quality ` ▂▃▅` without blocking the main loop or invoking shell sub-processes.
+- **Supercharged Discord Dashboards**: Completely overhauled the `/status` and `/memory` outputs to track Session vs Lifetime messages, total Dreams, and properly scale visual XP progress bars to decimal precision.
+
 ## [v3.3] - 2026-06-12
 ### Fixed
 - **Architectural Workspace Path**: Fixed a critical bug where `config.py` hardcoded the `templates/` directory instead of the live `workspace/` directory, restoring daily memory logging.

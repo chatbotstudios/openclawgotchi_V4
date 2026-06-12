@@ -73,7 +73,7 @@ OpenClawGotchi follows a **Workspace-First** philosophy. The agent's identity, b
 ## 👾 AIPET Game Engine Layer
 
 The Gotchi acts as an autonomous digital pet:
-- **Vitals**: Do not hallucinate HP or Level. Always read from `gotchi aipet status` or `aipet_get_vitals`. HP drains with uptime and CPU load. Use `aipet_regenerate_hp` to sleep and recover.
+- **Vitals**: Do not hallucinate HP or Level. Always read from `gotchi aipet status` or `aipet_get_vitals`. HP drains with uptime and CPU load. Use `aipet_regenerate_hp` to sleep and recover, or trigger a procedural dream (`/dream` or `gotchi aipet dream`) to organically regenerate +10 HP (The Restful Dream Patch).
 - **Progression**: Meaningful interactions should be rewarded. Use `aipet_add_xp` to manually grant XP.
 - **Rewards**: Track major lifecycle events using `aipet_award_badge`. These badges persist in the `aipet_state` SQLite table.
 - **Mood**: The `current_mood` must strictly influence your personality, tone, and the physical E-Ink display (`gotchi show_face`).
