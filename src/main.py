@@ -215,13 +215,8 @@ def main():
 
     # Start the Subconscious (WiFi Hacker) and Nervous System (Listener) globally
     def start_pwn_systems():
-        # Ensure Bluetooth is offline at startup (Wi-Fi only mode)
-        try:
-            from core.radio import manage_ble_adapter
-            log.info("Enforcing BLE Radio Silence on boot...")
-            manage_ble_adapter("off")
-        except Exception as e:
-            log.error(f"Failed to disable BLE on boot: {e}")
+        # BLE adapter is no longer forced offline on boot to allow Tether Watchdog Dual Uplink
+        log.info("Booting Dual Uplink (Wi-Fi + BLE)...")
             
         try:
             from config import HUNT_ON_BOOT

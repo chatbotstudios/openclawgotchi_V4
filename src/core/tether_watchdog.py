@@ -45,27 +45,43 @@ class TetherWatchdog:
             return
         
         try:
-            log.info(f"🧲 Internet Lost. Pulsing tether to {mac}...")
+            log.info(f"🧲 [1/4] Scanning for Bluetooth PAN tether at {mac}...")
+            
+            # Ensure adapter is ON
+            subprocess.run(["sudo", "rfkill", "unblock", "bluetooth"], capture_output=True)
+            subprocess.run(["sudo", "bluetoothctl", "power", "on"], capture_output=True)
+            subprocess.run(["sudo", "hciconfig", "hci0", "up"], capture_output=True)
+            
             # 1. Wake the Bluetooth radio
+            log.info(f"🧲 [2/4] Found target! Pairing & Connecting to MAC {mac}...")
             subprocess.run(["sudo", "bluetoothctl", "connect", mac], 
                            capture_output=True, timeout=10)
             time.sleep(2)
             
             # 2. Trigger NetworkManager
+            log.info("🧲 [3/4] Bringing up NetworkManager profile 'iPhoneHotspot'...")
             subprocess.run(["sudo", "nmcli", "con", "up", "iPhoneHotspot"], 
                            capture_output=True, timeout=15)
+                           
+            log.info("🧲 [4/4] Tethering sequence complete! Dual Uplink is ACTIVE.")
         except Exception as e:
             log.warning(f"🧲 Tether attempt failed: {e}")
 
     def _run(self):
         self.start_time = time.time()
         log.info(f"🧲 Watchdog Burst Mode started ({self.burst_duration}s duration).")
+        
+        # Initial Boot/Burst sequence: Always attempt to establish the Dual Uplink
+        mac = self._get_tether_mac()
+        if mac:
+            log.info("🧲 Establishing Dual Uplink (Hitless Transition) on boot...")
+            self._attempt_tether(mac)
+            
         while self.running:
             has_net = self._has_internet()
             log.debug(f"🧲 Watchdog Pulse: Internet {'ONLINE' if has_net else 'OFFLINE'}")
             
             if not has_net:
-                mac = self._get_tether_mac()
                 if mac:
                     self._attempt_tether(mac)
                 else:
