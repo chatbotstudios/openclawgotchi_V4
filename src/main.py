@@ -38,9 +38,15 @@ from hooks.runner import run_hook, HookEvent, discover_and_load_hooks
 from cron.scheduler import get_scheduler
 from core.registry import load_all_extensions, get_tools_and_schemas
 # Logging
+from config import DATA_DIR
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
-    format="%(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(DATA_DIR / "gotchi.log"),
+        logging.StreamHandler()
+    ]
 )
 log = logging.getLogger(__name__)
 
