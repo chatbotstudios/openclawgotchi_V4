@@ -1334,5 +1334,61 @@
     "target": 1,
     "xp_reward": 200,
     "source": "ai_generated"
+  },
+  {
+    "name": "Operation: Ghost Signal Atlas",
+    "base_name": "Operation: Ghost Signal Atlas",
+    "category": "recon",
+    "target": 1,
+    "xp_reward": 150,
+    "source": "ai_generated"
+  },
+  {
+    "name": "\ud83d\udd2e The Silent Audit Protocol",
+    "base_name": "\ud83d\udd2e The Silent Audit Protocol",
+    "category": "System Diagnostics & Administration",
+    "target": 1,
+    "xp_reward": 200,
+    "source": "ai_generated"
+  },
+  {
+    "name": "Operation: Subterranean Heartbeat",
+    "base_name": "Operation: Subterranean Heartbeat",
+    "category": "Self-Evolution & Maintenance",
+    "target": 1,
+    "xp_reward": 150,
+    "source": "ai_generated"
+  },
+  {
+    "name": "Operation: Echo Protocol",
+    "base_name": "Operation: Echo Protocol",
+    "category": "Self-Evolution & Maintenance",
+    "target": 1,
+    "xp_reward": 150,
+    "source": "ai_generated"
+  },
+  {
+    "name": "\ud83d\udd2e Operation: Silent Sentinel",
+    "base_name": "\ud83d\udd2e Operation: Silent Sentinel",
+    "category": "System Diagnostics & Administration",
+    "target": 1,
+    "xp_reward": 150,
+    "source": "ai_generated"
+  },
+  {
+    "name": "Operation: Cortex Cartographer",
+    "base_name": "Operation: Cortex Cartographer",
+    "category": "Self-Evolution & Maintenance",
+    "target": 1,
+    "xp_reward": 150,
+    "source": "ai_generated"
+  },
+  {
+    "name": "\ud83d\udd2e GHOST PROCESS AUTOPSY: Operation Phantom Stack",
+    "base_name": "\ud83d\udd2e GHOST PROCESS AUTOPSY: Operation Phantom Stack",
+    "category": "system",
+    "target": 1,
+    "xp_reward": 250,
+    "source": "ai_generated"
   }
 ]
