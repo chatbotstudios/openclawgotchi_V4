@@ -51,7 +51,7 @@ The following environment configurations in `.env` govern Bluetooth tethering de
 ### 5. Magnetic Watchdog (Autonomous Recovery)
 The unit features a background pulse that monitors internet connectivity:
 *   **Burst Mode**: For the first 5 minutes of disconnection, it pulses every 30 seconds.
-*   **Stealth Mode**: After 5 minutes, it relaxes to a 5-minute interval to save iPhone battery.
+*   **Stealth Mode**: After 5 minutes, it relaxes to a 2-minute interval to prevent iOS idle drop.
 *   **Reflex**: It automatically executes the "Connect -> NM Up" sequence if no internet is detected.
 
 ## 🛡️ Service Integrity & Troubleshooting

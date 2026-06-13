@@ -9,7 +9,7 @@ class TetherWatchdog:
     """
     Background watchdog that ensures the bot stays connected to the iPhone tether.
     """
-    def __init__(self, interval_burst=30, interval_steady=300, burst_duration=300):
+    def __init__(self, interval_burst=30, interval_steady=120, burst_duration=300):
         self.interval_burst = interval_burst
         self.interval_steady = interval_steady
         self.burst_duration = burst_duration
@@ -109,7 +109,7 @@ class TetherWatchdog:
             
             log.debug(f"🧲 Watchdog Pulse: Tether={'ACTIVE' if is_active else 'DROPPED'} | Internet={'ONLINE' if has_net else 'OFFLINE'}")
             
-            if not is_active:
+            if not is_active or not has_net:
                 if mac:
                     log.warning("🧲 Tether dropped or missing! Re-establishing Dual Uplink...")
                     self._attempt_tether(mac)
