@@ -45,7 +45,7 @@ class TetherWatchdog:
             return
         
         try:
-            log.info(f"🧲 [1/4] Scanning for Bluetooth PAN tether at {mac}...")
+            log.info(f"🧲 Tether Watchdog: [1/4] Scanning for Bluetooth PAN tether at {mac}...")
             
             # Ensure adapter is ON
             subprocess.run(["sudo", "rfkill", "unblock", "bluetooth"], capture_output=True)
@@ -53,19 +53,22 @@ class TetherWatchdog:
             subprocess.run(["sudo", "hciconfig", "hci0", "up"], capture_output=True)
             
             # 1. Wake the Bluetooth radio
-            log.info(f"🧲 [2/4] Found target! Pairing & Connecting to MAC {mac}...")
-            subprocess.run(["sudo", "bluetoothctl", "connect", mac], 
-                           capture_output=True, timeout=10)
+            log.info(f"🧲 Tether Watchdog: [2/4] Found target! Pairing & Connecting to MAC {mac}...")
+            try:
+                subprocess.run(["sudo", "bluetoothctl", "connect", mac], 
+                               capture_output=True, timeout=25)
+            except subprocess.TimeoutExpired:
+                log.warning("🧲 Tether Watchdog: bluetoothctl connect timed out, but continuing to nmcli...")
             time.sleep(2)
             
             # 2. Trigger NetworkManager
-            log.info("🧲 [3/4] Bringing up NetworkManager profile 'iPhoneHotspot'...")
+            log.info("🧲 Tether Watchdog: [3/4] Bringing up NetworkManager profile 'iPhoneHotspot'...")
             subprocess.run(["sudo", "nmcli", "con", "up", "iPhoneHotspot"], 
                            capture_output=True, timeout=15)
                            
-            log.info("🧲 [4/4] Tethering sequence complete! Dual Uplink is ACTIVE.")
+            log.info("🧲 Tether Watchdog: [4/4] Tethering sequence complete! Dual Uplink is ACTIVE.")
         except Exception as e:
-            log.warning(f"🧲 Tether attempt failed: {e}")
+            log.warning(f"🧲 Tether Watchdog: Tether attempt failed: {e}")
 
     def _run(self):
         self.start_time = time.time()
