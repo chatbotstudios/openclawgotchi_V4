@@ -39,6 +39,21 @@ class TetherWatchdog:
         except:
             return ""
 
+    def _is_tether_active(self) -> bool:
+        """Check if the iPhoneHotspot is currently active in NetworkManager."""
+        try:
+            res = subprocess.run(["nmcli", "-t", "-f", "NAME,STATE", "con", "show", "--active"], capture_output=True, text=True)
+            return "iPhoneHotspot:activated" in res.stdout
+        except:
+            return False
+
+    def _keepalive_ping(self):
+        """Send a packet over the BNEP interface to prevent iOS idle drop."""
+        try:
+            subprocess.run(["ping", "-c", "1", "-I", "bnep0", "8.8.8.8"], capture_output=True, timeout=2)
+        except:
+            pass
+
     def _attempt_tether(self, mac: str):
         """Perform the wake-and-connect sequence."""
         if not mac:
@@ -81,24 +96,27 @@ class TetherWatchdog:
             self._attempt_tether(mac)
             
         while self.running:
+            is_active = self._is_tether_active()
             has_net = self._has_internet()
-            log.debug(f"🧲 Watchdog Pulse: Internet {'ONLINE' if has_net else 'OFFLINE'}")
             
-            if not has_net:
+            log.debug(f"🧲 Watchdog Pulse: Tether={'ACTIVE' if is_active else 'DROPPED'} | Internet={'ONLINE' if has_net else 'OFFLINE'}")
+            
+            if not is_active:
                 if mac:
+                    log.warning("🧲 Tether dropped or missing! Re-establishing Dual Uplink...")
                     self._attempt_tether(mac)
                 else:
                     log.debug("No 'iPhoneHotspot' profile found. Skipping watchdog pulse.")
+            else:
+                self._keepalive_ping()
             
             # Determine interval based on elapsed time
             elapsed = time.time() - self.start_time
             
             if elapsed >= self.burst_duration:
-                log.info("🧲 Watchdog Burst complete. Turning OFF to save power.")
-                self.running = False
-                break
-                
-            current_interval = self.interval_burst
+                current_interval = self.interval_steady
+            else:
+                current_interval = self.interval_burst
             
             # Sleep in small increments to allow for faster shutdown
             for _ in range(int(current_interval)):
