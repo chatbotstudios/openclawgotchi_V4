@@ -283,13 +283,19 @@ class LiteLLMConnector(LLMConnector):
                 msg = response.choices[0].message
                 
                 latency = time.time() - call_start_time
-                usage = getattr(response, "usage", None)
-                p_tok = getattr(usage, "prompt_tokens", 0) if usage else 0
-                c_tok = getattr(usage, "completion_tokens", 0) if usage else 0
-                t_tok = getattr(usage, "total_tokens", 0) if usage else 0
-                
-                # The One-Liner Log
-                log.info(f"🧠 [LLM] {self.model.split('/')[-1]} | ⏱️ {latency:.1f}s | 🪙 Tokens: {t_tok} (P:{p_tok}/C:{c_tok})")
+                try:
+                    usage = getattr(response, "usage", None)
+                    p_tok = getattr(usage, "prompt_tokens", 0) if usage else 0
+                    c_tok = getattr(usage, "completion_tokens", 0) if usage else 0
+                    t_tok = getattr(usage, "total_tokens", 0) if usage else 0
+                    
+                    # The One-Liner Log
+                    log.info(f"🧠 [LLM FOOTPRINT] {str(self.model).split('/')[-1]} | ⏱️ {latency:.1f}s | 🪙 Tokens: {t_tok} (P:{p_tok}/C:{c_tok})")
+                    
+                    if msg.content:
+                        log.info(f"🧠 [LLM THINKING] {msg.content.strip()[:500]}")
+                except Exception as e_log:
+                    log.error(f"🧠 [LLM LOGGING ERROR] {e_log}")
                 
                 # Refresh stats after call (in case XP was awarded)
                 stats = get_stats_summary()
@@ -451,8 +457,10 @@ class LiteLLMConnector(LLMConnector):
                         final = f"{final}\n\n__TOOL_FOOTER__\n{footer}"
                     return final
             except Exception as e:
+                import traceback
                 err_str = str(e)
-                log.error(f"[LiteLLM] API Error on turn {turn+1}: {err_str[:200]}")
+                log.error(f"🧠 [LLM API ERROR] on turn {turn+1}: {err_str[:200]}\n{traceback.format_exc()}")
+                return f"Error: API communication failed. ({err_str[:100]})"
                 if "429" in err_str or "RateLimitError" in err_str or "rate" in err_str.lower():
                     from core.rate_limits import record_rate_limit, should_auto_retry
                     record_rate_limit("litellm", err_str)
