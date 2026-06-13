@@ -514,7 +514,7 @@ async def cmd_brain_backup(interaction: discord.Interaction):
     
     from core.router import get_router
     from hardware.display import parse_and_execute_commands
-    from bot.heartbeat import build_system_context
+    from core.prompts import build_system_context
     
     router = get_router()
     prompt = "Hey Gotchi, run your headless backup to save your brain, then pull the latest from the master branch, and do a safe restart."
