@@ -48,17 +48,10 @@ class TetherWatchdog:
             return False
 
     def _keepalive_ping(self, mac: str):
-        """Send packets over BNEP and Bluetooth Link Layer to prevent iOS idle drop."""
+        """Send packets over BNEP to prevent iOS idle drop."""
         try:
             # 1. IP-level ping to the hardcoded iPhone Personal Hotspot gateway
             subprocess.run(["ping", "-c", "1", "172.20.10.1"], capture_output=True, timeout=2)
-        except:
-            pass
-            
-        try:
-            # 2. Link-layer ping to keep the Bluetooth radio alive
-            if mac:
-                subprocess.run(["sudo", "l2ping", "-c", "1", mac], capture_output=True, timeout=3)
         except:
             pass
 
