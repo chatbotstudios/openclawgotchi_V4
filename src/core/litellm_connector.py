@@ -295,12 +295,7 @@ class LiteLLMConnector(LLMConnector):
                             except Exception:
                                 pass
 
-                import subprocess as sp
-                import os as sys_os
-                tether_active = sys_os.path.exists("/sys/class/net/bnep0")
-                if tether_active:
-                    log.info("📡 Tether active: Pausing Wi-Fi coexistence to maximize Bluetooth power...")
-                    sp.run(["sudo", "rfkill", "block", "wifi"], capture_output=True)
+                # We removed rfkill wifi toggling because it causes BCM43438 firmware panic
 
                 # Forensics: Pre-call hardware snapshot
                 try:
@@ -319,10 +314,6 @@ class LiteLLMConnector(LLMConnector):
                     response = await asyncio.to_thread(_throttled_completion, **kwargs)
                     msg = response.choices[0].message
                 finally:
-                    if tether_active:
-                        log.info("📡 Restoring Wi-Fi coexistence...")
-                        sp.run(["sudo", "rfkill", "unblock", "wifi"], capture_output=True)
-                        
                     # Forensics: Post-call hardware snapshot
                     if f_log is not None:
                         try:
