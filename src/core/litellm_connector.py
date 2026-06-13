@@ -295,7 +295,16 @@ class LiteLLMConnector(LLMConnector):
                     print(footprint, flush=True)
                     
                     if msg.content:
-                        thinking = f"🧠 [LLM THINKING] {msg.content.strip()[:500]}"
+                        content_lines = msg.content.strip()[:500].split('\n')
+                        formatted_lines = []
+                        for i, line in enumerate(content_lines):
+                            if line.upper().startswith(("FACE:", "SAY:", "DISPLAY:")):
+                                formatted_lines.append(f"🤖 {line}")
+                            elif i == 0:
+                                formatted_lines.append(f"🧠 [LLM THINKING] {line}")
+                            else:
+                                formatted_lines.append(line)
+                        thinking = "\n".join(formatted_lines)
                         log.info(thinking)
                         print(thinking, flush=True)
                 except Exception as e_log:
@@ -315,8 +324,8 @@ class LiteLLMConnector(LLMConnector):
                 
                 clean_msg = msg.model_dump() if hasattr(msg, "model_dump") else dict(msg)
                 clean_msg.pop("provider_specific_fields", None)
-                log.info(f"[LiteLLM Debug] Raw msg: {clean_msg}")
-                log.info(f"[LiteLLM Debug] Finish reason: {getattr(response.choices[0], 'finish_reason', 'unknown')}")
+                log.info(f"🧠 [LiteLLM Debug] Raw msg: {clean_msg}")
+                log.info(f"🧠 [LiteLLM Debug] Finish reason: {getattr(response.choices[0], 'finish_reason', 'unknown')}")
                 
                 tool_calls_raw = getattr(msg, "tool_calls", None)
                 if not tool_calls_raw and getattr(msg, "function_call", None):

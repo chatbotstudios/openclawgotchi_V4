@@ -86,10 +86,10 @@ class OpenClawDiscord(commands.Bot):
         retry_delay = 30 # Initial delay
         
         for attempt in range(max_retries):
-            log.info(f"Syncing Discord Slash Commands (Attempt {attempt + 1}/{max_retries})...")
+            log.info(f"💬 Syncing Discord Slash Commands (Attempt {attempt + 1}/{max_retries})...")
             try:
                 await self.tree.sync()
-                log.info("Slash Commands synced successfully.")
+                log.info("💬 Slash Commands synced successfully.")
                 return
             except discord.HTTPException as e:
                 if e.status == 503:
@@ -136,12 +136,12 @@ class OpenClawDiscord(commands.Bot):
             log.error(f"NightMode task error: {e}")
 
     async def on_ready(self):
-        log.info(f"Discord Bot connected as {self.user}")
+        log.info(f"💬 Discord Bot connected as {self.user}")
         if not hasattr(self, "_awakened"):
             self._awakened = True
             asyncio.create_task(self.awakening_pulse())
         else:
-            log.info("Bot reconnected, skipping awakening pulse.")
+            log.info("💬 Bot reconnected, skipping awakening pulse.")
 
     async def awakening_pulse(self):
         try:
@@ -189,7 +189,7 @@ class OpenClawDiscord(commands.Bot):
             show_face("happy", "SAY:Systems Nominal! | STATUS: Online")
 
     async def on_message(self, message):
-        log.info(f"[Debug on_message] Event from '{message.author}' (ID: {message.author.id}) in #{message.channel} (ID: {message.channel.id}). Content: '{message.content}'")
+        log.info(f"💬 [Debug on_message] Event from '{message.author}' (ID: {message.author.id}) in #{message.channel} (ID: {message.channel.id}). Content: '{message.content}'")
         if message.author.bot: return
         if not is_allowed(message.author.id): return
         
@@ -642,14 +642,14 @@ def run_discord():
     
     while True:
         try:
-            log.info("Starting OpenClawGotchi Discord Bot...")
-            bot_instance.run(DISCORD_BOT_TOKEN)
+            log.info("💬 Starting OpenClawGotchi Discord Bot...")
+            bot_instance.run(DISCORD_BOT_TOKEN, log_handler=None)
             break # Exit loop if run() finishes normally
         except Exception as e:
             log.error(f"Discord Bot crashed/failed: {e}")
             
             # Recreate bot instance to fix "Session is closed" errors on retry
-            log.info("Re-initializing bot instance for recovery...")
+            log.info("💬 Re-initializing bot instance for recovery...")
             old_tree = bot_instance.tree
             bot_instance = OpenClawDiscord()
             
@@ -660,7 +660,7 @@ def run_discord():
                 except Exception as register_err:
                     log.warning(f"Failed to transfer command {cmd.name}: {register_err}")
             
-            log.info(f"Retrying in {retry_delay}s...")
+            log.info(f"💬 Retrying in {retry_delay}s...")
             import time
             time.sleep(retry_delay)
             retry_delay = min(retry_delay + 5, 15) # Cap at 15s so it quickly recovers after offline hunt

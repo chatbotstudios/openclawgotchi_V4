@@ -195,15 +195,15 @@ def parse_and_execute_commands(response: str) -> tuple[str, dict]:
             if stripped.upper().startswith("FACE:"):
                 mood = stripped[5:].strip().lower()
                 commands["face"] = mood
-                log.info(f"CMD FACE: {mood}")
+                log.info(f"🤖 FACE: {mood}")
             elif stripped.upper().startswith("DISPLAY:"):
                 text = stripped[8:].strip()
                 commands["display"] = text
-                log.info(f"CMD DISPLAY: {text}")
+                log.info(f"🤖 DISPLAY: {text}")
             elif stripped.upper().startswith("SAY:"):
                 text = stripped[4:].strip()
                 commands["display"] = f"SAY:{text}"
-                log.info(f"CMD SAY: {text}")
+                log.info(f"🤖 SAY: {text}")
             elif stripped.upper().startswith("DM:"):
                 commands["dm"] = stripped[3:].strip()
             elif stripped.upper().startswith("GROUP:"):

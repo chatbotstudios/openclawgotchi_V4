@@ -42,7 +42,7 @@ from config import DATA_DIR
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format="%(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.FileHandler(DATA_DIR / "gotchi.log"),
         logging.StreamHandler()
@@ -151,12 +151,6 @@ async def run_cron_job(job):
 
 def main():
     """Start the bot."""
-    # Print the premium ASCII banner on boot
-    try:
-        from core.cli.entry import print_banner
-        print_banner()
-    except Exception:
-        pass
 
     from config import BOT_PLATFORM
 
