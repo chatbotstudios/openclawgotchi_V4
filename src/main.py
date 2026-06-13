@@ -46,7 +46,8 @@ logging.basicConfig(
     handlers=[
         logging.FileHandler(DATA_DIR / "gotchi.log"),
         logging.StreamHandler()
-    ]
+    ],
+    force=True
 )
 log = logging.getLogger(__name__)
 

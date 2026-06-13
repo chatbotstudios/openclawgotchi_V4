@@ -290,12 +290,17 @@ class LiteLLMConnector(LLMConnector):
                     t_tok = getattr(usage, "total_tokens", 0) if usage else 0
                     
                     # The One-Liner Log
-                    log.info(f"🧠 [LLM FOOTPRINT] {str(self.model).split('/')[-1]} | ⏱️ {latency:.1f}s | 🪙 Tokens: {t_tok} (P:{p_tok}/C:{c_tok})")
+                    footprint = f"🧠 [LLM FOOTPRINT] {str(self.model).split('/')[-1]} | ⏱️ {latency:.1f}s | 🪙 Tokens: {t_tok} (P:{p_tok}/C:{c_tok})"
+                    log.info(footprint)
+                    print(footprint, flush=True)
                     
                     if msg.content:
-                        log.info(f"🧠 [LLM THINKING] {msg.content.strip()[:500]}")
+                        thinking = f"🧠 [LLM THINKING] {msg.content.strip()[:500]}"
+                        log.info(thinking)
+                        print(thinking, flush=True)
                 except Exception as e_log:
                     log.error(f"🧠 [LLM LOGGING ERROR] {e_log}")
+                    print(f"🧠 [LLM LOGGING ERROR] {e_log}", flush=True)
                 
                 # Refresh stats after call (in case XP was awarded)
                 stats = get_stats_summary()
@@ -376,7 +381,10 @@ class LiteLLMConnector(LLMConnector):
                         call_signature = (func_name, args_fingerprint)
                         recent_tools.append(call_signature)
                         
-                        log.info(f"🔧 [TOOL FOOTPRINT] {func_name}({args_fingerprint})")
+                        tool_log = f"🔧 [TOOL FOOTPRINT] {func_name}({args_fingerprint})"
+                        log.info(tool_log)
+                        print(tool_log, flush=True)
+                        
                         if len(recent_tools) > MAX_REPEAT:
                             recent_tools.pop(0)
                         
@@ -459,7 +467,9 @@ class LiteLLMConnector(LLMConnector):
             except Exception as e:
                 import traceback
                 err_str = str(e)
-                log.error(f"🧠 [LLM API ERROR] on turn {turn+1}: {err_str[:200]}\n{traceback.format_exc()}")
+                err_log = f"🧠 [LLM API ERROR] on turn {turn+1}: {err_str[:200]}\n{traceback.format_exc()}"
+                log.error(err_log)
+                print(err_log, flush=True)
                 return f"Error: API communication failed. ({err_str[:100]})"
                 if "429" in err_str or "RateLimitError" in err_str or "rate" in err_str.lower():
                     from core.rate_limits import record_rate_limit, should_auto_retry
