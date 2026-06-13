@@ -276,11 +276,42 @@ class LiteLLMConnector(LLMConnector):
                     "approvals": stats.get("messages", 0)
                 }
 
-                # Pulse Buddy: Thinking
-                await asyncio.to_thread(pulse_buddy, "busy", f"GOTCHI-{self.preset}", f"Gotchi is thinking via {self.preset}...", **buddy_stats)
+                def _throttled_completion(**kw):
+                    import os as sys_os
+                    original_affinity = None
+                    try:
+                        if hasattr(sys_os, 'sched_getaffinity'):
+                            original_affinity = sys_os.sched_getaffinity(0)
+                            sys_os.sched_setaffinity(0, {0})  # Bind to core 0 to reduce peak current
+                    except Exception as e:
+                        pass
+                    
+                    try:
+                        return completion(**kw)
+                    finally:
+                        if original_affinity is not None:
+                            try:
+                                sys_os.sched_setaffinity(0, original_affinity)
+                            except Exception:
+                                pass
 
-                response = await asyncio.to_thread(completion, **kwargs)
-                msg = response.choices[0].message
+                import subprocess as sp
+                import os as sys_os
+                tether_active = sys_os.path.exists("/sys/class/net/bnep0")
+                if tether_active:
+                    log.info("📡 Tether active: Pausing Wi-Fi coexistence to maximize Bluetooth power...")
+                    sp.run(["sudo", "rfkill", "block", "wifi"], capture_output=True)
+
+                try:
+                    # Pulse Buddy: Thinking
+                    await asyncio.to_thread(pulse_buddy, "busy", f"GOTCHI-{self.preset}", f"Gotchi is thinking via {self.preset}...", **buddy_stats)
+
+                    response = await asyncio.to_thread(_throttled_completion, **kwargs)
+                    msg = response.choices[0].message
+                finally:
+                    if tether_active:
+                        log.info("📡 Restoring Wi-Fi coexistence...")
+                        sp.run(["sudo", "rfkill", "unblock", "wifi"], capture_output=True)
                 
                 latency = time.time() - call_start_time
                 try:

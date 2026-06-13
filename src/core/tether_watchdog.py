@@ -87,9 +87,10 @@ class TetherWatchdog:
             subprocess.run(["sudo", "nmcli", "con", "up", "iPhoneHotspot"], 
                            capture_output=True, timeout=15)
                            
-            # 3. MTU Throttle (Prevent firmware panic during large LLM TCP bursts)
-            log.info("🧲 Tether Watchdog: Applying MTU throttle (900) to bnep0...")
+            # 3. MTU Throttle & Traffic Control (Prevent firmware panic & brownout)
+            log.info("🧲 Tether Watchdog: Applying MTU throttle and traffic control pacing (250kbps) to bnep0...")
             subprocess.run(["sudo", "ip", "link", "set", "dev", "bnep0", "mtu", "900"], capture_output=True)
+            subprocess.run(["sudo", "tc", "qdisc", "replace", "dev", "bnep0", "root", "tbf", "rate", "250kbit", "burst", "10kb", "latency", "50ms"], capture_output=True)
                            
             log.info("🧲 Tether Watchdog: [4/4] Tethering sequence complete! Dual Uplink is ACTIVE.")
         except Exception as e:
