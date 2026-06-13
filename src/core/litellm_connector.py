@@ -302,6 +302,16 @@ class LiteLLMConnector(LLMConnector):
                     log.info("📡 Tether active: Pausing Wi-Fi coexistence to maximize Bluetooth power...")
                     sp.run(["sudo", "rfkill", "block", "wifi"], capture_output=True)
 
+                # Forensics: Pre-call hardware snapshot
+                try:
+                    from utils.forensics import get_forensics_logger, log_thermal_stats, get_bnep_stats
+                    f_log = get_forensics_logger()
+                    f_log.debug("--- [AI PAYLOAD START] ---")
+                    log_thermal_stats()
+                    pre_stats = get_bnep_stats()
+                except Exception:
+                    f_log = None
+
                 try:
                     # Pulse Buddy: Thinking
                     await asyncio.to_thread(pulse_buddy, "busy", f"GOTCHI-{self.preset}", f"Gotchi is thinking via {self.preset}...", **buddy_stats)
@@ -312,6 +322,20 @@ class LiteLLMConnector(LLMConnector):
                     if tether_active:
                         log.info("📡 Restoring Wi-Fi coexistence...")
                         sp.run(["sudo", "rfkill", "unblock", "wifi"], capture_output=True)
+                        
+                    # Forensics: Post-call hardware snapshot
+                    if f_log is not None:
+                        try:
+                            post_stats = get_bnep_stats()
+                            drop_diff = post_stats["tx_dropped"] - pre_stats.get("tx_dropped", 0)
+                            bytes_diff = post_stats["tx_bytes"] - pre_stats.get("tx_bytes", 0)
+                            f_log.debug(f"[NETWORK] Payload transmitted: {bytes_diff} bytes")
+                            f_log.debug(f"[NETWORK] Packets dropped during payload: {drop_diff}")
+                            if drop_diff > 0:
+                                f_log.error(f"WARNING: MTU BUFFER OVERFLOW DETECTED ({drop_diff} packets lost)!")
+                            f_log.debug("--- [AI PAYLOAD END] ---")
+                        except Exception:
+                            pass
                 
                 latency = time.time() - call_start_time
                 try:

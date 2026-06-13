@@ -113,6 +113,17 @@ class TetherWatchdog:
             log.debug(f"🧲 Watchdog Pulse: Tether={'ACTIVE' if is_active else 'DROPPED'} | Internet={'ONLINE' if has_net else 'OFFLINE'}")
             
             if not is_active:
+                # Detect crash edge-case and dump forensics
+                if getattr(self, '_was_active', False):
+                    log.error("🧲 TETHER CRASH DETECTED! Executing hardware forensics dump...")
+                    try:
+                        from utils.forensics import get_forensics_logger, dump_kernel_dmesg
+                        get_forensics_logger().error("--- [TETHER CRASH DETECTED] ---")
+                        dump_kernel_dmesg()
+                    except Exception:
+                        pass
+                self._was_active = False
+                
                 self.net_fails = 0
                 if mac:
                     log.warning("🧲 Tether dropped or missing! Re-establishing Dual Uplink...")
@@ -130,6 +141,7 @@ class TetherWatchdog:
                     log.debug(f"🧲 Internet unreachable (Fail {self.net_fails}/3). Waiting for routing table to settle...")
                     self._keepalive_ping(mac)
             else:
+                self._was_active = True
                 self.net_fails = 0
                 self._keepalive_ping(mac)
             
