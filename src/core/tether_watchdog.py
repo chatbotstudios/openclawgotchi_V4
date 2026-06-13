@@ -69,6 +69,7 @@ class TetherWatchdog:
             # Clean slate: nuke any stuck connections
             subprocess.run(["sudo", "nmcli", "con", "down", "iPhoneHotspot"], capture_output=True)
             subprocess.run(["sudo", "bluetoothctl", "disconnect", mac], capture_output=True)
+            time.sleep(3)
             
             # Ensure adapter is ON
             subprocess.run(["sudo", "rfkill", "unblock", "bluetooth"], capture_output=True)
@@ -109,13 +110,25 @@ class TetherWatchdog:
             
             log.debug(f"🧲 Watchdog Pulse: Tether={'ACTIVE' if is_active else 'DROPPED'} | Internet={'ONLINE' if has_net else 'OFFLINE'}")
             
-            if not is_active or not has_net:
+            if not is_active:
+                self.net_fails = 0
                 if mac:
                     log.warning("🧲 Tether dropped or missing! Re-establishing Dual Uplink...")
                     self._attempt_tether(mac)
                 else:
                     log.debug("No 'iPhoneHotspot' profile found. Skipping watchdog pulse.")
+            elif not has_net:
+                self.net_fails = getattr(self, 'net_fails', 0) + 1
+                if self.net_fails >= 3:
+                    if mac:
+                        log.warning("🧲 No internet for 3 consecutive pulses! Bouncing tether...")
+                        self._attempt_tether(mac)
+                    self.net_fails = 0
+                else:
+                    log.debug(f"🧲 Internet unreachable (Fail {self.net_fails}/3). Waiting for routing table to settle...")
+                    self._keepalive_ping(mac)
             else:
+                self.net_fails = 0
                 self._keepalive_ping(mac)
             
             # Determine interval based on elapsed time
