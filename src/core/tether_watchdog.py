@@ -47,10 +47,14 @@ class TetherWatchdog:
         except:
             return False
 
-    def _keepalive_ping(self):
-        """Send a packet over the BNEP interface to prevent iOS idle drop."""
+    def _keepalive_ping(self, mac: str):
+        """Send packets over BNEP and Bluetooth Link Layer to prevent iOS idle drop."""
         try:
-            subprocess.run(["ping", "-c", "1", "-I", "bnep0", "8.8.8.8"], capture_output=True, timeout=2)
+            # 1. IP-level ping to the hardcoded iPhone Personal Hotspot gateway
+            subprocess.run(["ping", "-c", "1", "172.20.10.1"], capture_output=True, timeout=2)
+            # 2. Link-layer ping to keep the Bluetooth radio alive
+            if mac:
+                subprocess.run(["sudo", "l2ping", "-c", "1", mac], capture_output=True, timeout=2)
         except:
             pass
 
@@ -61,6 +65,10 @@ class TetherWatchdog:
         
         try:
             log.info(f"🧲 Tether Watchdog: [1/4] Scanning for Bluetooth PAN tether at {mac}...")
+            
+            # Clean slate: nuke any stuck connections
+            subprocess.run(["sudo", "nmcli", "con", "down", "iPhoneHotspot"], capture_output=True)
+            subprocess.run(["sudo", "bluetoothctl", "disconnect", mac], capture_output=True)
             
             # Ensure adapter is ON
             subprocess.run(["sudo", "rfkill", "unblock", "bluetooth"], capture_output=True)
@@ -108,7 +116,7 @@ class TetherWatchdog:
                 else:
                     log.debug("No 'iPhoneHotspot' profile found. Skipping watchdog pulse.")
             else:
-                self._keepalive_ping()
+                self._keepalive_ping(mac)
             
             # Determine interval based on elapsed time
             elapsed = time.time() - self.start_time
