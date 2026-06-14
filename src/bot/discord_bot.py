@@ -515,6 +515,27 @@ async def cmd_restart(interaction: discord.Interaction):
     from extensions.system.commands import safe_restart
     await interaction.response.defer(); res = safe_restart(); await interaction.followup.send(res)
 
+@bot_instance.tree.command(name="git-pull", description="Download latest code from master and safely restart")
+async def cmd_git_pull(interaction: discord.Interaction):
+    if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
+    await interaction.response.defer()
+    
+    import subprocess
+    from extensions.system.commands import safe_restart
+    try:
+        res = subprocess.run(["git", "pull", "origin", "master"], capture_output=True, text=True, timeout=30)
+        output = res.stdout + "\n" + res.stderr
+        msg = f"📡 **Git Pull Results:**\n```\n{output[:1800].strip()}\n```"
+        if res.returncode == 0:
+            msg += "\n\n🔄 **Restarting daemon to apply changes...**"
+            await interaction.followup.send(msg)
+            safe_restart()
+        else:
+            msg += "\n\n⚠️ **Pull failed. Not restarting.**"
+            await interaction.followup.send(msg)
+    except Exception as e:
+        await interaction.followup.send(f"❌ **Error:** {e}")
+
 @bot_instance.tree.command(name="brain-backup", description="Run headless backup, pull master, and safe restart")
 async def cmd_brain_backup(interaction: discord.Interaction):
     if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
