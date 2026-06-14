@@ -328,14 +328,14 @@ def main():
     
     threading.Thread(target=start_pwn_systems, daemon=True).start()
     
-    # Disable Tether Watchdog temporarily
-    # try:
-    #     from core.tether_watchdog import watchdog
-    #     watchdog.burst_duration = 180
-    #     watchdog.start()
-    #     log.info("Tether Watchdog activated for 3-minute boot burst.")
-    # except Exception as e:
-    #     log.error(f"Failed to start Tether Watchdog on boot: {e}")
+    # Start Tether Watchdog on boot for 3 minutes (180s)
+    try:
+        from core.tether_watchdog import watchdog
+        watchdog.burst_duration = 180
+        watchdog.start()
+        log.info("Tether Watchdog activated for 3-minute boot burst.")
+    except Exception as e:
+        log.error(f"Failed to start Tether Watchdog on boot: {e}")
 
     # Ensure BLE is ON and broadcasting
     try:
