@@ -162,7 +162,8 @@ class TetherWatchdog:
             elapsed = time.time() - self.start_time
             
             if elapsed >= self.burst_duration:
-                current_interval = self.interval_steady
+                log.info(f"🧲 Watchdog Burst Mode ({self.burst_duration}s) complete. Shutting down tether watchdog.")
+                break
             else:
                 current_interval = self.interval_burst
             

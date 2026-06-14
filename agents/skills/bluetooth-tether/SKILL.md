@@ -48,11 +48,11 @@ The following environment configurations in `.env` govern Bluetooth tethering de
 
 *Note on Pairing PINs*: During the initial `gotchi network tether pair` flow, a 6-digit Secure Simple Pairing (SSP) code is displayed. The user must tap "Pair" on the phone or confirm on the terminal. Once paired and trusted, no PIN or code entry is required for subsequent connections or watchdog pulses.
 
-### 5. Magnetic Watchdog (Autonomous Recovery)
-The unit features a background pulse that monitors internet connectivity:
-*   **Burst Mode**: For the first 5 minutes of disconnection, it pulses every 30 seconds.
-*   **Stealth Mode**: After 5 minutes, it relaxes to a 2-minute interval to prevent iOS idle drop.
-*   **Reflex**: It automatically executes the "Connect -> NM Up" sequence if no internet is detected.
+### 5. Watchdog (Autonomous Recovery)
+The unit features a background pulse that monitors internet connectivity. To preserve battery, the indefinite Steady/Magnetic mode is disabled.
+*   **Burst Mode**: For the first 5 minutes of disconnection (or upon boot/prompt), it pulses every 30 seconds.
+*   **Stealth Mode**: Disabled. The watchdog terminates completely after the 5-minute burst.
+*   **Reflex**: It automatically executes the "Connect -> NM Up" sequence if no internet is detected during the burst.
 
 ## 🛡️ Service Integrity & Troubleshooting
 

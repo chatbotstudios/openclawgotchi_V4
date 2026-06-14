@@ -1626,6 +1626,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 // Parse XP Cap
                 const xp = parseInt(data.gotchi.xp) || 0;
                 xpValue = xp % 100;
+
+                // Sync HP from Backend State Manager
+                if (data.gotchi.hp !== undefined && data.gotchi.hp !== "?") {
+                    hpValue = parseFloat(data.gotchi.hp);
+                }
                 
                 // Track RPG Level Up arpeggio sound!
                 const currentLevel = parseInt(data.gotchi.level) || 2;
@@ -2334,16 +2339,27 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             
         # 2. Gotchi display and RPG stats
         from hardware import display
-        import db.stats
+        from game_engine.state import state_manager
+        
         try:
-            g = db.stats.get_stats_summary()
+            state = state_manager.load_state()
+            g = {
+                "level": state.level,
+                "title": state.title,
+                "xp": state.xp,
+                "hp": state.hp,
+                "rp": state.rp,
+                "messages": state.missions_completed
+            }
         except Exception:
-            g = {"level": "?", "title": "?", "xp": "?", "messages": "?"}
+            g = {"level": "?", "title": "?", "xp": "?", "hp": 100.0, "rp": 0.0, "messages": "?"}
             
         gotchi_dict = {
             "level": g.get("level", "?"),
             "title": g.get("title", "?"),
             "xp": g.get("xp", "?"),
+            "hp": g.get("hp", "?"),
+            "rp": g.get("rp", "?"),
             "messages": g.get("messages", "?"),
             "mood": getattr(display, "_current_mood", "happy"),
             "text": getattr(display, "_current_text", ""),
