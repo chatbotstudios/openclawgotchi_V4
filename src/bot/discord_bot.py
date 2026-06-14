@@ -525,6 +525,14 @@ async def cmd_git_pull(interaction: discord.Interaction):
     try:
         res = subprocess.run(["git", "pull", "origin", "master"], capture_output=True, text=True, timeout=30)
         output = res.stdout + "\n" + res.stderr
+        
+        # Auto-fix: if unstaged changes block the pull, stash them, pull, and pop.
+        if res.returncode != 0 and "Please commit or stash them" in output:
+            subprocess.run(["git", "stash"], capture_output=True)
+            res = subprocess.run(["git", "pull", "origin", "master"], capture_output=True, text=True, timeout=30)
+            subprocess.run(["git", "stash", "pop"], capture_output=True)
+            output = "🪄 Auto-stashed local changes to force pull.\n\n" + res.stdout + "\n" + res.stderr
+            
         msg = f"📡 **Git Pull Results:**\n```\n{output[:1800].strip()}\n```"
         if res.returncode == 0:
             msg += "\n\n🔄 **Restarting daemon to apply changes...**"
