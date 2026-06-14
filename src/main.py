@@ -328,14 +328,25 @@ def main():
     
     threading.Thread(target=start_pwn_systems, daemon=True).start()
     
-    # Start Tether Watchdog on boot for 3 minutes (180s)
+    # Disable Tether Watchdog temporarily
+    # try:
+    #     from core.tether_watchdog import watchdog
+    #     watchdog.burst_duration = 180
+    #     watchdog.start()
+    #     log.info("Tether Watchdog activated for 3-minute boot burst.")
+    # except Exception as e:
+    #     log.error(f"Failed to start Tether Watchdog on boot: {e}")
+
+    # Ensure BLE is ON and broadcasting
     try:
-        from core.tether_watchdog import watchdog
-        watchdog.burst_duration = 180
-        watchdog.start()
-        log.info("Tether Watchdog activated for 3-minute boot burst.")
+        import subprocess
+        subprocess.run(["sudo", "rfkill", "unblock", "bluetooth"], capture_output=True)
+        subprocess.run(["sudo", "hciconfig", "hci0", "up"], capture_output=True)
+        subprocess.run(["sudo", "bluetoothctl", "power", "on"], capture_output=True)
+        subprocess.run(["sudo", "bluetoothctl", "discoverable", "on"], capture_output=True)
+        log.info("🔵 BLE Module: ON and Discoverable")
     except Exception as e:
-        log.error(f"Failed to start Tether Watchdog on boot: {e}")
+        log.error(f"Failed to turn on BLE: {e}")
 
     # --- AUTO-NIGHT MODE & GEOLOCATION ---
     # Disabled by user request.
