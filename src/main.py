@@ -160,18 +160,21 @@ def main():
     init_db()
     log.info("Database initialized")
     
-    # Set up level-up callback (runs in background thread to avoid blocking)
-    from db.stats import set_level_up_callback
+    # Set up level-up callback via Event Bus (runs in background thread to avoid blocking)
+    from game_engine.events import events
     import threading
     
-    def on_level_up(level, title):
+    def on_level_up(data):
+        level = data.get("new_level")
+        title = data.get("title")
         def delayed_display():
             import time
             time.sleep(LEVEL_UP_DISPLAY_DELAY)
             show_face("celebrate", f"SAY:LEVEL UP! Lv{level}! | STATUS:{title}")
         threading.Thread(target=delayed_display, daemon=True).start()
-        log.info(f"Level up notification: Lv{level} {title}")
-    set_level_up_callback(on_level_up)
+        log.info(f"EventBus received level up notification: Lv{level} {title}")
+    
+    events.subscribe("level_up", on_level_up)
     
     # Load architectural extensions (Dynamic SDK)
     extensions_path = str(SRC_DIR / "extensions")

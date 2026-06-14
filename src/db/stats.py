@@ -110,14 +110,7 @@ LEVEL_TITLES = [
     "Absolute Unit",    # 20
 ]
 
-# Level-up callback (set by main.py or display module)
-_level_up_callback: Optional[Callable[[int, str], None]] = None
 
-
-def set_level_up_callback(callback: Callable[[int, str], None]):
-    """Set callback for level-up notifications. callback(level, title)"""
-    global _level_up_callback
-    _level_up_callback = callback
 
 
 def init_stats_table():
@@ -205,13 +198,6 @@ def add_xp(amount: int, reason: str = "") -> int:
     if new_level > old_level:
         title = LEVEL_TITLES[new_level - 1]
         log.info(f"LEVEL UP! Now Level {new_level} {title}!")
-        
-        # Trigger callback if set
-        if _level_up_callback:
-            try:
-                _level_up_callback(new_level, title)
-            except Exception as e:
-                log.error(f"Level-up callback failed: {e}")
     
     return new_xp
 

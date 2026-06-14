@@ -5,6 +5,13 @@ from datetime import datetime, timezone
 def _now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
 
+from enum import Enum
+
+class AgentStatus(str, Enum):
+    AWAKE = "awake"
+    DREAMING = "dreaming"
+    STEALTH_MODE = "stealth_mode"
+
 class AIPETState(BaseModel):
     """
     AIPET runtime state — persisted to templates/AIPET_STATE.json.
@@ -28,3 +35,4 @@ class AIPETState(BaseModel):
     missions_completed: int = 0
     badges: List[dict] = Field(default_factory=list)
     current_mood: str = "neutral"
+    status: AgentStatus = AgentStatus.AWAKE

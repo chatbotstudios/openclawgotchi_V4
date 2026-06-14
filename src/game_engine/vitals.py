@@ -79,13 +79,17 @@ def add_xp(amount: int, source: str = "mission", event=None) -> int:
     Award XP to the AIPET.
 
     Delegates to db.stats.add_xp() (canonical store), then:
-      - Mirrors the new values into AIPET_STATE.json
+      - Mirrors the new values into AIPET_STATE.json via state_manager
       - Appends a row to the aipet_vitals_log audit table
-      - Fires a level-up message/display if the level changed
+      - Fires a level_up event if the level changed
+      - Fires an xp_added event
 
     Returns the new total XP.
     """
-    state = load_state()
+    from game_engine.state import state_manager
+    from game_engine.events import events
+    
+    state = state_manager.load_state()
     old_level = state.level
 
     # ── Write to canonical store ─────────────────────────────────────────────
@@ -100,10 +104,9 @@ def add_xp(amount: int, source: str = "mission", event=None) -> int:
     state.xp          = new_xp
     state.level       = new_level
     state.title       = new_title          # requires models.py title field
-    state.last_updated = datetime.now(timezone.utc).isoformat()
-    save_state(state)
+    state_manager.save_state(state)
 
-    # ── Level-up effects ─────────────────────────────────────────────────────
+    # ── Level-up effects via Event Bus ───────────────────────────────────────
     if new_level > old_level:
         log.info(f"🎉 AIPET LEVELED UP → Level {new_level} ({new_title})")
 
@@ -112,15 +115,17 @@ def add_xp(amount: int, source: str = "mission", event=None) -> int:
                 f"🎉 **LEVEL UP!** Gotchi reached **Level {new_level}** — *{new_title}*! 🚀"
             )
 
-        try:
-            from hardware.display import show_face
-            show_face(
-                "excited",
-                f"SAY:Level {new_level}! | STATUS: LEVEL UP",
-                full_refresh=False,
-            )
-        except Exception as e:
-            log.warning(f"Failed to flash E-paper on level up: {e}")
+        events.emit("level_up", {
+            "old_level": old_level,
+            "new_level": new_level,
+            "title": new_title
+        })
+        
+    events.emit("xp_added", {
+        "amount": amount,
+        "source": source,
+        "new_total": new_xp
+    })
 
     # ── Append to audit log (never used for level reads) ─────────────────────
     try:
