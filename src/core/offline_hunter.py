@@ -79,6 +79,9 @@ class OfflineHunter:
         Launches the offline hunt. Designed to run as a non-blocking background task.
         Sleeps in 15-second chunks so the loop can be responsive to abort signals.
         """
+        from game_engine.state import state_manager
+        from game_engine.vitals import add_xp
+        
         orig_dark = self._get_env_var("DARK_MODE", "0")
         
         # 1. Update State
@@ -91,12 +94,27 @@ class OfflineHunter:
         state["active_mission_id"] = mission_id
         self._write_state(state)
         
+        state_manager.enter_offline_hunt()
+        
         # 2. UI Dark Mode Inversion
         self._set_env_var("DARK_MODE", "1")
         self._trigger_ui_refresh("hunting", f"DEEP DIVE: Sniffing for {duration_seconds // 60}m offline...")
         
         # 3. Enter Monitor Mode
         log.info("Transitioning wlan0 to monitor mode...")
+        
+        handshake_dir = PROJECT_DIR / "handshakes"
+        def get_handshake_count():
+            try:
+                if handshake_dir.exists():
+                    return len(list(handshake_dir.glob("*.pcap*")) + list(handshake_dir.glob("*.2500*")))
+            except Exception:
+                pass
+            return 0
+            
+        initial_handshakes = get_handshake_count()
+        last_handshakes = initial_handshakes
+        
         try:
             # Put wlan0 into monitor mode using the radio wrapper
             subprocess.run(["python3", "-m", "core.cli.entry", "network", "wifi", "off"], cwd=str(self.project_dir), capture_output=True)
@@ -104,8 +122,42 @@ class OfflineHunter:
             # 4. Wait/Sleep in 15-second chunks for the duration of the hunt
             log.info(f"Offline hunt active. Sleeping in {CHUNK_SLEEP}s chunks for {duration_seconds}s total...")
             chunks = max(1, duration_seconds // CHUNK_SLEEP)
-            for _ in range(chunks):
+            
+            # Base XP for participating in the hunt
+            add_xp(5, source="offline_hunt_start")
+            
+            for i in range(chunks):
                 time.sleep(CHUNK_SLEEP)
+                
+                # Retrieve current vitals
+                aipet_state = state_manager.load_state()
+                
+                # Check Self-Preservation (Abort if HP is critical)
+                if aipet_state.hp < 20.0:
+                    log.warning("Critical HP reached! Aborting offline hunt early to save hardware.")
+                    self._trigger_ui_refresh("exhausted", "CRITICAL HP: Aborting dive early!")
+                    break
+                    
+                # Thermal Decay (Monitor mode uses heavy CPU/Radio)
+                # Deduct 0.1 HP per 15s chunk (0.4 HP per minute)
+                aipet_state.hp = max(0.0, aipet_state.hp - 0.1)
+                state_manager.save_state(aipet_state)
+                
+                # Every 1 minute (4 chunks), check for new handshakes and update UI
+                if i > 0 and i % 4 == 0:
+                    current_handshakes = get_handshake_count()
+                    new_handshakes = current_handshakes - last_handshakes
+                    
+                    if new_handshakes > 0:
+                        xp_gain = new_handshakes * 10
+                        add_xp(xp_gain, source="offline_handshake_capture")
+                        self._trigger_ui_refresh("smart", f"Captured {new_handshakes} new handshakes! (+{xp_gain} XP)")
+                        last_handshakes = current_handshakes
+                    else:
+                        if "ble" in mission_id.lower():
+                            self._trigger_ui_refresh("hunting", f"BLE scan running... HP: {aipet_state.hp:.1f}")
+                        else:
+                            self._trigger_ui_refresh("hunting", f"Sniffing the void... HP: {aipet_state.hp:.1f}")
             
         finally:
             # 5. Restore managed mode and client connectivity
@@ -114,6 +166,8 @@ class OfflineHunter:
             
             # Give NetworkManager a moment to grab an IP
             time.sleep(15)
+            
+            state_manager.exit_offline_hunt()
             
             # 6. Restore original dark mode setting
             self._set_env_var("DARK_MODE", orig_dark)

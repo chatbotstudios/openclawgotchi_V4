@@ -11,6 +11,7 @@ class AgentStatus(str, Enum):
     AWAKE = "awake"
     DREAMING = "dreaming"
     STEALTH_MODE = "stealth_mode"
+    OFFLINE_HUNTING = "offline_hunting"
 
 class AIPETState(BaseModel):
     """

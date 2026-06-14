@@ -109,6 +109,12 @@ class StateManager:
 
     def wake_up(self):
         self.change_status(AgentStatus.AWAKE)
+        
+    def enter_offline_hunt(self):
+        self.change_status(AgentStatus.OFFLINE_HUNTING)
+        
+    def exit_offline_hunt(self):
+        self.change_status(AgentStatus.AWAKE)
 
 # Global singleton
 state_manager = StateManager()

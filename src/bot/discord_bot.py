@@ -237,8 +237,16 @@ class OpenClawDiscord(commands.Bot):
         router = get_router()
         
         # Check HP and force Lite Mode if exhausted
+        from game_engine.models import AgentStatus
         from game_engine.state import load_state
         aipet_state = load_state()
+        
+        # 1. Block LLM routing if we are offline hunting
+        if aipet_state.status == AgentStatus.OFFLINE_HUNTING:
+            msg = "[OFFLINE HUNT ACTIVE] The Gotchi is currently auditing the spectrum and cannot process complex reasoning. Try again later!"
+            await message.channel.send(msg)
+            return
+
         original_lite_mode = router.force_lite
         if aipet_state.hp < 20.0:
             router.force_lite = True
