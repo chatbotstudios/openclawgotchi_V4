@@ -94,10 +94,15 @@ class TetherWatchdog:
                 
             time.sleep(2) # Give kernel time to spawn bnep0
             
-            # Verify bnep0 actually exists before applying tc rules
+            # Verify bnep0 actually exists and received an IP address
             link_res = subprocess.run(["ip", "link", "show", "bnep0"], capture_output=True)
             if link_res.returncode != 0:
                 log.warning("🧲 Tether Watchdog: bnep0 interface not found! Sequence failed.")
+                return
+                
+            ip_res = subprocess.run(["ip", "-4", "addr", "show", "dev", "bnep0"], capture_output=True, text=True)
+            if "inet " not in ip_res.stdout:
+                log.warning("🧲 Tether Watchdog: bnep0 did not receive an IP address! Hotspot is offline or pairing failed.")
                 return
                            
             # 3. MTU Throttle & Traffic Control (Prevent firmware panic & brownout)

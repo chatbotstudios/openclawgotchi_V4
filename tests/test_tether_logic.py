@@ -131,9 +131,11 @@ def test_watchdog_attempt_tether():
     with patch("subprocess.run") as mock_run, patch("time.sleep") as mock_sleep:
         mock_proc = MagicMock()
         mock_proc.returncode = 0
+        mock_proc.stdout = "inet 172.20.10.5/28"  # Mock IP address allocation
         mock_run.return_value = mock_proc
         watchdog._attempt_tether("AA:BB:CC:DD:EE:FF")
-        assert mock_run.call_count == 10
+        assert mock_run.call_count == 11
         mock_run.assert_any_call(["sudo", "bluetoothctl", "connect", "AA:BB:CC:DD:EE:FF"], capture_output=True, timeout=25)
         mock_run.assert_any_call(["sudo", "nmcli", "con", "up", "iPhoneHotspot"], capture_output=True, timeout=15)
         mock_run.assert_any_call(["ip", "link", "show", "bnep0"], capture_output=True)
+        mock_run.assert_any_call(["ip", "-4", "addr", "show", "dev", "bnep0"], capture_output=True, text=True)
