@@ -129,7 +129,11 @@ def test_watchdog_get_mac():
 def test_watchdog_attempt_tether():
     watchdog = TetherWatchdog()
     with patch("subprocess.run") as mock_run, patch("time.sleep") as mock_sleep:
+        mock_proc = MagicMock()
+        mock_proc.returncode = 0
+        mock_run.return_value = mock_proc
         watchdog._attempt_tether("AA:BB:CC:DD:EE:FF")
-        assert mock_run.call_count == 9
+        assert mock_run.call_count == 10
         mock_run.assert_any_call(["sudo", "bluetoothctl", "connect", "AA:BB:CC:DD:EE:FF"], capture_output=True, timeout=25)
         mock_run.assert_any_call(["sudo", "nmcli", "con", "up", "iPhoneHotspot"], capture_output=True, timeout=15)
+        mock_run.assert_any_call(["ip", "link", "show", "bnep0"], capture_output=True)
