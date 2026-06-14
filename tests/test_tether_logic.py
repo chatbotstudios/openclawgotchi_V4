@@ -128,7 +128,10 @@ def test_watchdog_get_mac():
 
 def test_watchdog_attempt_tether():
     watchdog = TetherWatchdog()
-    with patch("subprocess.run") as mock_run, patch("time.sleep") as mock_sleep:
+    with patch("subprocess.run") as mock_run, \
+         patch("time.sleep") as mock_sleep, \
+         patch.object(TetherWatchdog, '_is_tether_active', return_value=True):
+        
         mock_proc = MagicMock()
         mock_proc.returncode = 0
         mock_proc.stdout = "inet 172.20.10.5/28"  # Mock IP address allocation

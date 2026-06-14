@@ -101,8 +101,17 @@ class TetherWatchdog:
                 return
                 
             ip_res = subprocess.run(["ip", "-4", "addr", "show", "dev", "bnep0"], capture_output=True, text=True)
+            
+            # Log the raw output for forensic debugging
+            log.debug(f"🧲 Tether Watchdog: bnep0 IP output: {ip_res.stdout.strip()}")
+            
             if "inet " not in ip_res.stdout or "169.254." in ip_res.stdout:
                 log.warning("🧲 Tether Watchdog: bnep0 received a link-local/invalid IP! Hotspot is offline or pairing failed.")
+                return
+                
+            # Verify NetworkManager actually considers it fully activated
+            if not self._is_tether_active():
+                log.warning("🧲 Tether Watchdog: NetworkManager profile is not in 'activated' state. Sequence failed.")
                 return
                            
             # 3. MTU Throttle & Traffic Control (Prevent firmware panic & brownout)
