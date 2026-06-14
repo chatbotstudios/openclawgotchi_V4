@@ -87,8 +87,20 @@ class TetherWatchdog:
                 subprocess.run(["sudo", "bluetoothctl", "connect", mac], 
                                capture_output=True, timeout=25)
             except subprocess.TimeoutExpired:
-                log.warning("🧲 Tether Watchdog: bluetoothctl connect timed out, but continuing to nmcli...")
-            time.sleep(2)
+                log.warning("🧲 Tether Watchdog: bluetoothctl connect timed out, but continuing...")
+                
+            # Poll for bnep0 to spawn from the bluetoothctl connect
+            bnep_spawned = False
+            for _ in range(5):
+                link_res = subprocess.run(["ip", "link", "show", "bnep0"], capture_output=True)
+                if link_res.returncode == 0:
+                    bnep_spawned = True
+                    break
+                time.sleep(2)
+                
+            if not bnep_spawned:
+                log.warning("🧲 Tether Watchdog: bnep0 interface did not spawn! Target might be asleep or blocking the connection.")
+                return
             
             # 2. Trigger NetworkManager
             log.info("🧲 Tether Watchdog: [3/4] Bringing up NetworkManager profile 'iPhoneHotspot'...")
