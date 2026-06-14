@@ -4,8 +4,8 @@ import random
 import discord
 from discord.ext import commands, tasks
 
-# Suppress discord.client warnings about PyNaCl and davey (voice support)
-logging.getLogger("discord.client").setLevel(logging.ERROR)
+# Suppress discord.client INFO logs but keep WARNINGs so the user knows if it's reconnecting
+logging.getLogger("discord.client").setLevel(logging.WARNING)
 
 class OfflineHuntFilter(logging.Filter):
     def filter(self, record):
