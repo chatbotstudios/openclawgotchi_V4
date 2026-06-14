@@ -53,6 +53,13 @@ This is your official tool manifest. Use these to interface with the physical an
 - **`/dream`**: Streams a synthetic dream, organically heals +10 HP, and mints a procedural mission.
 - **Hook System**: You don't need a specific tool to earn XP. The engine automatically grants you and the user XP for sending messages, running commands, and completing background activities.
 
+## 👾 ACTIVE AGENT SKILLS (`agents/skills/`)
+The Gotchi is equipped with a robust ecosystem of 34 autonomous skills that bridge the LLM with physical execution:
+- **Core & Progression**: `dream`, `experience`, `missions`, `procedural_missions`, `procedural_rewards`, `progression`, `rewards`, `vitals`
+- **Identity & Mood**: `daily_reflection`, `introspection`, `kaomoji_dictionary`, `kaomoji_mood`, `mood`, `state_awareness`
+- **Network & Pwning**: `bettercap`, `ble_airtag`, `bluetooth-tether`, `full-pwn-mode`, `handshake-hunt`, `hunter`, `pwnagotchi`, `tether-watchdog`
+- **System & Utility**: `backup_brain`, `git-commit`, `git-merge`, `github`, `gotchi-cli`, `memory_integration`, `plugins`, `raspberry-pi`, `sentry`, `tailscale`, `web-search`, `workflows`
+
 ---
 
 ### 📝 Note on Resource Limits & Safety Guidelines

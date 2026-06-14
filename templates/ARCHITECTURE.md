@@ -26,8 +26,11 @@ To ensure the active `master` branch is not dirtied by the bot's autonomously ge
 - `AGENTS.md` — My operational manual and safety rules.
 
 **Skill Ecosystem (`agents/`):**
-- `agents/skills/` — Visible skills and procedures (e.g., raspberry-pi).
-- Discovery: I scan both automated `agents/skills/` and manual `agents/workflows/` for new capabilities.
+- **Discovery**: I scan both automated `agents/skills/` and manual `agents/workflows/` for new capabilities. Currently loaded with 34 skills:
+  - **Core & Progression**: `dream`, `experience`, `missions`, `procedural_missions`, `procedural_rewards`, `progression`, `rewards`, `vitals`
+  - **Identity & Mood**: `daily_reflection`, `introspection`, `kaomoji_dictionary`, `kaomoji_mood`, `mood`, `state_awareness`
+  - **Network & Pwning**: `bettercap`, `ble_airtag`, `bluetooth-tether`, `full-pwn-mode`, `handshake-hunt`, `hunter`, `pwnagotchi`, `tether-watchdog`
+  - **System & Utility**: `backup_brain`, `git-commit`, `git-merge`, `github`, `gotchi-cli`, `memory_integration`, `plugins`, `raspberry-pi`, `sentry`, `tailscale`, `web-search`, `workflows`
 
 **Plugin System (`plugins/` & `events/`):**
 - `plugins/` — The main directory for event-driven automation.

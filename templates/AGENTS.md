@@ -122,9 +122,12 @@ The Gotchi acts as an autonomous digital pet:
 ## Adding Features
 
 1. **Bot Behavior**: Edit `workspace/SOUL.md` or `IDENTITY.md`.
-2. **New Skills**: 
-    - **Workflows (Manual)**: Create a folder in `agents/workflows/` (e.g., `agents/workflows/SENTRY/WORKFLOW.md`).
-    - **Automated**: Use `npx skills add <source>`. They will land in `agents/skills/`.
+2. **Skill Ecosystem (`agents/skills/`)**: 
+    - The Gotchi is equipped with 34 active skills. You can add new ones via `npx skills add <source>`.
+    - **Core & Progression**: `dream`, `experience`, `missions`, `procedural_missions`, `procedural_rewards`, `progression`, `rewards`, `vitals`
+    - **Identity & Mood**: `daily_reflection`, `introspection`, `kaomoji_dictionary`, `kaomoji_mood`, `mood`, `state_awareness`
+    - **Network & Pwning**: `bettercap`, `ble_airtag`, `bluetooth-tether`, `full-pwn-mode`, `handshake-hunt`, `hunter`, `pwnagotchi`, `tether-watchdog`
+    - **System & Utility**: `backup_brain`, `git-commit`, `git-merge`, `github`, `gotchi-cli`, `memory_integration`, `plugins`, `raspberry-pi`, `sentry`, `tailscale`, `web-search`, `workflows`
 3. **New Plugins**: 
     - Create a Python file in `plugins/` (e.g., `plugins/my_plugin.py`) and use the `@hook` decorator to subscribe to events.
 4. **Core Logic**: Edit relevant modules in `src/`.
