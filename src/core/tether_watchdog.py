@@ -76,10 +76,11 @@ class TetherWatchdog:
             subprocess.run(["sudo", "bluetoothctl", "disconnect", mac], capture_output=True)
             time.sleep(3)
             
-            # Ensure adapter is ON
+            # Ensure adapter is ON and Discoverable
             subprocess.run(["sudo", "rfkill", "unblock", "bluetooth"], capture_output=True)
             subprocess.run(["sudo", "bluetoothctl", "power", "on"], capture_output=True)
             subprocess.run(["sudo", "hciconfig", "hci0", "up"], capture_output=True)
+            subprocess.run(["sudo", "bluetoothctl", "discoverable", "on"], capture_output=True)
             
             # 1. Wake the Bluetooth radio
             log.info(f"🧲 Tether Watchdog: [2/4] Found target! Pairing & Connecting to MAC {mac}...")
