@@ -211,6 +211,27 @@ def main():
     else:
         log.info("E-Ink/AMOLED Baremetal/VPS deployment detected: skipping localhost web dashboard daemon.")
 
+    # Log network status at boot
+    def log_network_status():
+        import subprocess
+        try:
+            wifi_res = subprocess.run(["iwgetid", "-r"], capture_output=True, text=True)
+            wifi_ssid = wifi_res.stdout.strip()
+            if wifi_ssid:
+                log.info(f"📶 Wi-Fi Status: Connected to '{wifi_ssid}'")
+            else:
+                log.info("📶 Wi-Fi Status: Disconnected / Offline")
+                
+            ble_res = subprocess.run(["hciconfig"], capture_output=True, text=True)
+            if "UP RUNNING" in ble_res.stdout:
+                log.info("🔵 BLE Status: Adapter UP and RUNNING")
+            else:
+                log.info("🔴 BLE Status: Adapter DOWN")
+        except Exception as e:
+            log.warning(f"Failed to check network status: {e}")
+            
+    log_network_status()
+
     # Start the Subconscious (WiFi Hacker) and Nervous System (Listener) globally
     def start_pwn_systems():
         # BLE adapter is no longer forced offline on boot to allow Tether Watchdog Dual Uplink
