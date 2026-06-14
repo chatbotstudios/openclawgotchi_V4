@@ -84,8 +84,21 @@ class TetherWatchdog:
             
             # 2. Trigger NetworkManager
             log.info("🧲 Tether Watchdog: [3/4] Bringing up NetworkManager profile 'iPhoneHotspot'...")
-            subprocess.run(["sudo", "nmcli", "con", "up", "iPhoneHotspot"], 
+            res = subprocess.run(["sudo", "nmcli", "con", "up", "iPhoneHotspot"], 
                            capture_output=True, timeout=15)
+            
+            if res.returncode != 0:
+                err_msg = res.stderr.decode('utf-8').strip() if res.stderr else "Unknown error"
+                log.warning(f"🧲 Tether Watchdog: nmcli connection failed. Output: {err_msg}")
+                return
+                
+            time.sleep(2) # Give kernel time to spawn bnep0
+            
+            # Verify bnep0 actually exists before applying tc rules
+            link_res = subprocess.run(["ip", "link", "show", "bnep0"], capture_output=True)
+            if link_res.returncode != 0:
+                log.warning("🧲 Tether Watchdog: bnep0 interface not found! Sequence failed.")
+                return
                            
             # 3. MTU Throttle & Traffic Control (Prevent firmware panic & brownout)
             log.info("🧲 Tether Watchdog: Applying MTU throttle and traffic control pacing (250kbps) to bnep0...")
