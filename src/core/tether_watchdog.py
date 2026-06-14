@@ -43,7 +43,15 @@ class TetherWatchdog:
         """Check if the iPhoneHotspot is currently active in NetworkManager."""
         try:
             res = subprocess.run(["nmcli", "-t", "-f", "NAME,STATE", "con", "show", "--active"], capture_output=True, text=True, timeout=5)
-            return "iPhoneHotspot:activated" in res.stdout
+            if "iPhoneHotspot:activated" not in res.stdout:
+                return False
+            
+            # Strict validation: Check that bnep0 actually has a valid IP address
+            ip_res = subprocess.run(["ip", "-4", "addr", "show", "dev", "bnep0"], capture_output=True, text=True)
+            if "inet " not in ip_res.stdout or "169.254." in ip_res.stdout:
+                return False
+                
+            return True
         except:
             return False
 
@@ -92,21 +100,24 @@ class TetherWatchdog:
                 log.warning(f"🧲 Tether Watchdog: nmcli connection failed. Output: {err_msg}")
                 return
                 
-            time.sleep(2) # Give kernel time to spawn bnep0
+            time.sleep(1) # Give kernel time to spawn bnep0
             
             # Verify bnep0 actually exists and received an IP address
-            link_res = subprocess.run(["ip", "link", "show", "bnep0"], capture_output=True)
-            if link_res.returncode != 0:
-                log.warning("🧲 Tether Watchdog: bnep0 interface not found! Sequence failed.")
-                return
+            # Poll for up to 10 seconds to allow DHCP to assign an IP
+            valid_ip = False
+            for _ in range(5):
+                link_res = subprocess.run(["ip", "link", "show", "bnep0"], capture_output=True)
+                if link_res.returncode == 0:
+                    ip_res = subprocess.run(["ip", "-4", "addr", "show", "dev", "bnep0"], capture_output=True, text=True)
+                    if "inet " in ip_res.stdout and "169.254." not in ip_res.stdout:
+                        valid_ip = True
+                        log.debug(f"🧲 Tether Watchdog: bnep0 IP output: {ip_res.stdout.strip()}")
+                        break
+                time.sleep(2)
                 
-            ip_res = subprocess.run(["ip", "-4", "addr", "show", "dev", "bnep0"], capture_output=True, text=True)
-            
-            # Log the raw output for forensic debugging
-            log.debug(f"🧲 Tether Watchdog: bnep0 IP output: {ip_res.stdout.strip()}")
-            
-            if "inet " not in ip_res.stdout or "169.254." in ip_res.stdout:
-                log.warning("🧲 Tether Watchdog: bnep0 received a link-local/invalid IP! Hotspot is offline or pairing failed.")
+            if not valid_ip:
+                log.warning("🧲 Tether Watchdog: bnep0 did not receive a valid IP within 10s! Hotspot is offline or DHCP failed.")
+                subprocess.run(["sudo", "nmcli", "con", "down", "iPhoneHotspot"], capture_output=True)
                 return
                 
             # Verify NetworkManager actually considers it fully activated
