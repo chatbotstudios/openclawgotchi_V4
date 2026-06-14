@@ -32,6 +32,8 @@ class CronJob:
     # What to do
     message: str = ""               # Message to send to LLM
     system_event: str = ""          # System event text
+    bash_command: str = ""          # Native bash headless execution
+    python_script: str = ""         # Native python headless execution
     
     # Options
     enabled: bool = True
@@ -225,7 +227,9 @@ def add_cron_job(
     interval_minutes: int = 0,
     run_at: str = "",
     delete_after_run: bool = False,
-    target_chat_id: int = 0
+    target_chat_id: int = 0,
+    bash_command: str = "",
+    python_script: str = ""
 ) -> CronJob:
     """
     Add a cron job.
@@ -260,6 +264,8 @@ def add_cron_job(
         run_at=run_at,
         delete_after_run=delete_after_run,
         target_chat_id=target_chat_id,
+        bash_command=bash_command,
+        python_script=python_script
     )
     
     return get_scheduler().add_job(job)

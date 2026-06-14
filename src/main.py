@@ -56,6 +56,25 @@ async def run_cron_job(job):
     """Callback for cron scheduler — trigger LLM with chat context and send reply to owner."""
     log.info(f"Cron job triggered: {job.name}")
     
+    # --- HEADLESS BACKGROUND EXECUTION INTERCEPTOR ---
+    if getattr(job, "bash_command", None) or getattr(job, "python_script", None):
+        import threading
+        
+        def _run_headless(j):
+            try:
+                if getattr(j, "bash_command", None):
+                    import subprocess
+                    log.info(f"⚙️ [HEADLESS BASH] {j.name} -> Executing...")
+                    subprocess.Popen(j.bash_command, shell=True, start_new_session=True)
+                elif getattr(j, "python_script", None):
+                    log.info(f"⚙️ [HEADLESS PYTHON] {j.name} -> Executing...")
+                    exec(j.python_script, {"__builtins__": __builtins__})
+            except Exception as e:
+                log.error(f"❌ Headless execution failed for {j.name}: {e}")
+                
+        threading.Thread(target=_run_headless, args=(job,), daemon=True).start()
+        return  # Bypass LLM completely!
+        
     from audit_logging.command_logger import log_command
     log_command(
         action=f"cron:{job.name}",
@@ -263,6 +282,21 @@ def main():
             aipet_state = load_state()
             log.info(f"🎮 AIPET State: {aipet_state.status.value.upper()} | HP: {aipet_state.hp:.1f} | XP: {aipet_state.xp} | Lv: {aipet_state.level}")
             
+            # Active Schedules
+            from cron.scheduler import list_cron_jobs
+            jobs = list_cron_jobs()
+            if jobs:
+                log.info(f"⏰ Active Schedules ({len(jobs)} loaded):")
+                for j in jobs:
+                    typ = "[MSG]"
+                    if getattr(j, "bash_command", None): typ = "[BASH]"
+                    elif getattr(j, "python_script", None): typ = "[PY]"
+                    
+                    freq = f"Every {j.interval_minutes}m" if j.interval_minutes > 0 else f"Once at {j.next_run}"
+                    log.info(f"   ↳ {typ} {j.name} ({freq})")
+            else:
+                log.info("⏰ Active Schedules: None")
+                
         except Exception as e:
             log.warning(f"Failed to check hardware status: {e}")
             

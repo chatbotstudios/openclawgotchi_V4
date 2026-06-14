@@ -18,9 +18,34 @@ def list_my_cron_jobs() -> str:
     result = []
     for j in jobs:
         schedule = f"Every {j.interval_minutes}m" if j.interval_minutes > 0 else f"One-shot at {j.next_run}"
-        result.append(f"- ID: {j.id} | Name: {j.name} | Schedule: {schedule} | Target: {j.message}")
+        typ = "[MSG]"
+        if getattr(j, "bash_command", None): typ = "[BASH]"
+        elif getattr(j, "python_script", None): typ = "[PY]"
+        result.append(f"- ID: {j.id} | {typ} Name: {j.name} | Schedule: {schedule} | Target: {j.message or j.bash_command or 'python'}")
     
     return "Your active schedule:\n" + "\n".join(result)
+
+
+@register_tool
+def create_background_bash_task(name: str, interval_minutes: int, bash_command: str) -> str:
+    """Create a recurring headless background bash loop that executes natively without pinging the LLM. Use this for reliable hardware/system operations like pinging networks or running tools."""
+    if interval_minutes < 1:
+        return "Error: interval_minutes must be at least 1."
+    
+    from cron.scheduler import add_cron_job
+    job = add_cron_job(name=name, bash_command=bash_command, interval_minutes=interval_minutes)
+    return f"Successfully created native bash background loop '{name}' (ID: {job.id}). It will execute '{bash_command}' silently every {interval_minutes} minutes."
+
+
+@register_tool
+def create_background_python_task(name: str, interval_minutes: int, python_code: str) -> str:
+    """Create a recurring headless background python execution loop that runs natively. Use this to execute internal functions like pwn_ble_scan directly without pinging the LLM."""
+    if interval_minutes < 1:
+        return "Error: interval_minutes must be at least 1."
+    
+    from cron.scheduler import add_cron_job
+    job = add_cron_job(name=name, python_script=python_code, interval_minutes=interval_minutes)
+    return f"Successfully created native python background loop '{name}' (ID: {job.id}). It will execute the code silently every {interval_minutes} minutes."
 
 
 @register_tool
