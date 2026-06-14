@@ -231,6 +231,42 @@ def main():
             log.warning(f"Failed to check network status: {e}")
             
     log_network_status()
+    
+    # Log hardware diagnostics at boot
+    def log_hardware_status():
+        import shutil
+        from hardware.system import get_stats
+        from game_engine.state import load_state
+        try:
+            stats = get_stats()
+            
+            # Temperature
+            temp_val_str = stats.temp.replace("°C", "").replace("'C", "")
+            try:
+                if float(temp_val_str) > 75.0:
+                    log.info(f"🥵 Thermal Status: WARNING! High Temp {stats.temp}!")
+                else:
+                    log.info(f"🌡️ Thermal Status: {stats.temp} (Nominal)")
+            except ValueError:
+                log.info(f"🌡️ Thermal Status: {stats.temp}")
+                
+            # Memory & CPU
+            log.info(f"🧠 Memory Footprint: {stats.memory}")
+            log.info(f"⚡ CPU Load: {stats.cpu_load}")
+            
+            # Storage
+            total, used, free = shutil.disk_usage("/")
+            gb = 1024**3
+            log.info(f"💾 Storage: {free/gb:.1f}GB / {total/gb:.1f}GB Available")
+            
+            # AIPET State
+            aipet_state = load_state()
+            log.info(f"🎮 AIPET State: {aipet_state.status.value.upper()} | HP: {aipet_state.hp:.1f} | XP: {aipet_state.xp} | Lv: {aipet_state.level}")
+            
+        except Exception as e:
+            log.warning(f"Failed to check hardware status: {e}")
+            
+    log_hardware_status()
 
     # Start the Subconscious (WiFi Hacker) and Nervous System (Listener) globally
     def start_pwn_systems():
