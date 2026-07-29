@@ -1,6 +1,8 @@
 import subprocess
 import time
 import logging
+import secrets
+import string
 from pathlib import Path
 
 log = logging.getLogger("PwnManager")
@@ -10,6 +12,26 @@ class PwnManager:
         self.bettercap_proc = None
         self.pwn_daemon = None
         self.nervous_system = None
+        self._api_user = None
+        self._api_pass = None
+
+    def _get_api_creds(self):
+        """Get Bettercap API credentials from .env, generating a random password if unset."""
+        if self._api_user and self._api_pass:
+            return self._api_user, self._api_pass
+        try:
+            from dotenv import load_dotenv
+            import os
+            load_dotenv()
+            user = os.getenv("BETTERCAP_API_USER", "gotchi")
+            pw = os.getenv("BETTERCAP_API_PASS", "")
+            if not pw:
+                pw = ''.join(secrets.choice(string.hexdigits) for _ in range(32))
+            self._api_user = user
+            self._api_pass = pw
+            return user, pw
+        except Exception:
+            return "gotchi", ''.join(secrets.choice(string.hexdigits) for _ in range(32))
 
     def wait_for_interface(self, iface="wlan0mon", timeout=15):
         """Wait for monitor interface to appear"""
@@ -23,11 +45,12 @@ class PwnManager:
         """Poll REST API until ready"""
         import requests
         from requests.auth import HTTPBasicAuth
+        api_user, api_pass = self._get_api_creds()
         for _ in range(timeout * 2):  # 0.5s ticks
             try:
-                # Use the exact credentials we set in the eval string
+                # Use credentials from .env
                 res = requests.get("http://127.0.0.1:8081/api/session", 
-                                   auth=HTTPBasicAuth('gotchi', '123456'), 
+                                   auth=HTTPBasicAuth(api_user, api_pass), 
                                    timeout=1)
                 if res.status_code == 200:
                     return True
@@ -65,9 +88,11 @@ class PwnManager:
             handshake_path = str(project_root / "handshakes")
             Path(handshake_path).mkdir(exist_ok=True)
             
+            api_user, api_pass = self._get_api_creds()
+            
             cmd = [
                 "sudo", "bettercap", "-iface", "wlan0mon",
-                "-eval", f"set api.rest.user gotchi; set api.rest.pass 123456; "
+                "-eval", f"set api.rest.user {api_user}; set api.rest.pass {api_pass}; "
                          f"api.rest on; ble.recon on; wifi.recon on; "
                          f"set wifi.handshakes.path {handshake_path}"
             ]
