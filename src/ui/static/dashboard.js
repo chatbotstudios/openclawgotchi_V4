@@ -36,6 +36,10 @@
         let previousLevel = null;
         let isNapping = false;
 
+        // Auto-detect low-power devices (Pi Zero, mobile). Disable expensive effects.
+        const _isLowPower = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2;
+        let _effectsEnabled = !_isLowPower;
+
         // Diagnostics window controls state
         let consoleMaximized = false;
         let consoleMinimized = false;
@@ -178,6 +182,7 @@
                 }
             },
             playBeep() {
+                if (!_effectsEnabled) return;
                 try {
                     this.init();
                     if (this.ctx.state === 'suspended') this.ctx.resume();
@@ -194,6 +199,7 @@
                 } catch (e) { console.warn("Audio Context blocked:", e); }
             },
             playSuccessArpeggio() {
+                if (!_effectsEnabled) return;
                 try {
                     this.init();
                     if (this.ctx.state === 'suspended') this.ctx.resume();
@@ -220,6 +226,7 @@
 
         // DOM Particle Emitter Explosion (Emits glowing particles from click location)
         function createParticleExplosion(e) {
+            if (!_effectsEnabled) return;
             if (!e) return;
             const rect = e.target.getBoundingClientRect();
             const x = rect.left + rect.width / 2;

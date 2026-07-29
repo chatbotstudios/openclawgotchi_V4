@@ -837,3 +837,80 @@ body {
     50% { opacity: 1; transform: scale(1.02); }
     100% { opacity: 0.8; }
 }
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .upper-hud-module {
+        margin: 0.5rem;
+        padding: 0.8rem;
+    }
+    .grid-container {
+        grid-template-columns: 1fr !important;
+    }
+    .hud-row {
+        flex-direction: column;
+    }
+    .hud-card, .control-card {
+        width: 100%;
+    }
+    .mock-btn-group, .btn-group {
+        flex-wrap: wrap;
+    }
+    .mock-btn, .btn {
+        font-size: 0.6rem;
+        padding: 0.3rem 0.5rem;
+    }
+    .metrics-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .metric-card {
+        width: 100%;
+    }
+    .screen-title, .hud-card-title, .console-title {
+        font-size: 0.65rem;
+    }
+    .led-matrix {
+        gap: 3px;
+    }
+    .led-dot {
+        width: 10px;
+        height: 10px;
+    }
+    .console-screen {
+        height: 150px;
+    }
+    .secret-header-menu {
+        flex-wrap: wrap;
+    }
+    .synapse-input {
+        width: 100%;
+        margin-bottom: 0.3rem;
+    }
+    .synapse-form {
+        flex-direction: column;
+    }
+    .epd-thumbnail-frame img {
+        max-width: 100%;
+        height: auto;
+    }
+    .sliding-panel {
+        width: 95vw;
+    }
+}
+
+@media (max-width: 480px) {
+    .led-dot {
+        width: 6px;
+        height: 6px;
+    }
+    .state-badges-row {
+        flex-wrap: wrap;
+    }
+    .hud-logo span {
+        font-size: 0.6rem;
+    }
+    .header-menu-btn {
+        font-size: 1.2rem;
+    }
+}
