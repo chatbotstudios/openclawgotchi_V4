@@ -324,8 +324,13 @@ async function main() {
   await new Promise(r => setTimeout(r, 2000));
   stopSpinner('Tactical Setup Suite ready!');
 
-  console.log(`\n${PINK}  🛸 WELCOME TO OPENCLAWGOTCHI V3 🛸${RESET}`);
-  console.log(`  Let's bring your tactical companion online!\n`);
+  console.log(`\n${BLUE}   ____  ____  _______   ____________  ______________  ______${RESET}`);
+  console.log(`${BLUE}  / __ \\/ __ \\/ ____/ | / / ____/ __ \\/_  __/ ____/ / / /  _/${RESET}`);
+  console.log(`${PINK} / / / / /_/ / __/ /  |/ / / __/ / / / / / / /   / /_/ // /  ${RESET}`);
+  console.log(`${PINK}/ /_/ / ____/ /___/ /|  / /_/ / /_/ / / / / /___/ __  // /   ${RESET}`);
+  console.log(`${GREEN}\\____/_/   /_____/_/ |_/\\____/\\____/ /_/  \\____/_/ /_/___/   ${RESET}`);
+  console.log(`\n${PINK}  🛸 WELCOME TO OPENCLAWGOTCHI V4 🛸${RESET}`);
+  console.log(`  ${BLUE}Let's bring your tactical companion online!${RESET}\n`);
 
   // --- Autodetect Existing .env ---
   let existingEnv = {};
@@ -401,9 +406,51 @@ async function main() {
 
   await askQuestion('Press Enter to begin Configuration');
 
+  // --- PHASE 1: DEVICE & DEPLOYMENT TARGET ---
+  const typeChoices = [
+    'Raspberry Pi or ESP32 Edge Device',
+    'Local Machine (launches Gotchi on your local PC / Mac)',
+    'VPS / Cloud Server (launches Gotchi on a cloud VPS IP)'
+  ];
+  
+  let defaultTypeIdx = 0;
+  if (answers.deployment === 'Local' && answers.device === 'Standard PC / Mac') {
+    defaultTypeIdx = 1;
+  } else if (answers.deployment === 'VPS') {
+    defaultTypeIdx = 2;
+  }
+  
+  const selectedType = await showMenu('Select Device or Deployment Type', typeChoices, defaultTypeIdx);
+  
+  if (selectedType === 'Raspberry Pi or ESP32 Edge Device') {
+    let defaultDeviceIdx = 0;
+    if (answers.device && devices.indexOf(answers.device) !== -1) {
+      defaultDeviceIdx = devices.indexOf(answers.device);
+    }
+    answers.device = await showMenu('Select Target Hardware Device', devices.filter(d => d !== 'Standard PC / Mac'), defaultDeviceIdx);
+    answers.deployment = 'Device';
+  } else if (selectedType === 'Local Machine (launches Gotchi on your local PC / Mac)') {
+    answers.device = 'Standard PC / Mac';
+    answers.deployment = 'Local';
+    console.log(`\n${GREEN}✓ Configured as Local PC / Mac deployment.${RESET}`);
+    await new Promise(r => setTimeout(r, 1200));
+  } else {
+    answers.device = 'Cloud VPS';
+    answers.deployment = 'VPS';
+    console.log(`\n${GREEN}✓ Configured as Cloud VPS deployment.${RESET}`);
+    await new Promise(r => setTimeout(r, 1200));
+  }
+
   answers.setupMode = await showMenu('Select Setup Mode', setupModes);
 
-  // --- PHASE 1: KEYS & PLATFORMS ---
+  if (answers.deployment === 'Device' && answers.device.includes('Raspberry Pi') && answers.setupMode === 'Full Setup') {
+    const diagChoice = await showMenu('Hardware Diagnostics', ['Run Diagnostics Now', 'Skip', 'Test Later']);
+    if (diagChoice === 'Run Diagnostics Now') {
+      await runRealDiagnostics();
+    }
+  }
+
+  // --- PHASE 2: KEYS & PLATFORMS ---
   let defaultProviderIdx = providers.indexOf(answers.aiProvider);
   if (defaultProviderIdx === -1) defaultProviderIdx = 0;
   answers.aiProvider = await showMenu('Choose AI/LLM Provider', providers, defaultProviderIdx);
@@ -472,48 +519,6 @@ async function main() {
 
   answers.botName = await askQuestion('Companion Name', answers.botName || 'Gotchi');
   answers.ownerName = await askQuestion('Your Name (Operator)', answers.ownerName || 'Owner');
-
-  // --- PHASE 2 & 3: DEVICE & DEPLOYMENT TARGET ---
-  const typeChoices = [
-    'Raspberry Pi or ESP32 Edge Device',
-    'Local Machine (launches Gotchi on your local PC / Mac)',
-    'VPS / Cloud Server (launches Gotchi on a cloud VPS IP)'
-  ];
-  
-  let defaultTypeIdx = 0;
-  if (answers.deployment === 'Local' && answers.device === 'Standard PC / Mac') {
-    defaultTypeIdx = 1;
-  } else if (answers.deployment === 'VPS') {
-    defaultTypeIdx = 2;
-  }
-  
-  const selectedType = await showMenu('Select Device or Deployment Type', typeChoices, defaultTypeIdx);
-  
-  if (selectedType === 'Raspberry Pi or ESP32 Edge Device') {
-    let defaultDeviceIdx = 0;
-    if (answers.device && devices.indexOf(answers.device) !== -1) {
-      defaultDeviceIdx = devices.indexOf(answers.device);
-    }
-    answers.device = await showMenu('Select Target Hardware Device', devices.filter(d => d !== 'Standard PC / Mac'), defaultDeviceIdx);
-    answers.deployment = 'Device';
-    
-    if (answers.device.includes('Raspberry Pi') && answers.setupMode === 'Full Setup') {
-      const diagChoice = await showMenu('Hardware Diagnostics', ['Run Diagnostics Now', 'Skip', 'Test Later']);
-      if (diagChoice === 'Run Diagnostics Now') {
-        await runRealDiagnostics();
-      }
-    }
-  } else if (selectedType === 'Local Machine (launches Gotchi on your local PC / Mac)') {
-    answers.device = 'Standard PC / Mac';
-    answers.deployment = 'Local';
-    console.log(`\n${GREEN}✓ Configured as Local PC / Mac deployment. Diagnostics skipped.${RESET}`);
-    await new Promise(r => setTimeout(r, 1200));
-  } else {
-    answers.device = 'Cloud VPS';
-    answers.deployment = 'VPS';
-    console.log(`\n${GREEN}✓ Configured as Cloud VPS deployment. Diagnostics skipped.${RESET}`);
-    await new Promise(r => setTimeout(r, 1200));
-  }
 
   // --- SAVE & CONCLUDE ---
   process.stdout.write(CLEAR_SCREEN);

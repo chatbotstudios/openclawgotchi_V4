@@ -29,29 +29,9 @@ fi
 echo "  ✅ Python $(python3 --version | cut -d' ' -f2)"
 
 # ============================================
-# STEP 1.1: Hardening System Integrity
+# STEP 1.1: Check Node.js (For OpenClaw Skills)
 # ============================================
-if [[ "$(uname)" == "Darwin" ]]; then
-    echo "  ✅ System Integrity: macOS Detected (Skipping Debian-specific updates)"
-else
-    if ! dpkg -l | grep -q "locales-all"; then
-        echo "[1.1/5] Hardening System Integrity..."
-        sudo apt-get update -y -qq
-        sudo apt-get install -y -qq locales-all bluez bluez-firmware pi-bluetooth
-        sudo locale-gen en_US.UTF-8 > /dev/null 2>&1
-        sudo systemctl unmask bluetooth.service > /dev/null 2>&1
-        sudo systemctl enable bluetooth.service > /dev/null 2>&1
-        sudo systemctl start bluetooth.service > /dev/null 2>&1
-        echo "  ✅ Locales stabilized & Bluetooth Unmasked"
-    else
-        echo "  ✅ System Integrity: OK"
-    fi
-fi
-
-# ============================================
-# STEP 1.5: Check Node.js (For OpenClaw Skills)
-# ============================================
-echo "[1.5/5] Checking Node.js for OpenClaw Skills (npx)..."
+echo "[1.1/5] Checking Node.js for OpenClaw Skills (npx)..."
 if ! command -v node &> /dev/null || ! command -v npm &> /dev/null; then
     echo "  ❌ Node.js or NPM not found!"
     if [[ "$(uname)" == "Darwin" ]]; then
@@ -64,11 +44,61 @@ fi
 echo "  ✅ Node $(node -v)"
 
 # ============================================
-# STEP 2: Configure .env (interactive wizard)
+# STEP 1.5: Configure .env (interactive wizard)
 # ============================================
 echo ""
-echo "[2/5] Configuration..."
+echo "[1.5/5] Configuration..."
 node "${SCRIPT_DIR}/src/cli/wizard.mjs"
+
+# Load the generated variables
+if [ -f "${ENV_FILE}" ]; then
+    source "${ENV_FILE}"
+fi
+
+# ============================================
+# STEP 2: Hardening System Integrity
+# ============================================
+if [[ "$(uname)" == "Darwin" ]]; then
+    echo "  ✅ System Integrity: macOS Detected (Skipping Debian-specific updates)"
+else
+    if ! dpkg -l | grep -q "locales-all"; then
+        echo "[2/5] Hardening System Integrity..."
+        sudo apt-get update -y -qq
+        
+        if [[ "${GOTCHI_DEPLOYMENT}" == "Device" ]]; then
+            ARCH=$(dpkg --print-architecture)
+            if [[ "$ARCH" == "arm64" || "$ARCH" == "armhf" ]]; then
+                if [[ ! -f /etc/apt/sources.list.d/raspi.list ]]; then
+                    echo "  [Pi Setup] Adding Raspberry Pi OS repositories for $ARCH architecture..."
+                    wget -qO - https://archive.raspberrypi.org/debian/raspberrypi.gpg.key | sudo apt-key add -
+                    echo "deb http://archive.raspberrypi.org/debian/ bookworm main" | sudo tee /etc/apt/sources.list.d/raspi.list
+                    sudo apt-get update -y -qq
+                fi
+            else
+                echo "  ⚠️ Warning: You selected Raspberry Pi Deployment, but your architecture ($ARCH) is not ARM."
+                echo "  Skipping Raspberry Pi specific repositories to prevent apt-get errors."
+            fi
+        fi
+
+        sudo apt-get install -y -qq locales-all
+        
+        if [[ "${GOTCHI_DEPLOYMENT}" == "Device" ]]; then
+            sudo apt-get install -y -qq bluez bluez-firmware
+            if apt-cache show pi-bluetooth &> /dev/null; then
+                sudo apt-get install -y -qq pi-bluetooth
+            fi
+            sudo systemctl unmask bluetooth.service > /dev/null 2>&1
+            sudo systemctl enable bluetooth.service > /dev/null 2>&1
+            sudo systemctl start bluetooth.service > /dev/null 2>&1
+            echo "  ✅ Bluetooth Unmasked"
+        fi
+
+        sudo locale-gen en_US.UTF-8 > /dev/null 2>&1
+        echo "  ✅ Locales stabilized"
+    else
+        echo "  ✅ System Integrity: OK"
+    fi
+fi
 
 # ============================================
 # STEP 3: Configure Git

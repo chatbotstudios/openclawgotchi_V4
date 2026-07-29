@@ -1,6 +1,6 @@
 # 🦋 OpenClawGotchi V4.3: Tactical Edge Intelligence
 
-*A high-performance, autonomous AI companion for the Raspberry Pi Zero 2W, fusing OpenClaw's advanced reasoning with Pwnagotchi's hardware-edge network auditing.*
+*A high-performance, autonomous AI companion for the Raspberry Pi Zero 2W, fusing OpenClaw's advanced reasoning with Pwnagotchi's hardware-edge network auditing. Includes full **[HEADLESS MODE]** support for Local Machine/VPS deployments.*
 
 ![Status](https://img.shields.io/badge/Status-Hardened-blue) ![Architecture](https://img.shields.io/badge/Architecture-Modular--CLI-orange) ![Hardware](https://img.shields.io/badge/Hardware-Pi_Zero_2W-red) ![Display](https://img.shields.io/badge/Display-E--Ink_2.13-black)
 
@@ -75,6 +75,9 @@ V4.3 incorporates brutal low-level optimizations to maintain stability under 512
 - **Core**: Raspberry Pi Zero 2W (64-bit OS Lite)
 - **Face**: Waveshare 2.13" E-Ink (V4 recommended)
 - **Power**: High-quality micro-USB power bank.
+
+### [HEADLESS MODE] Local Machine / Cloud VPS
+OpenclawGotchi_V4 can be installed on your local machine/vps. The setup wizard in OpenClawGotchi V4 explicitly supports three deployment targets: Raspberry Pi / ESP32 Edge Device, Local Machine (PC / Mac), Cloud VPS. Automatically disables E-Ink drivers, BLE beacons, and physical GPIO drivers so it doesn't crash on non-ARM or non-Pi environments.
 
 ### Installation
 ```bash
