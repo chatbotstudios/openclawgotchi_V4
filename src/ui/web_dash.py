@@ -40,7 +40,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ {bot_name} V3 // Live Swarm Cyber HUD</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/fonts/fonts.css">
     <link rel="stylesheet" href="/static/dashboard.css">
 </head>
 <body>
@@ -650,39 +650,35 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
                 admin_id = get_admin_id() or 0
                 history = get_history(admin_id, limit=10)
                 
-                # Execute async call safely on this backend thread
+                # Execute async call safely — asyncio.run() handles loop lifecycle
                 import asyncio
 
                 from config import SYSTEM_PROMPT
-                loop = asyncio.new_event_loop()
-                try:
-                    add_system_log(f"[Synapse] Direct synapse transmit dispatched to AI Core: '{prompt[:30]}...'")
-                    response, connector = loop.run_until_complete(
-                        router.call(prompt, history, SYSTEM_PROMPT)
-                    )
-                    
-                    from audit_logging.command_logger import log_command
-                    log_command(
-                        action="web_synapse",
-                        user_id=admin_id,
-                        chat_id=0,
-                        source="web",
-                        extra={"prompt": prompt, "response": response}
-                    )
-                    
-                    # Execute SAY: / FACE: commands locally on EPD
-                    from hardware.display import parse_and_execute_commands
-                    parse_and_execute_commands(response)
-                    
-                    # Award dynamic reward XP on query success!
-                    from game_engine.vitals import add_xp as engine_add_xp
-                    engine_add_xp(25, "web_query")
-                    
-                    success = True
-                    message = response
-                    add_system_log("[Synapse] AI Core synapse response synchronized successfully (+25 XP)")
-                finally:
-                    loop.close()
+                add_system_log(f"[Synapse] Direct synapse transmit dispatched to AI Core: '{prompt[:30]}...'")
+                response, connector = asyncio.run(
+                    router.call(prompt, history, SYSTEM_PROMPT)
+                )
+                
+                from audit_logging.command_logger import log_command
+                log_command(
+                    action="web_synapse",
+                    user_id=admin_id,
+                    chat_id=0,
+                    source="web",
+                    extra={"prompt": prompt, "response": response}
+                )
+                
+                # Execute SAY: / FACE: commands locally on EPD
+                from hardware.display import parse_and_execute_commands
+                parse_and_execute_commands(response)
+                
+                # Award dynamic reward XP on query success!
+                from game_engine.vitals import add_xp as engine_add_xp
+                engine_add_xp(25, "web_query")
+                
+                success = True
+                message = response
+                add_system_log("[Synapse] AI Core synapse response synchronized successfully (+25 XP)")
             except Exception as e:
                 message = f"Error processing query: {e}"
                 log.error(message, exc_info=True)
@@ -754,8 +750,19 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             "messages": g.get("messages", "?"),
             "mood": getattr(display, "_current_mood", "happy"),
             "text": getattr(display, "_current_text", ""),
-            "kaomoji": display.get_current_face_ascii()
+            "kaomoji": display.get_current_face_ascii(),
         }
+        # Add XP progression breakdown
+        try:
+            from db.stats import get_level_progress
+            prog = get_level_progress()
+            gotchi_dict["xp_in_level"] = prog.get("xp_in_level", 0)
+            gotchi_dict["xp_needed_this_level"] = prog.get("xp_needed_this_level", 100)
+            gotchi_dict["xp_to_next"] = prog.get("xp_to_next", 0)
+        except Exception:
+            gotchi_dict["xp_in_level"] = 0
+            gotchi_dict["xp_needed_this_level"] = 100
+            gotchi_dict["xp_to_next"] = 100
 
         # 3. Auditor/Pwnagotchi Telemetry (cached 5s TTL)
         pwn_dict = {"status": "OFFLINE", "aps": 0, "ble": 0, "handshakes": 0}

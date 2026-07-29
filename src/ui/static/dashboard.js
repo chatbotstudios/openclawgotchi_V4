@@ -366,8 +366,9 @@
             const xpHeader = document.getElementById('xp-header-text');
             const xpBar = document.getElementById('xp-progress');
             if (xpHeader && xpBar) {
-                xpHeader.textContent = `XP PROGRESS ${xpValue}/100`;
-                xpBar.style.width = `${xpValue}%`;
+                const inLevel = Math.round(xpValue);
+                xpHeader.textContent = `XP PROGRESS ${inLevel}%`;
+                xpBar.style.width = `${Math.min(100, inLevel)}%`;
             }
 
             // HP progress
@@ -501,9 +502,11 @@
                 document.getElementById('rpg-class').textContent = data.gotchi.title || '-';
                 document.getElementById('rpg-level').textContent = data.gotchi.level || '-';
                 
-                // Parse XP Cap
-                const xp = parseInt(data.gotchi.xp) || 0;
-                xpValue = xp % 100;
+                // Parse XP progression (real level data from backend)
+                xpValue = 0;
+                if (data.gotchi.xp_in_level !== undefined && data.gotchi.xp_needed_this_level > 0) {
+                    xpValue = (data.gotchi.xp_in_level / data.gotchi.xp_needed_this_level) * 100;
+                }
 
                 // Sync HP from Backend State Manager
                 if (data.gotchi.hp !== undefined && data.gotchi.hp !== "?") {
@@ -693,7 +696,6 @@
                 const result = await res.json();
                 showToastNotification(result.message || 'Uplink synchronization complete.');
                 if (result.success) {
-                    xpValue = Math.min(100, xpValue + 40);
                     updateMetricsUI();
                     setTimeout(() => audioSynth.playSuccessArpeggio(), 200);
                 }
@@ -720,7 +722,6 @@
                 const result = await res.json();
                 showToastNotification(result.message || 'Brave search complete.');
                 if (result.success) {
-                    xpValue = Math.min(100, xpValue + 40);
                     updateMetricsUI();
                     setTimeout(() => audioSynth.playSuccessArpeggio(), 200);
                 }
@@ -785,7 +786,6 @@
                 if (result.success) {
                     audioSynth.playSuccessArpeggio();
                     showToastNotification("Direct synapse pathway synchronized.");
-                    xpValue = Math.min(100, xpValue + 25);
                     updateMetricsUI();
                 } else {
                     showToastNotification("Core error: " + result.message);
