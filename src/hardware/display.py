@@ -88,12 +88,16 @@ def _render_thread_loop():
                 if not first_frame and hasattr(_render_thread_loop, 'last_hash') and _render_thread_loop.last_hash == current_hash:
                     continue  # Skip SPI write if perfectly identical
                 _render_thread_loop.last_hash = current_hash
-                
+
+                # Save live PNG snapshot for web dashboard (real hardware or simulator)
+                sim_path = PROJECT_DIR / "simulator.png"
+                image.save(sim_path)
+
                 rotated = image.rotate(180)
-                
+
                 _display_update_count += 1
                 needs_full = first_frame or (_display_update_count % FULL_REFRESH_EVERY == 0)
-                
+
                 if _epd_initialized:
                     if needs_full:
                         log.debug(f"🖥️  Display: FULL REFRESH (Cycle {_display_update_count})")
@@ -108,15 +112,9 @@ def _render_thread_loop():
                         try:
                             _epd.displayPartial(_epd.getbuffer(rotated))
                         except AttributeError:
-                            # Fallback if driver doesn't expose displayPartial
                             _epd.display(_epd.getbuffer(rotated))
-                    
-                    # DO NOT call _epd.sleep() here, as it calls epdconfig.module_exit() 
-                    # and completely shuts down the SPI/GPIO pins, crashing subsequent updates!
                 else:
-                    # Simulator
-                    sim_path = PROJECT_DIR / "simulator.png"
-                    image.save(sim_path)
+                    pass  # Simulator — simulator.png already saved above; no E-Ink hardware
                 
                 # Success - reset error count
                 _consecutive_errors = 0
