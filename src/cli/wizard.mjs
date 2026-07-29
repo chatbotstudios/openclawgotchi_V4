@@ -341,7 +341,10 @@ async function main() {
       if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
         const parts = trimmed.split('=');
         const key = parts[0].trim();
-        const val = parts.slice(1).join('=').trim();
+        let val = parts.slice(1).join('=').trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          val = val.substring(1, val.length - 1);
+        }
         existingEnv[key] = val;
       }
     });
