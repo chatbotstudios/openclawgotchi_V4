@@ -148,8 +148,8 @@ if [ -f "${SCRIPT_DIR}/requirements.txt" ]; then
     # Check if key modules are importable to make verification robust
     if ! python3 -c "import rich, websockets, qrcode, dpkt, dotenv, discord, litellm, PIL, psutil, click, telegram" &>/dev/null; then
         echo "  Installing packages from requirements.txt..."
-        pip3 install --quiet --break-system-packages -r "${SCRIPT_DIR}/requirements.txt" 2>/dev/null || \
-        pip3 install --quiet -r "${SCRIPT_DIR}/requirements.txt" 2>/dev/null
+        pip3 install --break-system-packages -r "${SCRIPT_DIR}/requirements.txt" || \
+        pip3 install -r "${SCRIPT_DIR}/requirements.txt" || { echo "  ❌ Failed to install python packages"; exit 1; }
         echo "  ✅ Packages Installed"
     else
         echo "  ✅ Packages already healthy"
@@ -250,57 +250,28 @@ if [[ "$(uname)" != "Darwin" ]]; then
 fi
 
 # ============================================
-# START THE BOT / WIZARD CLIENT
+# START THE BOT
 # ============================================
 echo ""
+echo "╔═══════════════════════════════════════════════════╗"
+echo "║           🎉 Gotchi Setup Complete!               ║"
+echo "║          Your Companion is now Ready!             ║"
+echo "╚═══════════════════════════════════════════════════╝"
+echo ""
 if [[ "$(uname)" == "Darwin" ]]; then
-    read -p "Start Gotchi now? [Y/n]: " START_NOW
-    START_NOW=${START_NOW:-Y}
-
-    if [[ "$START_NOW" =~ ^[Yy]$ ]]; then
-        echo "╔═══════════════════════════════════════════════════╗"
-        echo "║           🚀 Launching Setup Complete!            ║"
-        echo "╚═══════════════════════════════════════════════════╝"
-        echo "  Select startup target:"
-        echo "    1) Visual Web Dash HUD (gotchi serve --port 8088)"
-        echo "    2) Interactive Companion Bot (gotchi run-bot)"
-        echo ""
-        read -p "  Enter choice [1-2] [1]: " CHOICE
-        CHOICE=${CHOICE:-1}
-        if [[ "$CHOICE" == "1" ]]; then
-            echo "🔗 Launching Visual Dashboard HUD... Open http://localhost:8088 in your browser."
-            exec "${SCRIPT_DIR}/gotchi" serve --port 8088
-        else
-            echo "🦋 Launching Interactive Companion Bot..."
-            exec "${SCRIPT_DIR}/gotchi" run-bot
-        fi
-    fi
+    echo "  Start the bot with:  gotchi run-bot"
+    echo "  Start the dash with: gotchi serve --port 8088"
 else
-    read -p "Start the bot now? [Y/n]: " START_NOW
+    echo "  Start the bot with:  gotchi restart"
+    echo ""
+    read -p "  Start the bot now? [Y/n]: " START_NOW
     START_NOW=${START_NOW:-Y}
-
     if [[ "$START_NOW" =~ ^[Yy]$ ]]; then
         sudo systemctl restart gotchi.service
         sleep 2
-        if systemctl is-active --quiet gotchi.service; then
-            echo "╔═══════════════════════════════════════════════════╗"
-            echo "║           ✅ Setup Complete!                      ║"
-            echo "╚═══════════════════════════════════════════════════╝"
-        else
+        if ! systemctl is-active --quiet gotchi.service; then
             echo "  ⚠️  Bot failed to start. Check logs: gotchi logs"
         fi
     fi
-fi
-
-echo ""
-if [[ "$(uname)" == "Darwin" ]]; then
-    echo "  📖 macOS Manual Commands:"
-    echo "     gotchi serve --port 8088  # Start visual dashboard HUD"
-    echo "     gotchi run-bot            # Start the companion bot"
-else
-    echo "  📖 Linux Manual Commands:"
-    echo "     gotchi status          # Check health"
-    echo "     gotchi restart         # Reboot daemon"
-    echo "     gotchi logs            # View live logs"
 fi
 echo ""

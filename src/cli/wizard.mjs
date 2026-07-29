@@ -587,20 +587,6 @@ async function main() {
   const connectedPlatform = answers.platforms.discord ? 'Discord client connected!' : 'Telegram bot webhook active!';
   stopSpinner(connectedPlatform);
 
-  console.log(`\n${PINK}╔═══════════════════════════════════════════════════╗${RESET}`);
-  console.log(`${PINK}║           🎉 Gotchi Setup Complete!               ║${RESET}`);
-  console.log(`${PINK}║          Your Companion is now Ready!             ║${RESET}`);
-  console.log(`${PINK}╚═══════════════════════════════════════════════════╝${RESET}\n`);
-
-  if (answers.deployment === 'Local') {
-    console.log(`  ${GREEN}ℹ️  Enable the Global 'gotchi' Command on your Mac / PC:${RESET}`);
-    console.log(`     ${BOLD}sudo ln -sf "${ROOT_DIR}/gotchi" /usr/local/bin/gotchi${RESET}\n`);
-    console.log(`  ${BLUE}Start your visual dashboard HUD:${RESET}`);
-    console.log(`     ${BOLD}gotchi serve --port 8088${RESET}\n`);
-  } else {
-    console.log(`  Start the bot with:  ${BOLD}${BLUE}gotchi restart${RESET}\n`);
-  }
-
   cleanup();
   process.exit(0);
 }
