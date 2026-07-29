@@ -47,9 +47,11 @@ def execute_bash(command: str, timeout: int = 999) -> str:
     timeout = min(timeout, 999)
     
     try:
+        import shlex
+        args = shlex.split(command)
         result = subprocess.run(
-            command, shell=True, capture_output=True, text=True,
-            timeout=timeout, cwd=str(PROJECT_DIR)
+            args, capture_output=True, text=True,
+            timeout=timeout, cwd=str(PROJECT_DIR), close_fds=True
         )
         output = ""
         if result.stdout.strip():
@@ -95,8 +97,9 @@ def restart_self() -> str:
     """Restart the bot service (with 3s delay to send response)."""
     try:
         subprocess.Popen(
-            "nohup sh -c 'sleep 3 && sudo systemctl restart gotchi' > /dev/null 2>&1 &",
-            shell=True
+            ["nohup", "sh", "-c", "sleep 3 && sudo systemctl restart gotchi"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            close_fds=True
         )
         return "Restarting in 3s... I'll be back!"
     except Exception as e:

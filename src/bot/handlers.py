@@ -788,7 +788,6 @@ async def cmd_health(update: Update, context: ContextTypes.DEFAULT_TYPE):
     from db.stats import get_stats_summary
     from config import SRC_DIR, DB_PATH
     from pathlib import Path
-    import subprocess
 
     stats = get_stats()
     gotchi_stats = get_stats_summary()

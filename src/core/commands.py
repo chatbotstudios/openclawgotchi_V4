@@ -170,13 +170,29 @@ def manage_cron(action: str, task: str = None, schedule: str = None) -> str:
     
     elif action == "add":
         if not task or not schedule: return "Missing task or schedule."
-        cmd = f"(crontab -l 2>/dev/null; echo '{schedule} /usr/local/bin/gotchi say \"RECURRING: {task}\" # gotchi_task') | crontab -"
-        subprocess.run(cmd, shell=True)
+        cron_line = f"{schedule} /usr/local/bin/gotchi say \"RECURRING: {task}\" # gotchi_task"
+        try:
+            current = subprocess.run(["crontab", "-l"], capture_output=True, text=True, timeout=5)
+            existing = current.stdout + current.stderr if current.returncode != 0 else current.stdout
+        except Exception:
+            existing = ""
+        new_crontab = existing.strip() + "\n" + cron_line + "\n" if existing.strip() else cron_line + "\n"
+        proc = subprocess.run(["crontab", "-"], input=new_crontab, text=True, capture_output=True, timeout=5)
+        if proc.returncode != 0:
+            return f"Failed to add cron job: {proc.stderr}"
         return f"Recurring task added: '{task}' at '{schedule}'"
-    
+
     elif action == "delete":
-        cmd = "crontab -l | grep -v 'gotchi_task' | crontab -"
-        subprocess.run(cmd, shell=True)
+        try:
+            current = subprocess.run(["crontab", "-l"], capture_output=True, text=True, timeout=5)
+            existing = current.stdout if current.returncode == 0 else ""
+        except Exception:
+            existing = ""
+        filtered = "\n".join(line for line in existing.splitlines() if "# gotchi_task" not in line)
+        filtered += "\n" if filtered.strip() else ""
+        proc = subprocess.run(["crontab", "-"], input=filtered, text=True, capture_output=True, timeout=5)
+        if proc.returncode != 0:
+            return f"Failed to delete cron jobs: {proc.stderr}"
         return "All bot tasks deleted."
     
     return "Invalid action."

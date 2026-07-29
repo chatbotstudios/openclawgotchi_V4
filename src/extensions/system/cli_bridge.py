@@ -134,9 +134,11 @@ def run_cli(command: str) -> str:
         return "Error: Command blocked for safety."
     
     try:
+        import shlex
+        args = shlex.split(command)
         result = subprocess.run(
-            command, shell=True, capture_output=True, text=True,
-            timeout=30, cwd=str(PROJECT_DIR)
+            args, capture_output=True, text=True,
+            timeout=30, cwd=str(PROJECT_DIR), close_fds=True
         )
         out = result.stdout + result.stderr
         return out[:4000] if out else "(no output)"

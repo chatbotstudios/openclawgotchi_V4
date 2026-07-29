@@ -81,9 +81,13 @@ async def run_cron_job(job):
         def _run_headless(j):
             try:
                 if getattr(j, "bash_command", None):
+                    import shlex
                     import subprocess
                     log.info(f"⚙️ [HEADLESS BASH] {j.name} -> Executing...")
-                    subprocess.Popen(j.bash_command, shell=True, start_new_session=True)
+                    subprocess.Popen(
+                        shlex.split(j.bash_command),
+                        start_new_session=True, close_fds=True
+                    )
                 elif getattr(j, "python_script", None):
                     log.info(f"⚙️ [HEADLESS PYTHON] {j.name} -> Executing...")
                     exec(j.python_script, {"__builtins__": __builtins__})
