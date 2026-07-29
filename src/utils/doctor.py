@@ -67,15 +67,15 @@ def main():
         all_ok = False
 
     # 4. Service Status
-    ok, out = check("Service", "systemctl is-active gotchi-bot")
-    if out == "active":
+    ok, out = check('Service', 'systemctl is-active gotchi')
+    if out == 'active':
         print("[✅] Service: Active")
     else:
         print(f"[❌] Service: {out}")
         all_ok = False
 
     # 5. Recent Errors
-    ok, out = check("Logs", "journalctl -u gotchi-bot -n 50 | grep -i 'error' | tail -3")
+    ok, out = check('Logs', 'journalctl -u gotchi -n 50 | grep -i error | tail -3')
     if not out:
         print("[✅] Logs: No recent errors")
     else:

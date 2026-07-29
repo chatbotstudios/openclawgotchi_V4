@@ -59,7 +59,7 @@ fi
 # ============================================
 echo ""
 echo "[3/5] Adding bot service watchdog (Battery Optimized)..."
-CRON_LINE="*/15 * * * * systemctl is-active gotchi.service >/dev/null || systemctl restart gotchi.service"
+CRON_LINE="*/15 * * * * systemctl is-active gotchi >/dev/null || systemctl restart gotchi"
 (sudo crontab -l 2>/dev/null | grep -v "gotchi" ; echo "$CRON_LINE") | sudo crontab -
 echo "  ✅ Cron watchdog: checks every 15 min, restarts if dead"
 
@@ -106,8 +106,8 @@ echo "  ✅ Silenced user-level audio layers"
 echo ""
 echo "[5/5] Ensuring bot service is enabled..."
 sudo systemctl daemon-reload
-sudo systemctl enable gotchi.service 2>/dev/null || true
-echo "  ✅ gotchi.service enabled"
+sudo systemctl enable gotchi 2>/dev/null || true
+echo "  ✅ gotchi service enabled"
 
 # ============================================
 # SUMMARY
@@ -120,7 +120,7 @@ echo ""
 echo "  📊 Status:"
 echo "     Swap:     $(free -h | grep Swap | awk '{print $2}')"
 echo "     Free RAM: $(free -h | grep Mem | awk '{print $4}')"
-echo "     Bot:      $(systemctl is-active gotchi-bot 2>/dev/null || echo 'not running')"
+echo "     Bot:      $(systemctl is-active gotchi 2>/dev/null || echo 'not running')"
 echo ""
 echo "  🛡️ Protection:"
 echo "     • Hardware watchdog: 15s (reboots on system freeze)"

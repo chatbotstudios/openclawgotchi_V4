@@ -31,7 +31,7 @@ def git_command(command: str) -> str:
         return f"Error: {e}"
 
 @register_tool
-def manage_service(service: str = "gotchi-bot", action: str = "status") -> str:
+def manage_service(service: str = 'gotchi', action: str = 'status') -> str:
     """Manage systemd services. Actions: status, restart, stop, start, logs."""
     try:
         valid_actions = ["status", "restart", "stop", "start", "logs"]

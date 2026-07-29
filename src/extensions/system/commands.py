@@ -94,7 +94,7 @@ def restart_self() -> str:
     """Restart the bot service (with 3s delay to send response)."""
     try:
         subprocess.Popen(
-            "nohup sh -c 'sleep 3 && sudo systemctl restart gotchi-bot' > /dev/null 2>&1 &",
+            "nohup sh -c 'sleep 3 && sudo systemctl restart gotchi' > /dev/null 2>&1 &",
             shell=True
         )
         return "Restarting in 3s... I'll be back!"
