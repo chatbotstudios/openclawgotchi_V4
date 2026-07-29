@@ -148,8 +148,8 @@ if [ -f "${SCRIPT_DIR}/requirements.txt" ]; then
     # Check if key modules are importable to make verification robust
     if ! python3 -c "import rich, websockets, qrcode, dpkt, dotenv, discord, litellm, PIL, psutil, click, telegram" &>/dev/null; then
         echo "  Installing packages from requirements.txt..."
-        pip3 install --break-system-packages -r "${SCRIPT_DIR}/requirements.txt" || \
-        pip3 install -r "${SCRIPT_DIR}/requirements.txt" || { echo "  ❌ Failed to install python packages"; exit 1; }
+        pip3 install --ignore-installed --break-system-packages -r "${SCRIPT_DIR}/requirements.txt" || \
+        pip3 install --ignore-installed -r "${SCRIPT_DIR}/requirements.txt" || { echo "  ❌ Failed to install python packages"; exit 1; }
         echo "  ✅ Packages Installed"
     else
         echo "  ✅ Packages already healthy"
@@ -157,7 +157,7 @@ if [ -f "${SCRIPT_DIR}/requirements.txt" ]; then
 else
     echo "  ⚠️  requirements.txt not found! Falling back to core packages..."
     PACKAGES="discord.py psutil litellm Pillow RPi.GPIO spidev python-dotenv requests python-telegram-bot click rich websockets qrcode dpkt"
-    pip3 install --quiet --break-system-packages $PACKAGES 2>/dev/null || true
+    pip3 install --ignore-installed --break-system-packages $PACKAGES || true
 fi
 
 # SPI for E-Ink
