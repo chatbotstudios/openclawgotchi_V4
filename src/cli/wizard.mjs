@@ -190,10 +190,10 @@ function cleanup() {
 function renderSpinner(message, spinnerName = 'helix', color = PINK) {
   const spinner = spinners[spinnerName] || spinners.helix;
   const { frames, interval } = spinner;
-  
+
   if (animationInterval) clearInterval(animationInterval);
   process.stdout.write(HIDE_CURSOR);
-  
+
   animationInterval = setInterval(() => {
     const frame = frames[currentFrameIdx++ % frames.length];
     process.stdout.write(`\r\x1B[2K  ${color}${frame}${RESET}  ${message}`);
@@ -233,14 +233,14 @@ function showMenu(title, options, currentIndex = 0) {
       process.stdin.setRawMode(true);
       process.stdin.resume();
     }
-    
+
     function draw() {
       process.stdout.write(CLEAR_SCREEN);
       console.log(`\n${PINK}╔═══════════════════════════════════════════════════╗${RESET}`);
       console.log(`${PINK}║${RESET} ${BOLD}${BLUE}${title.padEnd(49)}${RESET} ${PINK}║${RESET}`);
       console.log(`${PINK}╚═══════════════════════════════════════════════════╝${RESET}\n`);
       console.log(`  Use ${BOLD}↑/↓${RESET} keys or ${BOLD}number keys (1-${options.length})${RESET} to navigate, ${BOLD}Enter${RESET} to confirm.\n`);
-      
+
       options.forEach((opt, idx) => {
         const isCurrent = idx === currentIndex;
         const pointer = isCurrent ? `${PINK}➔${RESET} ` : '  ';
@@ -289,7 +289,7 @@ function showMenu(title, options, currentIndex = 0) {
 async function runRealDiagnostics() {
   process.stdout.write(CLEAR_SCREEN);
   console.log(`\n${BLUE}🔍 Running Authentic Hardware Diagnostics...${RESET}\n`);
-  
+
   const runTest = async (testName, spinnerName, command, failAllowed = true) => {
     renderSpinner(`Testing ${testName}...`, spinnerName, BLUE);
     await new Promise(r => setTimeout(r, 1000));
@@ -310,7 +310,7 @@ async function runRealDiagnostics() {
   await runTest('Bluetooth HCI Adapter', 'radar-2', 'hciconfig || bluetoothctl show');
   await runTest('E-Ink SPI Bus (/dev/spi*)', 'mitosis', 'ls -l /dev/spi*');
   await runTest('System Python Packages', 'pacman', 'python3 -c "import sqlite3; import urllib"');
-  
+
   console.log(`\n${GREEN}🎉 Authentic diagnostic phase complete!${RESET}\n`);
   await askQuestion('Press Enter to continue setup');
 }
@@ -318,7 +318,7 @@ async function runRealDiagnostics() {
 async function main() {
   readline.emitKeypressEvents(process.stdin);
   process.stdout.write(CLEAR_SCREEN);
-  
+
   // 1. Welcome Intro
   renderSpinner('Initializing Tactical Setup Suite...', 'helix');
   await new Promise(r => setTimeout(r, 2000));
@@ -363,7 +363,7 @@ async function main() {
       if (existingEnv['DISCORD_BOT_TOKEN']) answers.discordToken = existingEnv['DISCORD_BOT_TOKEN'];
       if (existingEnv['DISCORD_ALLOWED_USERS']) answers.discordAllowed = existingEnv['DISCORD_ALLOWED_USERS'];
       if (existingEnv['DEFAULT_LITE_MODEL']) answers.aiModel = existingEnv['DEFAULT_LITE_MODEL'];
-      
+
       if (existingEnv['DEFAULT_LITE_PRESET']) {
         const preset = existingEnv['DEFAULT_LITE_PRESET'].toLowerCase();
         const providerName = providers.find(p => p.replace(/\s+/g, '_').toLowerCase() === preset);
@@ -371,7 +371,7 @@ async function main() {
           answers.aiProvider = providerName;
         }
       }
-      
+
       // Load specific provider api keys from .env
       const keyMap = {
         'Nous Portal': 'NOUS_API_KEY',
@@ -392,12 +392,12 @@ async function main() {
         'Kimi Coding Plan': 'MOONSHOT_API_KEY',
         'GitHub Copilot': 'GITHUB_TOKEN'
       };
-      
+
       if (keyMap[answers.aiProvider] && existingEnv[keyMap[answers.aiProvider]]) {
         answers.dynamicApiKey = existingEnv[keyMap[answers.aiProvider]];
         answers.dynamicEnvKeyName = keyMap[answers.aiProvider];
       }
-      
+
       if (existingEnv['GOTCHI_DEVICE']) answers.device = existingEnv['GOTCHI_DEVICE'];
       if (existingEnv['GOTCHI_DEPLOYMENT']) answers.deployment = existingEnv['GOTCHI_DEPLOYMENT'];
       if (existingEnv['CUSTOM_BASE_URL']) answers.customBaseUrl = existingEnv['CUSTOM_BASE_URL'];
@@ -412,16 +412,16 @@ async function main() {
     'Local Machine (launches Gotchi on your local PC / Mac)',
     'VPS / Cloud Server (launches Gotchi on a cloud VPS IP)'
   ];
-  
+
   let defaultTypeIdx = 0;
   if (answers.deployment === 'Local' && answers.device === 'Standard PC / Mac') {
     defaultTypeIdx = 1;
   } else if (answers.deployment === 'VPS') {
     defaultTypeIdx = 2;
   }
-  
+
   const selectedType = await showMenu('Select Device or Deployment Type', typeChoices, defaultTypeIdx);
-  
+
   if (selectedType === 'Raspberry Pi or ESP32 Edge Device') {
     let defaultDeviceIdx = 0;
     if (answers.device && devices.indexOf(answers.device) !== -1) {
@@ -454,7 +454,7 @@ async function main() {
   let defaultProviderIdx = providers.indexOf(answers.aiProvider);
   if (defaultProviderIdx === -1) defaultProviderIdx = 0;
   answers.aiProvider = await showMenu('Choose AI/LLM Provider', providers, defaultProviderIdx);
-  
+
   // Clean up key prompt logic dynamically based on provider
   let requiresKey = true;
   let keyPrompt = `Enter your ${answers.aiProvider} API Key`;
@@ -465,7 +465,7 @@ async function main() {
     case 'OpenRouter': envKeyName = 'OPENROUTER_API_KEY'; break;
     case 'NovitaAI': envKeyName = 'NOVITA_API_KEY'; break;
     case 'Anthropic': envKeyName = 'ANTHROPIC_API_KEY'; break;
-    case 'OpenAI API': 
+    case 'OpenAI API':
     case 'OpenAI Codex': envKeyName = 'OPENAI_API_KEY'; break;
     case 'Qwen Cloud / DashScope': envKeyName = 'DASHSCOPE_API_KEY'; break;
     case 'xAI': envKeyName = 'XAI_API_KEY'; break;
@@ -478,8 +478,8 @@ async function main() {
     case 'Z.AI / GLM': envKeyName = 'ZAI_API_KEY'; break;
     case 'Kimi Coding Plan': envKeyName = 'MOONSHOT_API_KEY'; break;
     case 'GitHub Copilot': envKeyName = 'GITHUB_TOKEN'; break;
-    case 'LM Studio': 
-      requiresKey = false; 
+    case 'LM Studio':
+      requiresKey = false;
       answers.customBaseUrl = await askQuestion('Enter LM Studio URL', answers.customBaseUrl || 'http://127.0.0.1:1234/v1');
       break;
     case 'xAI Grok OAuth':
@@ -488,17 +488,17 @@ async function main() {
       requiresKey = false; // Uses internal auth flows
       break;
   }
-  
+
   if (requiresKey) {
     answers.dynamicApiKey = await askQuestion(keyPrompt, answers.dynamicApiKey);
     answers.dynamicEnvKeyName = envKeyName;
   }
-  
+
   const recommendedModels = modelsMap[answers.aiProvider] || ['custom'];
   let defaultModelIdx = recommendedModels.indexOf(answers.aiModel);
   if (defaultModelIdx === -1) defaultModelIdx = 0;
   answers.aiModel = await showMenu(`Select ${answers.aiProvider} Model`, recommendedModels, defaultModelIdx);
-  
+
   if (answers.aiModel === 'custom') {
     answers.aiModel = await askQuestion('Enter custom model tag', answers.aiModel);
   }
@@ -524,7 +524,7 @@ async function main() {
   process.stdout.write(CLEAR_SCREEN);
   renderSpinner('Generating and saving system environment configurations...', 'pong', PINK);
   await new Promise(r => setTimeout(r, 2000));
-  
+
   // 1. Generate or update .env file
   let envContent = '';
   if (fs.existsSync(ENV_FILE)) {
@@ -557,9 +557,9 @@ async function main() {
   Object.entries(updates).forEach(([key, val]) => {
     const regex = new RegExp(`^#?\\s*${key}=.*`, 'm');
     if (regex.test(envContent)) {
-      envContent = envContent.replace(regex, `${key}=${val}`);
+      envContent = envContent.replace(regex, `${key}="${val}"`);
     } else {
-      envContent += `\n${key}=${val}`;
+      envContent += `\n${key}="${val}"`;
     }
   });
 
@@ -575,7 +575,7 @@ async function main() {
   }, null, 2), 'utf8');
 
   stopSpinner('Configuration finalized and saved to .env successfully!');
-  
+
   // Fun Unicode concluding animation loop
   renderSpinner('Booting up personality core...', 'moon', PINK);
   await new Promise(r => setTimeout(r, 1500));
@@ -583,7 +583,7 @@ async function main() {
   await new Promise(r => setTimeout(r, 1500));
   renderSpinner('Activating platform channels...', 'hearts', PINK);
   await new Promise(r => setTimeout(r, 1500));
-  
+
   const connectedPlatform = answers.platforms.discord ? 'Discord client connected!' : 'Telegram bot webhook active!';
   stopSpinner(connectedPlatform);
 
@@ -600,7 +600,7 @@ async function main() {
   } else {
     console.log(`  Start the bot with:  ${BOLD}${BLUE}gotchi restart${RESET}\n`);
   }
-  
+
   cleanup();
   process.exit(0);
 }
