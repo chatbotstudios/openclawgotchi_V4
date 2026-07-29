@@ -17,7 +17,11 @@ from urllib.parse import parse_qs
 
 import psutil
 
-from config import BOT_NAME, DB_PATH, OWNER_NAME, PROJECT_DIR
+from config import BOT_NAME, DB_PATH, OWNER_NAME, PROJECT_DIR, AGENT_GITHUB_PAT, DISCORD_BOT_TOKEN
+
+# Dashboard auth token (optional — if set, all endpoints require ?token= or Authorization header)
+DASHBOARD_TOKEN = os.environ.get("DASHBOARD_TOKEN", "").strip()
+_BETTERCAP_CACHE = {"data": None, "time": 0}  # (data, timestamp) for Bettercap stats
 
 log = logging.getLogger("WebDash")
 
@@ -301,9 +305,38 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
         # Override to suppress spammy HTTP console prints
         pass
 
+    def _check_auth(self):
+        """Check DASHBOARD_TOKEN if configured. Returns True if auth passes."""
+        if not DASHBOARD_TOKEN:
+            return True  # No auth configured
+        # Check query param: ?token=xxx
+        from urllib.parse import urlparse, parse_qs
+        parsed = urlparse(self.path)
+        params = parse_qs(parsed.query)
+        if params.get('token', [None])[0] == DASHBOARD_TOKEN:
+            return True
+        # Check Authorization header: Bearer xxx
+        auth_header = self.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer ') and auth_header[7:] == DASHBOARD_TOKEN:
+            return True
+        return False
+
+    def _send_unauthorized(self):
+        self.send_response(401)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps({"success": False, "message": "Unauthorized — provide ?token= or Authorization: Bearer"}).encode('utf-8'))
+
     def do_GET(self):
+        # Strip query string for path matching
+        parsed_path = self.path.split('?')[0]
+        # Auth: skip for static assets and simulator (needed by unauthed HTML page)
+        if not parsed_path.startswith("/static/") and not parsed_path.startswith("/simulator.png"):
+            if not self._check_auth():
+                self._send_unauthorized()
+                return
         # 1. Main HTML Serve
-        if self.path == "/" or self.path == "/index.html":
+        if parsed_path == "/" or parsed_path == "/index.html":
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
@@ -322,7 +355,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(html.encode('utf-8'))
             
         # 2. Simulator EPD PNG Serve
-        elif self.path.startswith("/simulator.png"):
+        elif parsed_path.startswith("/simulator.png"):
             img_path = PROJECT_DIR / "simulator.png"
             if img_path.exists():
                 try:
@@ -343,7 +376,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(blank_png)
 
         # 3. Dynamic Stats API
-        elif self.path == "/api/stats":
+        elif parsed_path == "/api/stats":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
@@ -352,7 +385,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(stats, indent=2).encode('utf-8'))
 
         # 4. GET .env Configuration API
-        elif self.path == "/api/config":
+        elif parsed_path == "/api/config":
             env_path = PROJECT_DIR / ".env"
             env_content = ""
             if env_path.exists():
@@ -377,7 +410,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(env_content.encode('utf-8'))
 
         # 5. SSE — Server-Sent Events stream (real-time push)
-        elif self.path == "/api/events":
+        elif parsed_path == "/api/events":
             self.send_response(200)
             self.send_header("Content-Type", "text/event-stream")
             self.send_header("Cache-Control", "no-cache")
@@ -393,7 +426,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
                 pass
 
         # 6. Static files (CSS, JS, assets)
-        elif self.path.startswith("/static/"):
+        elif parsed_path.startswith("/static/"):
             static_dir = Path(__file__).parent / "static"
             file_path = static_dir / self.path[len("/static/"):]
             # Resolve to prevent path traversal
@@ -420,7 +453,12 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(404, "HUD Resource Not Found")
 
     def do_POST(self):
-        if self.path == "/api/action":
+        # Strip query string for path matching
+        post_path = self.path.split('?')[0]
+        if not self._check_auth():
+            self._send_unauthorized()
+            return
+        if post_path == "/api/action":
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length).decode('utf-8')
             params = parse_qs(post_data)
@@ -468,42 +506,101 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
 
             elif action == "telegram_uplink":
                 try:
-                    from game_engine.vitals import add_xp as engine_add_xp
-                    engine_add_xp(40, "telegram_uplink")
-                    add_system_log("[Uplink] Dispatching Telegram webhook ping to servers... ✓ Uplink stable! (+40 XP)")
-                    message = "Telegram uplink verified. +40 XP granted!"
-                    success = True
+                    import requests
+                    from config import BOT_TOKEN
+                    if BOT_TOKEN:
+                        r = requests.get(
+                            f"https://api.telegram.org/bot{BOT_TOKEN}/getMe",
+                            timeout=5
+                        )
+                        if r.status_code == 200:
+                            bot_info = r.json().get("result", {})
+                            bot_name = bot_info.get("first_name", "Unknown")
+                            message = f"Telegram API verified: @{bot_name} token valid."
+                            from game_engine.vitals import add_xp as engine_add_xp
+                            engine_add_xp(40, "telegram_uplink")
+                            add_system_log(f"[Uplink] Telegram API verified: @{bot_name} (+40 XP)")
+                            success = True
+                        else:
+                            message = f"Telegram API error: HTTP {r.status_code}"
+                    else:
+                        message = "TELEGRAM_BOT_TOKEN not configured — set in .env"
                 except Exception as e:
                     message = f"Telegram ping failed: {e}"
 
             elif action == "discord_uplink":
                 try:
-                    from game_engine.vitals import add_xp as engine_add_xp
-                    engine_add_xp(40, "discord_uplink")
-                    add_system_log("[Uplink] Synchronizing Discord telemetry handshake... ✓ Stream bound! (+40 XP)")
-                    message = "Discord guild synchronized. +40 XP granted!"
-                    success = True
+                    import requests
+                    if DISCORD_BOT_TOKEN:
+                        r = requests.get(
+                            "https://discord.com/api/v10/users/@me",
+                            headers={"Authorization": f"Bot {DISCORD_BOT_TOKEN}"},
+                            timeout=5
+                        )
+                        if r.status_code == 200:
+                            bot_info = r.json()
+                            bot_name = bot_info.get("username", "Unknown")
+                            message = f"Discord API verified: @{bot_name} token valid."
+                            from game_engine.vitals import add_xp as engine_add_xp
+                            engine_add_xp(40, "discord_uplink")
+                            add_system_log(f"[Uplink] Discord API verified: @{bot_name} (+40 XP)")
+                            success = True
+                        else:
+                            message = f"Discord API error: HTTP {r.status_code}"
+                    else:
+                        message = "DISCORD_BOT_TOKEN not configured — set in .env"
                 except Exception as e:
-                    message = f"Discord sync failed: {e}"
+                    message = f"Discord ping failed: {e}"
 
             elif action == "github_uplink":
                 try:
-                    from game_engine.vitals import add_xp as engine_add_xp
-                    engine_add_xp(40, "github_uplink")
-                    add_system_log("[Uplink] Pulling remote repo metadata via AGENT_GITHUB_PAT... ✓ Sync complete! (+40 XP)")
-                    message = "GitHub metadata synchronized. +40 XP granted!"
-                    success = True
+                    import requests
+                    if AGENT_GITHUB_PAT:
+                        r = requests.get(
+                            "https://api.github.com/user",
+                            headers={"Authorization": f"Bearer {AGENT_GITHUB_PAT}"},
+                            timeout=5
+                        )
+                        if r.status_code == 200:
+                            user_info = r.json()
+                            gh_login = user_info.get("login", "Unknown")
+                            gh_repos = user_info.get("public_repos", 0)
+                            message = f"GitHub API verified: @{gh_login} ({gh_repos} repos)."
+                            from game_engine.vitals import add_xp as engine_add_xp
+                            engine_add_xp(40, "github_uplink")
+                            add_system_log(f"[Uplink] GitHub API verified: @{gh_login} ({gh_repos} repos) (+40 XP)")
+                            success = True
+                        else:
+                            message = f"GitHub API error: HTTP {r.status_code}"
+                    else:
+                        message = "AGENT_GITHUB_PAT not configured — set in .env"
                 except Exception as e:
                     message = f"GitHub sync failed: {e}"
 
             elif action == "brave_search":
                 try:
                     query = params.get('query', [None])[0] or "cybernetics"
-                    from game_engine.vitals import add_xp as engine_add_xp
-                    engine_add_xp(40, "brave_search")
-                    add_system_log(f"[Cyberspace] Scanned Brave index query: '{query}' -> Found 8 node references (+40 XP)")
-                    message = f"Cyberspace query '{query}' synchronized. +40 XP granted!"
-                    success = True
+                    import requests
+                    brave_key = os.environ.get("BRAVE_SEARCH_API_KEY", "")
+                    if brave_key:
+                        r = requests.get(
+                            "https://api.search.brave.com/res/v1/web/search",
+                            params={"q": query, "count": 5},
+                            headers={"Accept": "application/json", "Accept-Encoding": "gzip", "X-Subscription-Token": brave_key},
+                            timeout=5
+                        )
+                        if r.status_code == 200:
+                            results = r.json().get("web", {}).get("results", [])
+                            result_summary = "; ".join(f"{r['title']}: {r.get('url','')}" for r in results[:3])
+                            message = f"Brave Search: {len(results)} results for '{query}'. Top: {result_summary}"
+                            from game_engine.vitals import add_xp as engine_add_xp
+                            engine_add_xp(40, "brave_search")
+                            add_system_log(f"[Cyberspace] Brave search '{query}': {len(results)} results (+40 XP)")
+                            success = True
+                        else:
+                            message = f"Brave API error: HTTP {r.status_code}"
+                    else:
+                        message = "BRAVE_SEARCH_API_KEY not configured — set in .env"
                 except Exception as e:
                     message = f"Brave search failed: {e}"
 
@@ -530,7 +627,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({"success": success, "message": message}).encode('utf-8'))
 
-        elif self.path == "/api/chat":
+        elif post_path == "/api/chat":
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length).decode('utf-8')
             params = parse_qs(post_data)
@@ -595,7 +692,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({"success": success, "message": message}).encode('utf-8'))
 
-        elif self.path == "/api/config":
+        elif post_path == "/api/config":
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length).decode('utf-8')
             env_path = PROJECT_DIR / ".env"
@@ -660,31 +757,36 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             "kaomoji": display.get_current_face_ascii()
         }
 
-        # 3. Auditor/Pwnagotchi Telemetry
+        # 3. Auditor/Pwnagotchi Telemetry (cached 5s TTL)
         pwn_dict = {"status": "OFFLINE", "aps": 0, "ble": 0, "handshakes": 0}
         try:
-            from utils.ipc import state_manager
-            state = state_manager.get_state()
-            
-            # Read bettercap configurations if running in that scope
-            import requests
-            from requests.auth import HTTPBasicAuth
-
-            from config import BETTERCAP_PASS, BETTERCAP_USER
-            
-            try:
-                auth = HTTPBasicAuth(BETTERCAP_USER, BETTERCAP_PASS)
-                r = requests.get("http://localhost:8081/api/session", auth=auth, timeout=0.5)
-                if r.status_code == 200:
-                    session = r.json()
-                    pwn_dict["status"] = "ONLINE"
-                    
-                    aps = session.get("wifi", {}).get("aps", [])
-                    valid_aps = [ap for ap in aps if ap.get('encryption') not in ('', 'OPEN')]
-                    pwn_dict["aps"] = len(valid_aps)
-                    pwn_dict["ble"] = len(session.get("ble", {}).get("devices", []))
-            except Exception:
-                pass
+            import time as _time
+            now = _time.time()
+            # Use cached data if fresh (5s TTL)
+            if _BETTERCAP_CACHE["data"] and (now - _BETTERCAP_CACHE["time"]) < 5:
+                pwn_dict = _BETTERCAP_CACHE["data"]
+            else:
+                from utils.ipc import state_manager
+                state = state_manager.get_state()
+                
+                import requests
+                from requests.auth import HTTPBasicAuth
+                from config import BETTERCAP_PASS, BETTERCAP_USER
+                
+                try:
+                    auth = HTTPBasicAuth(BETTERCAP_USER, BETTERCAP_PASS)
+                    r = requests.get("http://localhost:8081/api/session", auth=auth, timeout=0.5)
+                    if r.status_code == 200:
+                        session = r.json()
+                        pwn_dict["status"] = "ONLINE"
+                        aps = session.get("wifi", {}).get("aps", [])
+                        valid_aps = [ap for ap in aps if ap.get('encryption') not in ('', 'OPEN')]
+                        pwn_dict["aps"] = len(valid_aps)
+                        pwn_dict["ble"] = len(session.get("ble", {}).get("devices", []))
+                except Exception:
+                    pass
+                _BETTERCAP_CACHE["data"] = dict(pwn_dict)
+                _BETTERCAP_CACHE["time"] = now
                 
             # Read handshakes directory count
             handshake_dir = PROJECT_DIR / "handshakes"
