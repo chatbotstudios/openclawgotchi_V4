@@ -188,21 +188,18 @@ except Exception as e:
 def print_banner():
     pink = "\033[38;5;205m"
     blue = "\033[38;5;39m"
+    green = "\033[38;5;82m"
     bold = "\033[1m"
     reset = "\033[0m"
     
     banner = f"""
-{pink}{bold}  ▄██████▄   ▄██████▄  ████████▄     ▄████████    ▄█    █▄   ▄█  
-{pink}{bold} ▄█▀▀  ▀██▄ ▄█▀▀  ▀██▄ ███   ▀███   ▄███▀▀▀▀███   ▄███    ███ ▄███  
-{pink}{bold} ███    ███ ███    ███ ███    ███   ███    ▀███   ███▌    ███  ███  
-{blue}{bold} ███    ███ ███    ███ ███    ███  ▄███▄▄▄▄██▀    ███▌    ███  ███  
-{blue}{bold} ███    ███ ███    ███ ███    ███ ▀▀███▀▀▀▀▀    ▀███████████  ███  
-{blue}{bold} ███    ███ ███    ███ ███    ███ ▀███████████    ███▌    ███  ███  
-{pink}{bold} ▀██▄  ▄██▀ ▀██▄  ▄██▀ ███   ▄███   ███    ███    ███     ███  ███  
-{pink}{bold}  ▀██████▀   ▀██████▀  ████████▀    ███    ███     ██      ▀   ███  
-{pink}{bold}                                    ███    ███                  {reset}"""
+{blue}{bold}   ____  ____  _______   ____________  ______________  ______
+{blue}{bold}  / __ \\/ __ \\/ ____/ | / / ____/ __ \\/_  __/ ____/ / / /  _/
+{pink}{bold} / / / / /_/ / __/ /  |/ / / __/ / / / / / / /   / /_/ // /  
+{pink}{bold}/ /_/ / ____/ /___/ /|  / /_/ / /_/ / / / / /___/ __  // /   
+{green}{bold}\\____/_/   /_____/_/ |_/\\____/\\____/ /_/  \\____/_/ /_/___/   {reset}"""
     print(banner)
-    print(f"  {blue}OpenClawGotchi V3.0{reset} — {pink}Tactical Companion Core{reset}\n")
+    print(f"\n  {blue}OpenClawGotchi V4.0{reset} — {pink}Tactical Companion Core{reset}\n")
 
 if __name__ == "__main__":
     # Check if setup sentinel exists. If not, and running without arguments, auto-launch setup wizard.
