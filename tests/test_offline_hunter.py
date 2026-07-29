@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from core.offline_hunter import OfflineHunter, CHUNK_SLEEP
+import game_engine.state  # noqa: F401 — ensure module is importable for patch targets
 
 def test_offline_hunter_flow(tmp_path):
     # Setup temp paths for testing

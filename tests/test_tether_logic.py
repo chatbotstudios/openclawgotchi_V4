@@ -137,8 +137,14 @@ def test_watchdog_attempt_tether():
         mock_proc.stdout = "inet 172.20.10.5/28"  # Mock IP address allocation
         mock_run.return_value = mock_proc
         watchdog._attempt_tether("AA:BB:CC:DD:EE:FF")
-        assert mock_run.call_count == 11
+        # 13 calls: nmcli down, bt disconnect, rfkill, bt power on, hciconfig up,
+        # bt discoverable on, bt connect, ip link show bnep0, nmcli up,
+        # ip link show bnep0, ip addr show bnep0, ip mtu set, tc qdisc
+        assert mock_run.call_count == 13
         mock_run.assert_any_call(["sudo", "bluetoothctl", "connect", "AA:BB:CC:DD:EE:FF"], capture_output=True, timeout=25)
         mock_run.assert_any_call(["sudo", "nmcli", "con", "up", "iPhoneHotspot"], capture_output=True, timeout=15)
         mock_run.assert_any_call(["ip", "link", "show", "bnep0"], capture_output=True)
         mock_run.assert_any_call(["ip", "-4", "addr", "show", "dev", "bnep0"], capture_output=True, text=True)
+        mock_run.assert_any_call(["sudo", "rfkill", "unblock", "bluetooth"], capture_output=True)
+        mock_run.assert_any_call(["sudo", "bluetoothctl", "power", "on"], capture_output=True)
+        mock_run.assert_any_call(["sudo", "hciconfig", "hci0", "up"], capture_output=True)
