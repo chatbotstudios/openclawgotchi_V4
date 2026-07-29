@@ -1,16 +1,18 @@
 import click
-from core.cli.utils import output_result, format_header
-from core.commands import manage_wifi_interface, manage_ble_adapter, manage_net
+
+from core.cli.utils import format_header, output_result
+from core.commands import manage_ble_adapter, manage_net, manage_wifi_interface
+
 
 @click.group()
 def network():
     """Radio and Networking commands."""
-    pass
 
 @network.command(name="status")
 def network_status():
     """Display Dual Uplink Network Status."""
     import subprocess
+
     from core.cli.utils import format_header
     
     # Get wlan0 IP
@@ -66,7 +68,6 @@ def network_status():
 @network.group()
 def wifi():
     """Wi-Fi radio management."""
-    pass
 
 @wifi.command(name="status")
 @click.option('--json', 'as_json', is_flag=True)
@@ -94,7 +95,6 @@ def wifi_scan():
 @network.group()
 def ble():
     """Bluetooth hardware controls."""
-    pass
 
 @ble.command(name="on")
 def ble_on():
@@ -115,7 +115,6 @@ def ble_scan():
 @network.group()
 def tether():
     """Bluetooth PAN Tethering."""
-    pass
 
 @tether.command(name="burst")
 @click.option('--duration', default=300, type=int, help="Duration in seconds for aggressive polling.")
@@ -148,6 +147,7 @@ def tether_up(mac):
     """Bring up the Bluetooth PAN tethering tunnel."""
     import subprocess
     import time
+
     from config import load_env
     
     target_mac = mac
@@ -208,7 +208,6 @@ def network_hunt(duration, mission):
 @network.group()
 def net():
     """Global network diagnostics."""
-    pass
 
 @net.command(name="ping")
 def net_ping():

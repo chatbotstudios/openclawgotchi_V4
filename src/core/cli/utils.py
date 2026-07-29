@@ -1,5 +1,7 @@
 import json
+
 import click
+
 
 def output_result(data, as_json=False):
     """Universal output handler for human or machine consumption."""

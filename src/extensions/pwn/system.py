@@ -1,6 +1,7 @@
-from sdk.tool_builder import register_tool
-from core.commands import clear_bot_history
 import logging
+
+from core.commands import clear_bot_history
+from sdk.tool_builder import register_tool
 
 log = logging.getLogger("Extensions.System")
 

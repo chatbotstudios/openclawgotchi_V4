@@ -1,11 +1,12 @@
-import sqlite3
-import logging
 import json
+import logging
+import sqlite3
 from datetime import datetime, timezone
-from typing import List, Dict, Optional
-from config import DB_PATH, WORKSPACE_DIR, MISSIONS_DIR
-from game_engine.vitals import add_xp, regenerate_hp_on_sleep
+from typing import Dict, List, Optional
+
+from config import DB_PATH, MISSIONS_DIR, WORKSPACE_DIR
 from game_engine.state import load_state, save_state
+from game_engine.vitals import add_xp, regenerate_hp_on_sleep
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ def load_progressive_missions():
     except Exception as e:
         log.error(f"Failed to load progressive missions: {e}")
 
-def get_missions(status_filter: Optional[str] = None) -> List[Dict]:
+def get_missions(status_filter: str | None = None) -> list[dict]:
     """Retrieves missions from the database, optionally filtered by status."""
     try:
         conn = sqlite3.connect(str(DB_PATH))
@@ -120,8 +121,9 @@ def complete_mission(name: str, event=None) -> bool:
 
         # Broadcast to Discord #heartbeats
         try:
-            from core.missions.notifications import _send_discord_webhook
             import threading
+
+            from core.missions.notifications import _send_discord_webhook
             content = f"🏆 **Mission Complete!**\n> **{mission['name']}**\n*+{mission['xp_reward']} XP gained!*"
             t = threading.Thread(target=_send_discord_webhook, args=({"content": content},))
             t.daemon = True
@@ -168,6 +170,7 @@ def increment_mission_progress(base_name: str, amount: int = 1, event=None):
 
 def _generate_dream_async():
     import asyncio
+
     from core.router import get_router
     
     async def _run():

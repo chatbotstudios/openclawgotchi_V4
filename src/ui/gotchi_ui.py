@@ -8,6 +8,7 @@ import os
 import json
 import datetime
 import textwrap
+import time
 from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
 import sys
@@ -15,6 +16,16 @@ import sys
 UI_DIR = Path(__file__).parent.resolve()
 SRC_DIR = UI_DIR.parent
 PROJECT_DIR = SRC_DIR.parent
+
+# ---------------------------------------------------------------------------
+# Module-level caches
+# ---------------------------------------------------------------------------
+_STATS_CACHE = {}       # get_system_stats(): {'data': dict, 'time': float}
+_STATS_CACHE_TTL = 12   # seconds before refreshing stats
+_CPU_PREV = {}          # previous /proc/stat ticks for delta calculation
+_FACES_CACHE = None     # _load_all_faces() result
+_FONT_CACHE = {}        # _get_font() → ImageFont, keyed by (path, size)
+# ---------------------------------------------------------------------------
 
 try:
     from config import BOT_NAME
@@ -28,64 +39,60 @@ except ImportError:
         return {"level": 1, "title": "Bot", "xp": 0, "xp_in_level": 0, "xp_needed_this_level": 100, "max_level": 20}
 
 def get_system_stats():
+    # --- Cache check ---
+    cached = _STATS_CACHE.get('stats')
+    if cached and (time.time() - cached['time']) < _STATS_CACHE_TTL:
+        return cached['data']
+
     stats = {'load': 0, 'temp': '?', 'mem_avail': '?', 'cpu': '?', 'uptime': '?'}
     try:
-        # Load average (Works on most Unix)
+        # Load average (works on most Unix, no subprocess needed)
         stats['load'] = os.getloadavg()[0]
-        
-        # Temperature
+
+        # Temperature — /sys/class/thermal/thermal_zone0/temp (no subprocess)
         try:
-            import subprocess
-            if sys.platform == "linux":
-                try:
-                    temp = subprocess.check_output(["vcgencmd", "measure_temp"], text=True, timeout=1).strip()
-                    stats['temp'] = temp.replace("temp=", "").replace("'C", "")
-                except:
-                    with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
-                        stats['temp'] = f"{int(f.read().strip()) / 1000:.1f}"
-        except:
+            with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
+                stats['temp'] = f"{int(f.read().strip()) / 1000:.1f}"
+        except Exception:
             pass
-            
-        # Memory
+
+        # Memory — /proc/meminfo (no subprocess, no psutil)
         try:
-            import psutil
-            mem = psutil.virtual_memory()
-            stats['mem_avail'] = int(mem.available / (1024 * 1024))
-            stats['mem_total'] = int(mem.total / (1024 * 1024))
-        except ImportError:
-            try:
-                import subprocess
-                if sys.platform == "linux":
-                    mem_out = subprocess.check_output(["free", "-m"], text=True, timeout=1).splitlines()[1].split()
-                    stats['mem_avail'] = mem_out[6] 
-                    stats['mem_total'] = mem_out[1]
-            except:
-                pass
-            
-        # CPU Usage
+            with open('/proc/meminfo', 'r') as f:
+                for line in f:
+                    if line.startswith('MemAvailable:'):
+                        stats['mem_avail'] = int(line.split()[1]) // 1024
+                    elif line.startswith('MemTotal:'):
+                        stats['mem_total'] = int(line.split()[1]) // 1024
+                    if 'mem_avail' in stats and 'mem_total' in stats:
+                        break
+        except Exception:
+            pass
+
+        # CPU Usage — /proc/stat delta (no subprocess, no psutil, no shell=True)
         try:
-            import psutil
-            stats['cpu'] = int(psutil.cpu_percent(interval=None))
-        except ImportError:
-            try:
-                import subprocess
-                if sys.platform == "linux":
-                    cpu_out = subprocess.check_output("top -bn1 | grep -i 'Cpu(s)'", shell=True, text=True, timeout=1)
-                    idle = float(cpu_out.split('id,')[0].split(',')[-1].strip().split()[0])
-                    stats['cpu'] = int(100.0 - idle)
-            except:
-                pass
-            
-        # Uptime
+            with open('/proc/stat', 'r') as f:
+                for line in f:
+                    if line.startswith('cpu '):
+                        parts = line.split()
+                        idle = int(parts[4])
+                        total = sum(int(p) for p in parts[1:])
+                        prev = _CPU_PREV
+                        if prev:
+                            idle_delta = idle - prev.get('idle', idle)
+                            total_delta = total - prev.get('total', total)
+                            if total_delta > 0:
+                                stats['cpu'] = int(100.0 * (1.0 - idle_delta / total_delta))
+                        _CPU_PREV.clear()
+                        _CPU_PREV.update(idle=idle, total=total)
+                        break
+        except Exception:
+            pass
+
+        # Uptime — /proc/uptime (already pure, keep as-is)
         try:
-            if sys.platform == "linux":
-                with open('/proc/uptime', 'r') as f:
-                    uptime_seconds = float(f.readline().split()[0])
-            else:
-                import psutil
-                import time
-                uptime_seconds = time.time() - psutil.boot_time()
-                
+            with open('/proc/uptime', 'r') as f:
+                uptime_seconds = float(f.readline().split()[0])
             days = int(uptime_seconds // 86400)
             hours = int((uptime_seconds % 86400) // 3600)
             mins = int((uptime_seconds % 3600) // 60)
@@ -93,13 +100,18 @@ def get_system_stats():
                 stats['uptime'] = f"{days:02d}:{hours:02d}:{mins:02d}"
             else:
                 stats['uptime'] = f"{hours:02d}:{mins:02d}"
-        except:
+        except Exception:
             pass
     except Exception:
         pass
+
+    _STATS_CACHE['stats'] = {'data': stats, 'time': time.time()}
     return stats
 
 def _load_all_faces() -> dict:
+    global _FACES_CACHE
+    if _FACES_CACHE is not None:
+        return _FACES_CACHE
     try:
         from ui.faces import DEFAULT_FACES as default_faces
     except ImportError:
@@ -111,42 +123,75 @@ def _load_all_faces() -> dict:
             custom_faces = json.loads(CUSTOM_FACES_PATH.read_text())
     except Exception:
         pass
-    return {**default_faces, **custom_faces}
+    _FACES_CACHE = {**default_faces, **custom_faces}
+    return _FACES_CACHE
 
 _animation_tick = 0
 
 def get_bluetooth_icon() -> str:
     if sys.platform != "linux":
         return "B"  # Default for macOS/Windows development/testing
-    
+
     try:
-        import subprocess
-        # 1. Check if adapter is present and UP
-        hci_check = subprocess.run(["hciconfig", "hci0"], capture_output=True, text=True, timeout=1)
-        rfkill_check = subprocess.run(["rfkill", "list", "bluetooth"], capture_output=True, text=True, timeout=1)
-        if hci_check.returncode != 0 or "DOWN" in hci_check.stdout or "Soft blocked: yes" in rfkill_check.stdout:
+        # 1. Check if adapter exists (hci0) and check rfkill soft block
+        hci_path = Path("/sys/class/bluetooth/hci0")
+        if not hci_path.exists():
             return "X"
-            
-        # 2. Check if discoverable (ISCAN active)
-        if "ISCAN" in hci_check.stdout:
-            return "(B)"
-            
-        # 3. Check if tethered / connected
-        bnep_check = subprocess.run(["ip", "link", "show", "bnep0"], capture_output=True, text=True, timeout=1)
-        if bnep_check.returncode == 0 and "state UP" in bnep_check.stdout:
-            return "B✓"
-            
-        # 4. Check if actively scanning / broadcasting
-        pgrep_scan = subprocess.run(["pgrep", "-f", "bluetoothctl|hcitool|bettercap"], capture_output=True, text=True, timeout=1)
-        if pgrep_scan.returncode == 0:
-            return "<<B>>"
-            
+
+        # Check rfkill via /sys/class/rfkill/ (more reliable than /proc/rfkill)
+        rfkill_soft_blocked = False
+        try:
+            for rfkill_dir in Path("/sys/class/rfkill").iterdir():
+                try:
+                    rtype = (rfkill_dir / "type").read_text().strip()
+                    if rtype == "bluetooth":
+                        soft = (rfkill_dir / "soft").read_text().strip()
+                        if soft == "1":
+                            rfkill_soft_blocked = True
+                            break
+                except Exception:
+                    continue
+        except Exception:
+            pass
+
+        if rfkill_soft_blocked:
+            return "X"
+
+        # 2. Check if discovering / scanning (ISCAN-like state)
+        try:
+            discovering = (hci_path / "discovering").read_text().strip()
+            if discovering == "1":
+                return "(B)"
+        except Exception:
+            pass
+
+        # 3. Check if tethered / connected (bnep0 interface)
+        try:
+            bnep_operstate = Path("/sys/class/net/bnep0/operstate")
+            if bnep_operstate.exists() and bnep_operstate.read_text().strip() == "up":
+                return "B✓"
+        except Exception:
+            pass
+
+        # 4. Check for active scanning / broadcasting processes via /proc
+        try:
+            for proc_dir in Path("/proc").iterdir():
+                if proc_dir.name.isdigit():
+                    try:
+                        cmdline = (proc_dir / "cmdline").read_text()
+                        for proc_name in ("bluetoothctl", "hcitool", "bettercap"):
+                            if proc_name in cmdline:
+                                return "<<B>>"
+                    except Exception:
+                        continue
+        except Exception:
+            pass
+
         return "B"
     except Exception:
         return "B"
 
 def get_wifi_icon() -> str:
-    import sys
     if sys.platform != "linux":
         return " ▂▃▅"
         
@@ -168,6 +213,14 @@ def get_wifi_icon() -> str:
         pass
         
     return " ▂▃▅"
+
+
+def _get_font(path, size):
+    """Load (and cache) an ImageFont for the given path+size combination."""
+    key = (path, size)
+    if key not in _FONT_CACHE:
+        _FONT_CACHE[key] = ImageFont.truetype(path, size)
+    return _FONT_CACHE[key]
 
 def generate_canvas(mood="happy", status_text="") -> Image:
     stats = get_system_stats()
@@ -202,10 +255,10 @@ def generate_canvas(mood="happy", status_text="") -> Image:
 
     try:
         if not font_base_path: raise FileNotFoundError("No DejaVu base font found.")
-        font_ui = ImageFont.truetype(font_base_path, 10)
-        font_text = ImageFont.truetype(font_base_path, 12)
-        font_bold = ImageFont.truetype(font_base_path, 10)
-        font_face = ImageFont.truetype(face_path, 26)
+        font_ui = _get_font(font_base_path, 10)
+        font_text = _get_font(font_base_path, 12)
+        font_bold = _get_font(font_base_path, 10)
+        font_face = _get_font(face_path, 26)
     except Exception as e:
         import logging
         logging.error(f"UI Font Loading Failed (Falling back to tiny default font): {e}")
@@ -308,7 +361,6 @@ def generate_canvas(mood="happy", status_text="") -> Image:
 
     # Dynamic Offline Hunt Countdown
     try:
-        import time
         states_path = PROJECT_DIR / "gotchi_states.json"
         if states_path.exists():
             state_data = json.loads(states_path.read_text())

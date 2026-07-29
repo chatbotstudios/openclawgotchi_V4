@@ -1,7 +1,8 @@
 import os
 import sys
-import click
 from pathlib import Path
+
+import click
 
 # Fix path to find src/
 PROJECT_DIR = Path(__file__).parent.parent.parent.parent.resolve()
@@ -9,14 +10,17 @@ sys.path.insert(0, str(PROJECT_DIR / "src"))
 
 # Load environment
 from dotenv import load_dotenv
+
 load_dotenv(PROJECT_DIR / ".env")
 
 # Ensure PYTHONPATH is set for sub-processes
 os.environ["PYTHONPATH"] = str(PROJECT_DIR / "src")
 
-import sys
 import logging
+import sys
+
 from config import DATA_DIR
+
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 file_handler = logging.FileHandler(DATA_DIR / "gotchi.log")
@@ -31,12 +35,27 @@ logging.basicConfig(
     handlers=[file_handler, stream_handler]
 )
 
-from core.cli.commands.core import status, doctor, logs, restart, dash, clear, list_tools, ui, mode, help_cmd, run_bot, setup, serve
-from core.cli.commands.pwn import pwn
-from core.cli.commands.network import network
-from core.cli.commands.tasks import tasks
+from core.cli.commands.core import (
+    clear,
+    dash,
+    doctor,
+    help_cmd,
+    list_tools,
+    logs,
+    mode,
+    restart,
+    run_bot,
+    serve,
+    setup,
+    status,
+    ui,
+)
 from core.cli.commands.missions import missions
+from core.cli.commands.network import network
+from core.cli.commands.pwn import pwn
+from core.cli.commands.tasks import tasks
 from game_engine.cli import aipet
+
 
 class CategorizedGroup(click.Group):
     def format_commands(self, ctx, formatter):
@@ -109,7 +128,6 @@ class CategorizedGroup(click.Group):
 @click.group(cls=CategorizedGroup)
 def cli():
     """🦋 OPENCLAWGOTCHI V3 — Tactical CLI Interface"""
-    pass
 
 from core.cli.commands.core import backup
 
@@ -138,7 +156,7 @@ cli.add_command(aipet)
 
 # --- Dynamic Tool CLI Registration ---
 try:
-    from core.registry import load_all_extensions, get_registered_tools
+    from core.registry import get_registered_tools, load_all_extensions
     
     # Load all extensions dynamically
     load_all_extensions(str(PROJECT_DIR / "src" / "extensions"))

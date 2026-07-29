@@ -10,14 +10,34 @@ echo ""
 # ============================================
 # 1. SWAP (critical for 512MB Pi)
 # ============================================
-echo "[1/5] Configuring swap (1GB)..."
+echo "[1/5] Configuring memory (ZRAM + swap)..."
+
+# ZRAM — compressed in-memory swap (saves SD card lifespan vs dphys-swapfile)
+if command -v apt &> /dev/null; then
+    if ! dpkg -l zram-tools &>/dev/null 2>&1; then
+        echo "  Installing zram-tools (compressed in-memory swap)..."
+        sudo apt install -y zram-tools > /dev/null 2>&1 || true
+    fi
+    # Configure: 256MB per device, lz4 algorithm (fastest compression)
+    if [ -f /etc/default/zramswap ]; then
+        sudo sed -i 's/^#.*PERCENT=.*/PERCENT=50/' /etc/default/zramswap 2>/dev/null || true
+        echo "  ✅ ZRAM configured (50% of RAM, lz4)"
+    else
+        echo 'PERCENT=50' | sudo tee /etc/default/zramswap > /dev/null
+        echo "  ✅ ZRAM configured (50% of RAM, lz4)"
+    fi
+    sudo systemctl enable zramswap 2>/dev/null || true
+    sudo systemctl restart zramswap 2>/dev/null || true
+fi
+
+# dphys-swapfile as fallback (reduced to 256MB since ZRAM handles the load)
 if ! command -v dphys-swapfile &> /dev/null; then
     echo "  Installing dphys-swapfile..."
     sudo apt update && sudo apt install -y dphys-swapfile > /dev/null 2>&1 || true
 fi
 
 if [ -f /etc/dphys-swapfile ]; then
-    sudo sed -i 's/^CONF_SWAPSIZE=.*/CONF_SWAPSIZE=1024/' /etc/dphys-swapfile
+    sudo sed -i 's/^CONF_SWAPSIZE=.*/CONF_SWAPSIZE=256/' /etc/dphys-swapfile
     sudo systemctl restart dphys-swapfile 2>/dev/null || true
     echo "  ✅ Swap: $(free -h | grep Swap | awk '{print $2}')"
 else
@@ -59,7 +79,7 @@ fi
 # ============================================
 echo ""
 echo "[3/5] Adding bot service watchdog (Battery Optimized)..."
-CRON_LINE="*/15 * * * * systemctl is-active gotchi.service >/dev/null || systemctl restart gotchi.service"
+CRON_LINE="*/15 * * * * systemctl is-active gotchi >/dev/null || systemctl restart gotchi"
 (sudo crontab -l 2>/dev/null | grep -v "gotchi" ; echo "$CRON_LINE") | sudo crontab -
 echo "  ✅ Cron watchdog: checks every 15 min, restarts if dead"
 
@@ -106,8 +126,8 @@ echo "  ✅ Silenced user-level audio layers"
 echo ""
 echo "[5/5] Ensuring bot service is enabled..."
 sudo systemctl daemon-reload
-sudo systemctl enable gotchi.service 2>/dev/null || true
-echo "  ✅ gotchi.service enabled"
+sudo systemctl enable gotchi 2>/dev/null || true
+echo "  ✅ gotchi service enabled"
 
 # ============================================
 # SUMMARY
@@ -118,9 +138,10 @@ echo "║              ✅ Hardening Complete!               ║"
 echo "╚═══════════════════════════════════════════════════╝"
 echo ""
 echo "  📊 Status:"
+echo "     ZRAM:     $(swapon --show=NAME,SIZE,TYPE 2>/dev/null | grep zram | awk '{print $2}' || echo 'inactive')"
 echo "     Swap:     $(free -h | grep Swap | awk '{print $2}')"
 echo "     Free RAM: $(free -h | grep Mem | awk '{print $4}')"
-echo "     Bot:      $(systemctl is-active gotchi-bot 2>/dev/null || echo 'not running')"
+echo "     Bot:      $(systemctl is-active gotchi 2>/dev/null || echo 'not running')"
 echo ""
 echo "  🛡️ Protection:"
 echo "     • Hardware watchdog: 15s (reboots on system freeze)"

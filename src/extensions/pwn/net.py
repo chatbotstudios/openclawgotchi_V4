@@ -1,5 +1,7 @@
 import subprocess
+
 from sdk.tool_builder import register_tool
+
 
 @register_tool
 def net_scan() -> str:

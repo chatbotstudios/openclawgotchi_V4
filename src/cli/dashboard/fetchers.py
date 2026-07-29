@@ -1,8 +1,9 @@
 import asyncio
-import sys
 import os
-import requests
+import sys
 from pathlib import Path
+
+import requests
 from requests.auth import HTTPBasicAuth
 
 # We use asyncio.to_thread to prevent blocking the UI loop with IO operations.
@@ -31,7 +32,7 @@ async def fetch_pwn_status():
             from utils.ipc import state_manager
             state = state_manager.get_state()
             
-            from config import BETTERCAP_USER, BETTERCAP_PASS
+            from config import BETTERCAP_PASS, BETTERCAP_USER
             auth = HTTPBasicAuth(BETTERCAP_USER, BETTERCAP_PASS)
             
             res = {"state": state, "aps": 0, "ble": 0, "handshakes": 0, "status": "OFFLINE"}
@@ -158,8 +159,9 @@ async def fetch_face():
         try:
             # For this dashboard we simulate the face logic
             # Normally it reads from E-Ink state, we'll just pick a default or use IPC
-            from ui.faces import get_all_faces
             import random
+
+            from ui.faces import get_all_faces
             faces = get_all_faces()
             smart = faces.get("smart", ["(✜‿‿✜)"])
             return random.choice(smart) if isinstance(smart, list) else smart

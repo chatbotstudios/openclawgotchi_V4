@@ -4,8 +4,9 @@ https://developers.forem.com/api
 """
 
 import os
+from typing import Any, Dict, List, Optional
+
 import requests
-from typing import Optional, Dict, List, Any
 from dotenv import load_dotenv
 
 # Ensure .env is loaded
@@ -13,7 +14,7 @@ load_dotenv()
 
 BASE_URL = "https://dev.to/api"
 
-def _get_headers() -> Dict[str, str]:
+def _get_headers() -> dict[str, str]:
     """Get headers with API key."""
     api_key = os.getenv("DEVTO_API_KEY")
     if not api_key:
@@ -27,10 +28,10 @@ def post_article(
     title: str,
     body_markdown: str,
     published: bool = False,
-    tags: Optional[List[str]] = None,
-    series: Optional[str] = None,
-    canonical_url: Optional[str] = None
-) -> Dict[str, Any]:
+    tags: list[str] | None = None,
+    series: str | None = None,
+    canonical_url: str | None = None
+) -> dict[str, Any]:
     """
     Create a new article on DEV.to
     
@@ -84,11 +85,11 @@ def post_article(
 
 def update_article(
     article_id: int,
-    title: Optional[str] = None,
-    body_markdown: Optional[str] = None,
-    published: Optional[bool] = None,
-    tags: Optional[List[str]] = None
-) -> Dict[str, Any]:
+    title: str | None = None,
+    body_markdown: str | None = None,
+    published: bool | None = None,
+    tags: list[str] | None = None
+) -> dict[str, Any]:
     """
     Update an existing article
     """
@@ -98,7 +99,7 @@ def update_article(
 
     url = f"{BASE_URL}/articles/{article_id}"
     
-    article_data: Dict[str, Any] = {"article": {}}
+    article_data: dict[str, Any] = {"article": {}}
     
     if title:
         article_data["article"]["title"] = title
@@ -120,7 +121,7 @@ def update_article(
         return {"error": str(e)}
 
 
-def get_my_articles(page: int = 1, per_page: int = 30) -> List[Dict[str, Any]]:
+def get_my_articles(page: int = 1, per_page: int = 30) -> list[dict[str, Any]]:
     """Get all my published articles"""
     headers = _get_headers()
     if not headers:

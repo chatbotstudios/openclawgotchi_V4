@@ -1,12 +1,20 @@
-import click
 import subprocess
 from pathlib import Path
-from core.cli.utils import output_result, format_header
+
+import click
+
+from core.cli.utils import format_header, output_result
 
 # Fix path to find src/
 PROJECT_DIR = Path(__file__).parent.parent.parent.parent.parent.resolve()
 
-from core.commands import get_status_report, format_status_plain, set_llm_mode, clear_bot_history
+from core.commands import (
+    clear_bot_history,
+    format_status_plain,
+    get_status_report,
+    set_llm_mode,
+)
+
 
 @click.command()
 @click.option('--json', 'as_json', is_flag=True, help="Output in JSON format")
@@ -145,7 +153,7 @@ def clear():
 @click.command(name="list")
 def list_tools():
     """List all available AI tools."""
-    from core.registry import load_all_extensions, get_registered_tools
+    from core.registry import get_registered_tools, load_all_extensions
     load_all_extensions(str(PROJECT_DIR / "src" / "extensions"))
     tools = get_registered_tools()
     format_header("Available Tools")
@@ -155,14 +163,13 @@ def list_tools():
 @click.group()
 def ui():
     """UI and Display configuration."""
-    pass
 
 @ui.command(name="mode")
 @click.argument('mode_setting', type=click.Choice(['dark', 'light'], case_sensitive=False))
 def ui_mode(mode_setting):
     """Set the e-Paper display mode (dark or light)."""
-    from core.commands import set_env_var
     from core.cli.utils import success_print
+    from core.commands import set_env_var
     new_state = (mode_setting.lower() == 'dark')
     set_env_var("DARK_MODE", "1" if new_state else "0")
     success_print(f"UI Mode set to: {'DARK' if new_state else 'LIGHT'}")
@@ -190,8 +197,9 @@ def setup():
 def serve(port):
     """Launch the live web dashboard server."""
     click.echo(f"Starting live web dashboard on port {port}...")
-    from ui.web_dash import ThreadingHTTPServer, WebDashboardHandler
     import socket
+
+    from ui.web_dash import ThreadingHTTPServer, WebDashboardHandler
     
     # Try to get the actual network IP address
     hostname = socket.gethostname()

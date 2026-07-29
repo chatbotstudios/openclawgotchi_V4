@@ -1,5 +1,6 @@
+from core.missions.manager import get_mission, get_missions, update_mission_status
 from sdk.tool_builder import register_tool
-from core.missions.manager import get_missions, get_mission, update_mission_status
+
 
 @register_tool
 def list_available_missions() -> str:

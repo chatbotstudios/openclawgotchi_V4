@@ -37,7 +37,7 @@ This is your official tool manifest. Use these to interface with the physical an
 
 ## ⚙️ DEVELOPER & MAINTENANCE
 - **`git_command`**: Manage your source code, branches, and updates.
-- **`manage_service`**: Restart or stop the `gotchi-bot` service.
+- **`manage_service`**: Restart or stop the `gotchi` service.
 - **`create_custom_tool`**: Write new Python skills for yourself on the fly.
 
 ## 🎯 MISSIONS & QUESTS

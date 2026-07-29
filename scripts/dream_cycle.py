@@ -4,8 +4,8 @@ Dream Cycle — Autonomous background dream + logging.
 Scheduled via system cron. Self-cleaning after 10 cycles.
 """
 import json
-import sqlite3
 import os
+import sqlite3
 import sys
 from datetime import datetime
 

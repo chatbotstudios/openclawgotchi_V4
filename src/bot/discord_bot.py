@@ -1,6 +1,7 @@
-import logging
 import asyncio
+import logging
 import random
+
 import discord
 from discord.ext import commands, tasks
 
@@ -19,21 +20,34 @@ class OfflineHuntFilter(logging.Filter):
 logging.getLogger("discord.client").addFilter(OfflineHuntFilter())
 
 from config import (
-    DISCORD_BOT_TOKEN, get_discord_allowed_users, 
-    DISCORD_HEARTBEATS_CHANNEL, DISCORD_CHANNEL_ID, BOT_NAME,
-    OWNER_NAME, SIBLING_BOT_NAME, HISTORY_LIMIT, MODEL_CONTEXT_TOKENS,
-    DB_PATH, _env_flag
+    BOT_NAME,
+    DB_PATH,
+    DISCORD_BOT_TOKEN,
+    DISCORD_CHANNEL_ID,
+    DISCORD_HEARTBEATS_CHANNEL,
+    HISTORY_LIMIT,
+    MODEL_CONTEXT_TOKENS,
+    OWNER_NAME,
+    SIBLING_BOT_NAME,
+    _env_flag,
+    get_discord_allowed_users,
 )
-from db.memory import (
-    save_message, get_history, clear_history, get_message_count,
-    save_user, add_fact, search_facts, get_recent_facts
-)
-from hardware.display import parse_and_execute_commands, error_screen, show_face
-from hardware.system import get_stats
 from core.router import get_router
+from db.memory import (
+    add_fact,
+    clear_history,
+    get_history,
+    get_message_count,
+    get_recent_facts,
+    save_message,
+    save_user,
+    search_facts,
+)
 from db.stats import get_stats_summary, on_message_answered
+from hardware.display import error_screen, parse_and_execute_commands, show_face
+from hardware.system import get_stats
+from hooks.runner import HookEvent, run_hook
 from memory.summarize import optimize_history
-from hooks.runner import run_hook, HookEvent
 
 log = logging.getLogger(__name__)
 
@@ -299,8 +313,9 @@ class OpenClawDiscord(commands.Bot):
             on_message_answered()
             
             # Award tool-use XP
-            from db.stats import on_tool_use
             import re
+
+            from db.stats import on_tool_use
             tool_source = tool_footer or response
             tool_match = re.search(r'Tool usage \((\d+)\):', tool_source)
             if tool_match:
@@ -499,7 +514,13 @@ async def cmd_cron(interaction: discord.Interaction, name: str, interval: str, m
 async def cmd_pwn(interaction: discord.Interaction, action: str = "status", target: str = None):
     if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
     await interaction.response.defer()
-    from extensions.pwn.wifi import pwn_status, pwn_pause, pwn_crack, pwn_lock_target, pwn_show_qr
+    from extensions.pwn.wifi import (
+        pwn_crack,
+        pwn_lock_target,
+        pwn_pause,
+        pwn_show_qr,
+        pwn_status,
+    )
     action = action.lower()
     if action == "status": res = pwn_status()
     elif action == "pause": res = pwn_pause(int(target) if target else 5)
@@ -521,6 +542,7 @@ async def cmd_git_pull(interaction: discord.Interaction):
     await interaction.response.defer()
     
     import subprocess
+
     from extensions.system.commands import safe_restart
     try:
         res = subprocess.run(["git", "pull", "origin", "master"], capture_output=True, text=True, timeout=30)
@@ -549,9 +571,9 @@ async def cmd_brain_backup(interaction: discord.Interaction):
     if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
     await interaction.response.defer()
     
+    from core.prompts import build_system_context
     from core.router import get_router
     from hardware.display import parse_and_execute_commands
-    from core.prompts import build_system_context
     
     router = get_router()
     prompt = "Hey Gotchi, run your headless backup to save your brain, then pull the latest from the master branch, and do a safe restart."
@@ -602,10 +624,10 @@ async def cmd_dream(interaction: discord.Interaction):
     await interaction.response.defer()
     
     from core.router import get_router
-    from hardware.display import parse_and_execute_commands
-    from game_engine.vitals import add_xp, regenerate_hp_on_sleep
     from game_engine.missions import increment_mission_progress
     from game_engine.state import load_state, save_state
+    from game_engine.vitals import add_xp, regenerate_hp_on_sleep
+    from hardware.display import parse_and_execute_commands
     
     add_xp(60, source="dream_session")
     increment_mission_progress("Synthetic Strategist", 1)

@@ -8,8 +8,8 @@ import re
 from datetime import datetime
 from typing import Optional
 
-from hardware.system import get_stats
 from hardware.display import show_face
+from hardware.system import get_stats
 
 log = logging.getLogger(__name__)
 
@@ -118,7 +118,7 @@ def get_auto_mood() -> tuple[str, str]:
     return moods[idx]
 
 
-def apply_auto_mood(override_text: Optional[str] = None) -> tuple[str, str]:
+def apply_auto_mood(override_text: str | None = None) -> tuple[str, str]:
     """
     Apply auto-mood to display.
     Returns: (mood, text) that was applied.

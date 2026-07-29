@@ -1,6 +1,7 @@
-import subprocess
 import logging
+import subprocess
 from pathlib import Path
+
 from config import PROJECT_DIR, WORKSPACE_DIR
 from sdk.tool_builder import register_tool
 
@@ -46,9 +47,11 @@ def execute_bash(command: str, timeout: int = 999) -> str:
     timeout = min(timeout, 999)
     
     try:
+        import shlex
+        args = shlex.split(command)
         result = subprocess.run(
-            command, shell=True, capture_output=True, text=True,
-            timeout=timeout, cwd=str(PROJECT_DIR)
+            args, capture_output=True, text=True,
+            timeout=timeout, cwd=str(PROJECT_DIR), close_fds=True
         )
         output = ""
         if result.stdout.strip():
@@ -94,8 +97,9 @@ def restart_self() -> str:
     """Restart the bot service (with 3s delay to send response)."""
     try:
         subprocess.Popen(
-            "nohup sh -c 'sleep 3 && sudo systemctl restart gotchi-bot' > /dev/null 2>&1 &",
-            shell=True
+            ["nohup", "sh", "-c", "sleep 3 && sudo systemctl restart gotchi"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            close_fds=True
         )
         return "Restarting in 3s... I'll be back!"
     except Exception as e:
@@ -142,6 +146,7 @@ def log_error(message: str) -> str:
         return "Error: message required"
     try:
         from datetime import datetime
+
         from config import DATA_DIR
         log_path = DATA_DIR / "ERROR_LOG.md"
         DATA_DIR.mkdir(parents=True, exist_ok=True)

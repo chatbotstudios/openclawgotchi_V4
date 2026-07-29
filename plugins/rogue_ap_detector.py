@@ -14,9 +14,9 @@ NOTE: iwlist requires a Pi with a wireless interface. On macOS dev environments
 the subprocess call gracefully fails and logs a warning.
 """
 
-import time
-import subprocess
 import re
+import subprocess
+import time
 
 from pwnagotchi.plugins import BasePlugin
 

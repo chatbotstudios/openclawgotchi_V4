@@ -1,5 +1,6 @@
 import logging
-from typing import Callable, Dict, List, Any
+from collections.abc import Callable
+from typing import Any, Dict, List
 
 log = logging.getLogger(__name__)
 
@@ -12,8 +13,8 @@ class EventDispatcher:
     
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(EventDispatcher, cls).__new__(cls)
-            cls._instance._listeners: Dict[str, List[Callable[[Any], None]]] = {}
+            cls._instance = super().__new__(cls)
+            cls._instance._listeners: dict[str, list[Callable[[Any], None]]] = {}
         return cls._instance
 
     def subscribe(self, event_type: str, callback: Callable[[Any], None]):

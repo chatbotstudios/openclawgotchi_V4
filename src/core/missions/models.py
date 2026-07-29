@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
+
 @dataclass
 class Mission:
     id: str
@@ -12,7 +13,7 @@ class Mission:
     progress: int
     target: int
     reward_xp: int
-    trigger_event: Optional[str] = None
+    trigger_event: str | None = None
     actor: str = "any"
     
     @classmethod

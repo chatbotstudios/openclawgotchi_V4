@@ -100,8 +100,7 @@ def save_knowledge_entries(entries: list[dict]):
             filepath.write_text(f"# {title}\n\n")
         with open(filepath, "a") as f:
             f.write(f"\n## {today}\n")
-            for insight in insights:
-                f.write(f"- {insight}\n")
+            f.writelines(f"- {insight}\n" for insight in insights)
 
     log.info(f"Saved {len(entries)} insights to {len(by_category)} knowledge files")
 
@@ -187,6 +186,7 @@ async def update_traits(bot_name: str) -> bool:
 
     try:
         from litellm import acompletion
+
         from config import DEFAULT_LITE_PRESET, LLM_PRESETS
 
         preset = LLM_PRESETS.get(DEFAULT_LITE_PRESET, LLM_PRESETS["glm"])
@@ -277,6 +277,7 @@ async def crystallize_knowledge(bot_name: str, owner_name: str) -> int:
 
     try:
         from litellm import acompletion
+
         from config import DEFAULT_LITE_PRESET, LLM_PRESETS
 
         preset = LLM_PRESETS.get(DEFAULT_LITE_PRESET, LLM_PRESETS["glm"])

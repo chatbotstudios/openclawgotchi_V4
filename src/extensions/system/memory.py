@@ -1,5 +1,6 @@
 from sdk.tool_builder import register_tool
 
+
 def _sanitize_string(s: str, max_len: int = 10000) -> str:
     if s is None:
         return ""
@@ -23,7 +24,7 @@ def remember_fact(category: str, fact: str) -> str:
 def recall_facts(query: str = "", limit: int = 10) -> str:
     """Search long-term memory."""
     try:
-        from db.memory import search_facts, get_recent_facts
+        from db.memory import get_recent_facts, search_facts
         if query:
             facts = search_facts(query, limit)
         else:
@@ -39,8 +40,8 @@ def recall_facts(query: str = "", limit: int = 10) -> str:
 def recall_messages(limit: int = 20) -> str:
     """Look back at recent conversation messages from the database."""
     try:
-        from db.memory import get_history
         from config import get_admin_id
+        from db.memory import get_history
         chat_id = get_admin_id() or 0
         history = get_history(chat_id, limit=min(limit, 50))
         if not history:
@@ -80,8 +81,8 @@ def check_mail() -> str:
 def add_scheduled_task(name: str, interval_minutes: int = 0, run_in_minutes: int = 0, run_in_seconds: int = 0, message: str = "") -> str:
     """Add a scheduled/cron task."""
     try:
-        from cron.scheduler import add_cron_job
         from core.litellm_connector import _get_cron_target_chat_id
+        from cron.scheduler import add_cron_job
         target_chat = _get_cron_target_chat_id() or 0
         
         if run_in_seconds > 0:

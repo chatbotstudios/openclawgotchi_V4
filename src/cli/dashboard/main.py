@@ -1,31 +1,32 @@
 import asyncio
-import time
-import re
-import random
 import logging
-from rich.live import Live
+import random
+import re
+import time
+
 from rich.console import Console
+from rich.live import Live
 
 from cli.dashboard.fetchers import (
-    fetch_system_stats,
     fetch_gotchi_stats,
+    fetch_missions_status,
     fetch_pwn_status,
     fetch_recent_logs,
-    fetch_missions_status
-)
-from cli.dashboard.layout import (
-    generate_layout,
-    render_header,
-    render_face,
-    render_vitals,
-    render_radio,
-    render_memory,
-    render_missions,
-    render_logs,
-    render_prompt_bar,
-    render_footer
+    fetch_system_stats,
 )
 from cli.dashboard.keyboard import KeyboardListener
+from cli.dashboard.layout import (
+    generate_layout,
+    render_face,
+    render_footer,
+    render_header,
+    render_logs,
+    render_memory,
+    render_missions,
+    render_prompt_bar,
+    render_radio,
+    render_vitals,
+)
 
 log = logging.getLogger(__name__)
 
@@ -85,11 +86,11 @@ async def submit_chat_task(prompt: str):
     active_face = random.choice(["(✜‿‿✜)", "(o.o)", "(•ิ_•ิ)"])
     
     try:
+        from audit_logging.command_logger import log_bot_response, log_command
+        from config import get_admin_id
         from core.router import get_router
         from db.memory import get_history, save_message
-        from config import get_admin_id
         from game_engine.vitals import add_xp
-        from audit_logging.command_logger import log_command, log_bot_response
         
         admin_id = get_admin_id() or 0
         
@@ -127,9 +128,9 @@ async def submit_chat_task(prompt: str):
             active_face = "(★ ◡ ★)"
             
     except Exception as e:
-        from db.memory import save_message
-        from config import get_admin_id
         from audit_logging.command_logger import log_error
+        from config import get_admin_id
+        from db.memory import save_message
         admin_id = get_admin_id() or 0
         save_message(admin_id, "assistant", f"Error: Failed to process thought: {e}")
         log_error("TUI_Chat_Error", str(e))
@@ -175,8 +176,8 @@ async def dashboard_loop(refresh_rate: float):
                             input_buffer = input_buffer[:-1]
                         elif key == "key:enter":
                             if input_buffer.strip() and not gotchi_thinking:
-                                from db.memory import save_message
                                 from config import get_admin_id
+                                from db.memory import save_message
                                 admin_id = get_admin_id() or 0
                                 
                                 # Save user message to database

@@ -2,7 +2,6 @@
 System stats — temperature, memory, uptime.
 """
 
-import subprocess
 import os
 import psutil
 from dataclasses import dataclass
@@ -26,61 +25,52 @@ def get_stats() -> SystemStats:
     """Gather current system stats."""
     stats = SystemStats()
     
-    # 1. Uptime
+    # 1. Uptime — /proc/uptime (no subprocess)
     try:
-        # psutil approach for uptime
-        import time
-        uptime_seconds = time.time() - psutil.boot_time()
+        with open("/proc/uptime", "r") as f:
+            uptime_seconds = float(f.readline().split()[0])
         days = int(uptime_seconds // 86400)
         hours = int((uptime_seconds % 86400) // 3600)
         minutes = int((uptime_seconds % 3600) // 60)
-        
         if days > 0:
             stats.uptime = f"up {days} days, {hours}:{minutes:02d}"
         else:
             stats.uptime = f"up {hours}:{minutes:02d}"
     except Exception:
-        # Fallback to shell
-        try:
-            result = subprocess.run(["uptime", "-p"], capture_output=True, text=True, timeout=2)
-            stats.uptime = result.stdout.strip()
-        except: pass
+        stats.uptime = "?"
     
-    # 2. Temperature
+    # 2. Temperature — /sys/class/thermal/thermal_zone0/temp (no subprocess)
     try:
-        # Try vcgencmd first (Raspberry Pi specific)
-        result = subprocess.run(["vcgencmd", "measure_temp"], capture_output=True, text=True, timeout=2)
-        if result.returncode == 0:
-            stats.temp = result.stdout.strip().replace("temp=", "")
+        if os.path.exists("/sys/class/thermal/thermal_zone0/temp"):
+            with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+                stats.temp = f"{int(f.read().strip())/1000:.1f}°C"
         else:
-            # Fallback to psutil sensors_temperatures (may work on some macOS/Linux)
+            # Fallback to psutil sensors_temperatures
             temps = psutil.sensors_temperatures()
             if temps:
                 for name, entries in temps.items():
                     if entries:
                         stats.temp = f"{entries[0].current}°C"
                         break
-            
-            if stats.temp == "?":
-                # Fallback for Linux thermal zone
-                if os.path.exists("/sys/class/thermal/thermal_zone0/temp"):
-                    with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
-                        stats.temp = f"{int(f.read().strip())/1000:.1f}°C"
     except Exception:
         pass
     
-    # 3. Memory
+    # 3. Memory — /proc/meminfo (no subprocess)
     try:
-        vm = psutil.virtual_memory()
-        stats.memory = f"Free: {vm.available / (1024*1024):.1f} MB"
+        with open("/proc/meminfo", "r") as f:
+            for line in f:
+                if line.startswith("MemAvailable:"):
+                    avail_mb = int(line.split()[1]) / 1024
+                    stats.memory = f"Free: {avail_mb:.1f} MB"
+                    break
     except Exception:
         try:
-            result = subprocess.run(["free", "-h"], capture_output=True, text=True, timeout=2)
-            if result.returncode == 0:
-                stats.memory = f"Free: {result.stdout.splitlines()[1].split()[6]}"
-        except: pass
+            vm = psutil.virtual_memory()
+            stats.memory = f"Free: {vm.available / (1024*1024):.1f} MB"
+        except Exception:
+            pass
     
-    # 4. CPU Load
+    # 4. CPU Load — psutil (already no subprocess)
     try:
         load = psutil.cpu_percent(interval=None)
         stats.cpu_load = f"{load}%"
@@ -103,7 +93,7 @@ def get_stats_string() -> str:
         self_info = "[SELF] Stats loading..."
     
     try:
-        from config import PROJECT_DIR, DB_PATH
+        from config import DB_PATH, PROJECT_DIR
         paths_info = f"[PATHS] Project: {PROJECT_DIR} | DB: {DB_PATH}"
     except Exception:
         paths_info = ""

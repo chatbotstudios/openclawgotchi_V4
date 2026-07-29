@@ -1,6 +1,7 @@
 import logging
-from hooks.runner import hook, HookEvent
+
 from hardware.display import update_display
+from hooks.runner import HookEvent, hook
 
 # Metadata
 __author__ = 'evilsocket@gmail.com'

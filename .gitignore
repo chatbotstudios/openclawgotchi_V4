@@ -7,6 +7,15 @@ templates/memory/
 templates/knowledge/
 templates/CHANGELOG.md
 
+# Workspace — live bot state (memory journals, learned facts)
+workspace/memory/
+workspace/knowledge/
+
+# Handshakes — captured WPA handshake data
+handshakes/*.pcap
+handshakes/*.2500
+handshakes/*.hccapx
+
 # External skills (clone separately if needed)
 openclaw-skills/
 
@@ -47,6 +56,9 @@ env/
 *.db
 *.sqlite
 *.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
 gotchi.db
 
 # ===================
@@ -94,8 +106,6 @@ htmlcov/
 .tox/
 nosetests.xml
 coverage.xml
-
-
 
 # ===================
 # Runtime data

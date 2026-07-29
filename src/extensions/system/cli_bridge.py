@@ -1,12 +1,14 @@
+import logging
 import os
 import subprocess
-import logging
-import psutil
 from pathlib import Path
+
+import psutil
+
 from config import PROJECT_DIR
-from sdk.tool_builder import register_tool
-from core.commands import get_status_report, format_status_plain, set_llm_mode
+from core.commands import format_status_plain, get_status_report, set_llm_mode
 from extensions.system.commands import _is_dangerous_command
+from sdk.tool_builder import register_tool
 
 log = logging.getLogger(__name__)
 
@@ -132,9 +134,11 @@ def run_cli(command: str) -> str:
         return "Error: Command blocked for safety."
     
     try:
+        import shlex
+        args = shlex.split(command)
         result = subprocess.run(
-            command, shell=True, capture_output=True, text=True,
-            timeout=30, cwd=str(PROJECT_DIR)
+            args, capture_output=True, text=True,
+            timeout=30, cwd=str(PROJECT_DIR), close_fds=True
         )
         out = result.stdout + result.stderr
         return out[:4000] if out else "(no output)"

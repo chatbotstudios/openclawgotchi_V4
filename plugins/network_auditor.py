@@ -33,7 +33,7 @@ import logging
 import time
 from collections import defaultdict
 
-from hooks.runner import hook, HookEvent
+from hooks.runner import HookEvent, hook
 
 try:
     from game_engine.missions import increment_mission_progress

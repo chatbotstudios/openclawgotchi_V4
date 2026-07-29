@@ -1,4 +1,5 @@
 import logging
+
 import qrcode
 from PIL import Image, ImageDraw, ImageFont
 

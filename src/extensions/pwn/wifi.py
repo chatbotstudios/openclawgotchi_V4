@@ -1,10 +1,13 @@
-import os
-import requests
 import glob
+import os
 import re
 import time
+
+import requests
+
 from config import PROJECT_DIR
 from sdk.tool_builder import register_tool
+
 
 @register_tool
 def pwn_status() -> str:
@@ -15,7 +18,7 @@ def pwn_status() -> str:
         
         from requests.auth import HTTPBasicAuth
         try:
-            from config import BETTERCAP_USER, BETTERCAP_PASS
+            from config import BETTERCAP_PASS, BETTERCAP_USER
         except ImportError:
             BETTERCAP_USER = "gotchi"
             BETTERCAP_PASS = "123456"

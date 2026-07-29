@@ -3,13 +3,14 @@ XP & Stats system — Pwnagotchi-style leveling.
 Tracks: messages answered, days alive, tasks completed, brother chats.
 """
 
-import sqlite3
 import logging
-from datetime import datetime, date
-from typing import Optional, Callable
+import sqlite3
 import threading
-
 import time
+from collections.abc import Callable
+from datetime import date, datetime
+from typing import Optional
+
 from config import DB_PATH
 
 _stat_buffer = {}

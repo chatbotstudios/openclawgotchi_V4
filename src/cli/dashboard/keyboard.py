@@ -1,8 +1,8 @@
-import threading
-import sys
-import tty
-import termios
 import logging
+import sys
+import termios
+import threading
+import tty
 from queue import Queue
 
 log = logging.getLogger(__name__)

@@ -6,7 +6,7 @@ src_dir = Path(__file__).resolve().parent / "src"
 sys.path.insert(0, str(src_dir))
 
 from game_engine.state import load_state, save_state
-from game_engine.vitals import calculate_hp, add_xp, regenerate_hp_on_sleep, decay_mood
+from game_engine.vitals import add_xp, calculate_hp, decay_mood, regenerate_hp_on_sleep
 
 print("Loading state...")
 state = load_state()

@@ -1,5 +1,6 @@
-import requests
 import sys
+
+import requests
 
 # Update this to match your Buddy's IP on your network
 BUDDY_IP = "192.168.1.17"

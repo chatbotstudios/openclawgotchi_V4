@@ -1,6 +1,7 @@
+import logging
 import subprocess
 import time
-import logging
+
 from sdk.tool_builder import register_tool
 
 log = logging.getLogger(__name__)

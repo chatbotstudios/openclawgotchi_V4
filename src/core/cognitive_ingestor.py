@@ -1,7 +1,8 @@
 import logging
+
 from config import get_admin_id
-from db.memory import add_fact, save_pending_task
 from core.events import on
+from db.memory import add_fact, save_pending_task
 
 logger = logging.getLogger(__name__)
 

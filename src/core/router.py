@@ -2,9 +2,9 @@
 LLM Router — auto-fallback between LLM providers.
 """
 
+import asyncio
 import logging
 from typing import Optional
-import asyncio
 
 from core.base import LLMError
 from core.litellm_connector import LiteLLMConnector
@@ -43,7 +43,7 @@ class LLMRouter:
         self, 
         prompt: str, 
         history: list[dict],
-        system_prompt: Optional[str] = None
+        system_prompt: str | None = None
     ) -> tuple[str, str]:
         """
         Call LLM based on current mode.
@@ -75,7 +75,7 @@ class LLMRouter:
         return self._lock
 
 # Global instance
-_router: Optional[LLMRouter] = None
+_router: LLMRouter | None = None
 
 def get_router() -> LLMRouter:
     """Get or create the global router instance."""

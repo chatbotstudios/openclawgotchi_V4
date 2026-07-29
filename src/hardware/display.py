@@ -5,9 +5,9 @@ Holds the SPI bus open to allow smooth partial updates without flashing.
 
 import logging
 import re
+import sys
 import threading
 import time
-import sys
 
 from config import PROJECT_DIR
 
@@ -185,9 +185,7 @@ def parse_and_execute_commands(response: str) -> tuple[str, dict]:
         if not stripped: continue
         
         is_command = False
-        if stripped.upper().startswith(("FACE:", "DISPLAY:", "SAY:", "DM:", "GROUP:", "STATUS:", "REMEMBER:", "MAIL:")):
-            is_command = True
-        elif re.match(r"^\s*</?\w+>\s*$", stripped):
+        if stripped.upper().startswith(("FACE:", "DISPLAY:", "SAY:", "DM:", "GROUP:", "STATUS:", "REMEMBER:", "MAIL:")) or re.match(r"^\s*</?\w+>\s*$", stripped):
             is_command = True
             
         if is_command:
@@ -257,8 +255,9 @@ def error_screen(error_msg: str):
 
 def get_current_face_ascii() -> str:
     """Returns the ASCII Kaomoji of the current hardware face."""
-    from ui.faces import get_all_faces
     import random
+
+    from ui.faces import get_all_faces
     faces = get_all_faces()
     mood_faces = faces.get(_current_mood, faces.get("happy", ["(◕‿◕)"]))
     return random.choice(mood_faces) if isinstance(mood_faces, list) else mood_faces

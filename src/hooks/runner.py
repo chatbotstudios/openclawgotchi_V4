@@ -3,12 +3,12 @@ Hooks System — Event-driven automation.
 Simple Python hooks that run on specific events.
 """
 
-import logging
 import importlib.util
-from pathlib import Path
-from typing import Callable
+import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 
 from config import PROJECT_DIR, WORKSPACE_DIR
 

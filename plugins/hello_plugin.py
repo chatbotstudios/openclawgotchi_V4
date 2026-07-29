@@ -1,5 +1,6 @@
-from hooks.runner import hook, HookEvent
 import logging
+
+from hooks.runner import HookEvent, hook
 
 log = logging.getLogger("Plugins")
 

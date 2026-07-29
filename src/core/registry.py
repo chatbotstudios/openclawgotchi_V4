@@ -2,7 +2,9 @@ import importlib.util
 import os
 import sys
 from pathlib import Path
-from sdk.tool_builder import get_registered_tools, get_registered_schemas
+
+from sdk.tool_builder import get_registered_schemas, get_registered_tools
+
 
 def load_all_extensions(extensions_dir: str):
     """

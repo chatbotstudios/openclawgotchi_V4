@@ -2,13 +2,20 @@
 import subprocess
 import os
 import sys
+import shlex
 
 def check(name, cmd):
+    """Run a simple command (no shell pipes) and return (ok, output)."""
     try:
-        output = subprocess.check_output(cmd, shell=True, text=True, stderr=subprocess.STDOUT).strip()
+        args = shlex.split(cmd)
+        output = subprocess.check_output(args, text=True, stderr=subprocess.STDOUT, timeout=10).strip()
         return True, output
     except subprocess.CalledProcessError as e:
         return False, e.output.strip()
+    except subprocess.TimeoutExpired:
+        return False, "TIMEOUT"
+    except Exception as e:
+        return False, str(e)
 
 def main():
     bot_name = os.environ.get("BOT_NAME", "Gotchi")
@@ -24,7 +31,14 @@ def main():
         all_ok = False
 
     # 2. Disk Space
-    ok, out = check("Disk", "df -h / | tail -1")
+    try:
+        df_out = subprocess.check_output(["df", "-h", "/"], text=True, timeout=10)
+        lines = df_out.strip().splitlines()
+        out = lines[-1] if lines else ""
+        ok = True
+    except Exception as e:
+        out = str(e)
+        ok = False
     if ok:
         try:
             used_pct = int(out.split()[-2].replace("%", ""))
@@ -41,16 +55,17 @@ def main():
         all_ok = False
 
     # 3. Temperature
-    ok, out = check("Temp", "vcgencmd measure_temp")
-    if not ok:
-        # Fallback for non-vcgencmd environments
-        ok, out = check("Temp", "cat /sys/class/thermal/thermal_zone0/temp")
-        if ok:
-            try:
-                temp = float(out.strip()) / 1000
-                out = f"{temp}°C"
-            except Exception:
-                ok = False
+    try:
+        temp_raw = subprocess.check_output(["vcgencmd", "measure_temp"], text=True, timeout=5).strip()
+        ok, out = True, temp_raw
+    except Exception:
+        try:
+            with open("/sys/class/thermal/thermal_zone0/temp") as f:
+                temp_val = float(f.read().strip()) / 1000
+            ok, out = True, f"{temp_val}°C"
+        except Exception:
+            ok = False
+            out = ""
     if ok:
         try:
             temp = float(out.replace("temp=", "").replace("'C", "").replace("°C", "").strip())
@@ -67,15 +82,25 @@ def main():
         all_ok = False
 
     # 4. Service Status
-    ok, out = check("Service", "systemctl is-active gotchi-bot")
-    if out == "active":
+    ok, out = check('Service', 'systemctl is-active gotchi')
+    if out == 'active':
         print("[✅] Service: Active")
     else:
         print(f"[❌] Service: {out}")
         all_ok = False
 
     # 5. Recent Errors
-    ok, out = check("Logs", "journalctl -u gotchi-bot -n 50 | grep -i 'error' | tail -3")
+    try:
+        journal_out = subprocess.check_output(
+            ["journalctl", "-u", "gotchi", "-n", "50", "--no-pager"],
+            text=True, timeout=10
+        )
+        lines = [line for line in journal_out.splitlines() if "error" in line.lower()]
+        out = "\n".join(lines[-3:]) if lines else ""
+        ok = True
+    except Exception:
+        out = ""
+        ok = False
     if not out:
         print("[✅] Logs: No recent errors")
     else:

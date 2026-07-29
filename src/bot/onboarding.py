@@ -5,7 +5,7 @@ Checks for BOOTSTRAP.md and guides user through setup.
 
 import logging
 
-from config import WORKSPACE_DIR, PROJECT_DIR
+from config import PROJECT_DIR, WORKSPACE_DIR
 
 log = logging.getLogger(__name__)
 

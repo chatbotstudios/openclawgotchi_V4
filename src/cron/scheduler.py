@@ -4,11 +4,12 @@ Uses APScheduler-style API but minimal implementation.
 """
 
 import asyncio
-import logging
 import json
+import logging
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Callable, Optional, Any
-from dataclasses import dataclass, asdict
+from typing import Any, Optional
 
 from config import PROJECT_DIR
 
@@ -59,7 +60,7 @@ class CronScheduler:
     
     def __init__(self):
         self.jobs: dict[str, CronJob] = {}
-        self._task: Optional[asyncio.Task] = None
+        self._task: asyncio.Task | None = None
         self._running = False
         self._callbacks: dict[str, Callable] = {}
         self._load_jobs()
@@ -119,7 +120,7 @@ class CronScheduler:
                 return True
         return False
     
-    def get_job(self, job_id: str) -> Optional[CronJob]:
+    def get_job(self, job_id: str) -> CronJob | None:
         """Get a job by ID."""
         return self.jobs.get(job_id)
     
@@ -206,7 +207,7 @@ class CronScheduler:
 
 
 # Global scheduler instance
-_scheduler: Optional[CronScheduler] = None
+_scheduler: CronScheduler | None = None
 
 
 def get_scheduler() -> CronScheduler:

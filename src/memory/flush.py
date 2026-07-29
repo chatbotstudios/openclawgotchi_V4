@@ -5,12 +5,12 @@ Inspired by OpenClaw's pre-compaction memory flush.
 Includes LLM-powered conversation summarization for heartbeat.
 """
 
-import logging
 import gc
+import logging
 from datetime import datetime
 from typing import Optional
 
-from config import WORKSPACE_DIR, HISTORY_LIMIT
+from config import HISTORY_LIMIT, WORKSPACE_DIR
 
 log = logging.getLogger(__name__)
 
@@ -110,7 +110,7 @@ Conversation:
 Summary (bullet points only):"""
 
 
-async def summarize_conversation_with_llm(history: list[dict], chat_id: int = 0) -> Optional[str]:
+async def summarize_conversation_with_llm(history: list[dict], chat_id: int = 0) -> str | None:
     """
     Use LLM to create a brief summary of conversation.
     Called during heartbeat, not in main message flow.
@@ -145,6 +145,7 @@ async def summarize_conversation_with_llm(history: list[dict], chat_id: int = 0)
     try:
         # Use LiteLLM for summarization (same preset as Lite mode)
         from litellm import acompletion
+
         from config import DEFAULT_LITE_PRESET, LLM_PRESETS
         
         preset = LLM_PRESETS.get(DEFAULT_LITE_PRESET, LLM_PRESETS["glm"])
@@ -199,8 +200,9 @@ async def summarize_and_save(chat_id: int) -> bool:
 
 def get_chats_with_recent_messages() -> list[int]:
     """Get chat IDs that had messages since last heartbeat."""
-    from db.memory import get_connection
     from datetime import timedelta
+
+    from db.memory import get_connection
     
     # Messages in last 4 hours (heartbeat interval)
     cutoff = (datetime.now() - timedelta(hours=4)).isoformat()
