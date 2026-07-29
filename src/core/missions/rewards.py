@@ -1,4 +1,5 @@
 import logging
+
 from core.missions.models import Mission
 from game_engine.vitals import add_xp
 from utils.buddy_pulse import pulse_buddy

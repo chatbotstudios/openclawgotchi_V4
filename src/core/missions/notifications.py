@@ -1,6 +1,8 @@
 import logging
 import threading
+
 import requests
+
 from config import DISCORD_BOT_TOKEN, DISCORD_HEARTBEATS_CHANNEL
 from core.missions.models import Mission
 

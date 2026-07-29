@@ -1,13 +1,14 @@
-import sys
 import os
+import sys
 from unittest.mock import MagicMock, patch
+
 import pytest
 
 # Add src/ to PYTHONPATH programmatically
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from extensions.pwn.tether import tether_scan, tether_pair, tether_up, tether_status
 from core.tether_watchdog import TetherWatchdog
+from extensions.pwn.tether import tether_pair, tether_scan, tether_status, tether_up
 
 
 def test_tether_scan():

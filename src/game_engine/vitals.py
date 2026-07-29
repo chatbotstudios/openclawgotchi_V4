@@ -14,22 +14,24 @@ Architecture:
     Audit log:   aipet_vitals_log SQLite table (append-only, never read for level)
 """
 
-import sqlite3
 import logging
+import sqlite3
 from datetime import datetime, timezone
 
 from config import DB_PATH
-from game_engine.state import load_state, save_state
 
 # ── Re-export canonical read helpers so game-engine callers import from here ─
-from db.stats import (                          # noqa: F401  (intentional re-exports)
+from db.stats import (
+    LEVEL_THRESHOLDS,
+    LEVEL_TITLES,
     get_level_for_xp,
     get_level_progress,
     get_stats_summary,
-    LEVEL_THRESHOLDS,
-    LEVEL_TITLES,
+)
+from db.stats import (
     add_xp as _stats_add_xp,
 )
+from game_engine.state import load_state, save_state
 
 log = logging.getLogger(__name__)
 
@@ -86,8 +88,8 @@ def add_xp(amount: int, source: str = "mission", event=None) -> int:
 
     Returns the new total XP.
     """
-    from game_engine.state import state_manager
     from game_engine.events import events
+    from game_engine.state import state_manager
     
     state = state_manager.load_state()
     old_level = state.level

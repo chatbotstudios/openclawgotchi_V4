@@ -5,7 +5,7 @@ Keeps last N messages verbatim, summarizes older ones.
 
 import logging
 import re
-from typing import List, Dict
+from typing import Dict, List
 
 log = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ def extract_key_info(content: str, role: str) -> str:
         return first_sentence[:60] + "..." if len(first_sentence) > 60 else first_sentence
 
 
-def summarize_old_messages(messages: List[Dict]) -> str:
+def summarize_old_messages(messages: list[dict]) -> str:
     """
     Create a brief summary of older messages.
     Extracts key topics and questions for context.
@@ -84,7 +84,7 @@ def summarize_old_messages(messages: List[Dict]) -> str:
     return "[Earlier: " + " → ".join(summaries) + "]"
 
 
-def optimize_history(history: List[Dict]) -> List[Dict]:
+def optimize_history(history: list[dict]) -> list[dict]:
     """
     Optimize conversation history for context window.
     Returns: condensed history with summary + recent messages.

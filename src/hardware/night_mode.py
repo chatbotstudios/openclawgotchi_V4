@@ -1,7 +1,9 @@
 import logging
 import os
-import requests
 from datetime import datetime, timezone
+
+import requests
+
 from core.commands import set_env_var
 from hardware.display import update_display
 

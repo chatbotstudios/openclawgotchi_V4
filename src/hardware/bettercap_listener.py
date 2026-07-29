@@ -1,20 +1,22 @@
 import asyncio
-import websockets
 import json
 import logging
 from threading import Thread
 
+import websockets
+
+from db.memory import add_fact
+
 # Import OpenClawGotchi internals
 from hardware.display import update_display
-from db.memory import add_fact
-from hooks.runner import run_hook, HookEvent
+from hooks.runner import HookEvent, run_hook
 
 log = logging.getLogger("NervousSystem")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 
 # Fallback config
 try:
-    from config import BETTERCAP_USER, BETTERCAP_PASS
+    from config import BETTERCAP_PASS, BETTERCAP_USER
 except ImportError:
     BETTERCAP_USER = "gotchi"
     BETTERCAP_PASS = "123456"

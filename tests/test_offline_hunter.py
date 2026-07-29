@@ -1,14 +1,15 @@
-import sys
-import os
-import time
 import json
+import os
+import sys
+import time
 from unittest.mock import MagicMock, patch
 
 # Add src/ to PYTHONPATH programmatically
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from core.offline_hunter import OfflineHunter, CHUNK_SLEEP
-import game_engine.state  # noqa: F401 — ensure module is importable for patch targets
+import game_engine.state
+from core.offline_hunter import CHUNK_SLEEP, OfflineHunter
+
 
 def test_offline_hunter_flow(tmp_path):
     # Setup temp paths for testing

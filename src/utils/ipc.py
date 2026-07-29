@@ -1,7 +1,7 @@
-import os
 import json
-import time
 import logging
+import os
+import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -24,7 +24,7 @@ class DaemonStateManager:
             "hop_interval": 5
         }
 
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """Read the current state, returning defaults if file is missing or invalid."""
         if not self.state_file.exists():
             return self._default_state.copy()
@@ -36,7 +36,7 @@ class DaemonStateManager:
             log.error(f"Failed to read IPC state: {e}")
             return self._default_state.copy()
 
-    def set_state(self, new_state: Dict[str, Any]):
+    def set_state(self, new_state: dict[str, Any]):
         """Write state atomicaly using a temp file and rename."""
         new_state["last_update"] = time.time()
         temp_file = self.state_file.with_suffix(".tmp")
@@ -63,7 +63,7 @@ class DaemonStateManager:
         state = self.get_state()
         return time.time() < state.get("paused_until", 0)
 
-    def get_target_lock(self) -> Optional[str]:
+    def get_target_lock(self) -> str | None:
         """Get the current BSSID target lock if any."""
         return self.get_state().get("target_lock")
 

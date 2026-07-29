@@ -1,12 +1,14 @@
-import sys
-import os
 import asyncio
+import os
+import sys
 
 # Add src to path
 sys.path.append(os.path.join(os.getcwd(), "src"))
 
-from core.litellm_connector import LiteLLMConnector
 import pytest
+
+from core.litellm_connector import LiteLLMConnector
+
 
 @pytest.mark.skip(reason="Manual integration test. Requires physical Buddy on local network.")
 async def test_pulse():

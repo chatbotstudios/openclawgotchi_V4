@@ -8,6 +8,7 @@ import os
 import json
 import datetime
 import textwrap
+import time
 from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
 import sys
@@ -15,6 +16,16 @@ import sys
 UI_DIR = Path(__file__).parent.resolve()
 SRC_DIR = UI_DIR.parent
 PROJECT_DIR = SRC_DIR.parent
+
+# ---------------------------------------------------------------------------
+# Module-level caches
+# ---------------------------------------------------------------------------
+_STATS_CACHE = {}       # get_system_stats(): {'data': dict, 'time': float}
+_STATS_CACHE_TTL = 12   # seconds before refreshing stats
+_CPU_PREV = {}          # previous /proc/stat ticks for delta calculation
+_FACES_CACHE = None     # _load_all_faces() result
+_FONT_CACHE = {}        # _get_font() → ImageFont, keyed by (path, size)
+# ---------------------------------------------------------------------------
 
 try:
     from config import BOT_NAME

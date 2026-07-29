@@ -1,6 +1,6 @@
-import sqlite3
 import json
 import logging
+import sqlite3
 from pathlib import Path
 from typing import List, Optional
 
@@ -67,7 +67,7 @@ def load_default_missions():
     except Exception as e:
         log.error(f"Failed to load default missions: {e}")
 
-def get_missions(status: Optional[str] = None) -> List[Mission]:
+def get_missions(status: str | None = None) -> list[Mission]:
     """Get missions optionally filtered by status."""
     conn = sqlite3.connect(str(DB_PATH))
     if status:
@@ -79,7 +79,7 @@ def get_missions(status: Optional[str] = None) -> List[Mission]:
     conn.close()
     return missions
 
-def get_mission(mission_id: str) -> Optional[Mission]:
+def get_mission(mission_id: str) -> Mission | None:
     """Get a single mission by ID."""
     conn = sqlite3.connect(str(DB_PATH))
     row = conn.execute("SELECT * FROM missions WHERE id = ?", (mission_id,)).fetchone()

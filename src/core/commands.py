@@ -1,11 +1,12 @@
 import logging
-from core.router import get_router
-from hardware.system import get_stats
-from db.stats import get_stats_summary
-from db.memory import clear_history, get_message_count
-from core.registry import get_tools_and_schemas
-from hardware.display import show_face
+
 from config import BOT_NAME, PROJECT_DIR
+from core.registry import get_tools_and_schemas
+from core.router import get_router
+from db.memory import clear_history, get_message_count
+from db.stats import get_stats_summary
+from hardware.display import show_face
+from hardware.system import get_stats
 from sdk.tool_builder import register_tool
 
 log = logging.getLogger(__name__)
@@ -137,8 +138,8 @@ def clear_bot_history(chat_id):
 
 def get_tactical_dashboard():
     """Gathers real-time data for the terminal tactical dashboard."""
-    from extensions.pwn.wifi import pwn_status
     from extensions.pwn.ble import pwn_ble_scan
+    from extensions.pwn.wifi import pwn_status
     from hardware.display import get_current_face_ascii
     
     wifi = pwn_status()
@@ -225,6 +226,7 @@ def launch_offline_hunt(duration_minutes: int) -> str:
         
     import subprocess
     import sys
+
     from core.commands import set_env_var
     from hardware.display import show_face
     

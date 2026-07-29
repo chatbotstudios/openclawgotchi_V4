@@ -1,8 +1,8 @@
-import subprocess
-import time
 import logging
 import secrets
 import string
+import subprocess
+import time
 from pathlib import Path
 
 log = logging.getLogger("PwnManager")
@@ -20,8 +20,9 @@ class PwnManager:
         if self._api_user and self._api_pass:
             return self._api_user, self._api_pass
         try:
-            from dotenv import load_dotenv
             import os
+
+            from dotenv import load_dotenv
             load_dotenv()
             user = os.getenv("BETTERCAP_API_USER", "gotchi")
             pw = os.getenv("BETTERCAP_API_PASS", "")
@@ -106,8 +107,8 @@ class PwnManager:
                 log.info("Bettercap API is online.")
                 
             # 5. Start Python layers
-            from .subconscious_pwn import PwnDaemon
             from .bettercap_listener import NervousSystem
+            from .subconscious_pwn import PwnDaemon
             
             self.pwn_daemon = PwnDaemon()
             self.nervous_system = NervousSystem()

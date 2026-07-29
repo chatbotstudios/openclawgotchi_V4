@@ -1,11 +1,14 @@
 import click
-from core.cli.utils import output_result, format_header
-from extensions.pwn.wifi import pwn_status, pwn_check_cracks as pwn_list_handshakes, pwn_crack as pwn_crack_handshake, pwn_lock_target
+
+from core.cli.utils import format_header, output_result
+from extensions.pwn.wifi import pwn_check_cracks as pwn_list_handshakes
+from extensions.pwn.wifi import pwn_crack as pwn_crack_handshake
+from extensions.pwn.wifi import pwn_lock_target, pwn_status
+
 
 @click.group()
 def pwn():
     """Full-spectrum Wi-Fi auditing tools."""
-    pass
 
 @pwn.command(name="status")
 @click.option('--json', 'as_json', is_flag=True, help="Output in JSON format")

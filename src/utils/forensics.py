@@ -1,6 +1,6 @@
 import logging
-import subprocess
 import os
+import subprocess
 from pathlib import Path
 
 # Setup dedicated forensics logger

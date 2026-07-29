@@ -1,14 +1,15 @@
-import time
 import logging
-import random
-import requests
 import os
-from requests.auth import HTTPBasicAuth
+import random
+import time
 from threading import Thread
+
+import requests
+from requests.auth import HTTPBasicAuth
 
 # Try to use openclawgotchi config if available, otherwise fallback to defaults
 try:
-    from config import PWN_WHITELIST_MACS, BETTERCAP_URL, BETTERCAP_USER, BETTERCAP_PASS
+    from config import BETTERCAP_PASS, BETTERCAP_URL, BETTERCAP_USER, PWN_WHITELIST_MACS
 except ImportError:
     PWN_WHITELIST_MACS = []
     BETTERCAP_URL = "http://localhost:8081/api"

@@ -1,8 +1,9 @@
 import inspect
-from typing import Callable, Dict, Any, get_type_hints
+from collections.abc import Callable
+from typing import Any, Dict, get_type_hints
 
-_TOOL_REGISTRY: Dict[str, Callable] = {}
-_SCHEMA_REGISTRY: list[Dict[str, Any]] = []
+_TOOL_REGISTRY: dict[str, Callable] = {}
+_SCHEMA_REGISTRY: list[dict[str, Any]] = []
 
 def register_tool(func: Callable) -> Callable:
     """
@@ -109,7 +110,7 @@ def register_tool(func: Callable) -> Callable:
             return func(**kwargs)
             
         except Exception as e:
-            return f"Error executing {name}: {str(e)}"
+            return f"Error executing {name}: {e!s}"
 
     _TOOL_REGISTRY[name] = wrapper
     
@@ -123,10 +124,10 @@ def register_tool(func: Callable) -> Callable:
     
     return wrapper
 
-def get_registered_tools() -> Dict[str, Callable]:
+def get_registered_tools() -> dict[str, Callable]:
     """Return the map of function name to actual Python function."""
     return _TOOL_REGISTRY
 
-def get_registered_schemas() -> list[Dict[str, Any]]:
+def get_registered_schemas() -> list[dict[str, Any]]:
     """Return the list of OpenAI JSON schemas for LiteLLM."""
     return _SCHEMA_REGISTRY

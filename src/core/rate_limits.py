@@ -4,8 +4,8 @@ Parses actual Retry-After from provider responses instead of guessing.
 Supports auto-retry for short limits.
 """
 
-import logging
 import json
+import logging
 import re
 from datetime import datetime, timedelta
 from typing import Optional
@@ -40,7 +40,7 @@ def _save_limits():
         log.warning(f"Failed to save rate limits: {e}")
 
 
-def _parse_retry_after(error_msg: str) -> Optional[float]:
+def _parse_retry_after(error_msg: str) -> float | None:
     """
     Parse retry delay from provider error message.
     
@@ -146,7 +146,7 @@ def is_limited(provider: str) -> bool:
         return False
 
 
-def get_retry_after(provider: str) -> Optional[float]:
+def get_retry_after(provider: str) -> float | None:
     """
     Get seconds until rate limit resets for a provider.
     Returns None if not limited, 0 if expired.
@@ -170,7 +170,7 @@ def get_retry_after(provider: str) -> Optional[float]:
         return None
 
 
-def should_auto_retry(provider: str) -> Optional[float]:
+def should_auto_retry(provider: str) -> float | None:
     """
     Check if we should auto-retry (short limit).
     Returns wait time in seconds, or None if we shouldn't retry.

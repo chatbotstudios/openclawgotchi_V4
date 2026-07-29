@@ -7,14 +7,14 @@ import os
 import sqlite3
 from typing import Optional
 
-from config import GROUP_CHAT_ID, get_admin_id, PROJECT_DIR
-from db.memory import get_history, get_pending_tasks, delete_pending_task, save_message
-from hardware.display import parse_and_execute_commands
-from hardware.auto_mood import apply_auto_mood, get_auto_mood
-from db.stats import on_heartbeat, get_status_bar, get_stats_summary
-from core.router import get_router
+from config import GROUP_CHAT_ID, PROJECT_DIR, get_admin_id
 from core.base import RateLimitError
-from hooks.runner import run_hook, HookEvent
+from core.router import get_router
+from db.memory import delete_pending_task, get_history, get_pending_tasks, save_message
+from db.stats import get_stats_summary, get_status_bar, on_heartbeat
+from hardware.auto_mood import apply_auto_mood, get_auto_mood
+from hardware.display import parse_and_execute_commands
+from hooks.runner import HookEvent, run_hook
 
 log = logging.getLogger(__name__)
 
@@ -100,7 +100,7 @@ def send_mail(to_bot: str, message: str) -> bool:
         return False
 
 
-def process_command_mail(message: str) -> Optional[str]:
+def process_command_mail(message: str) -> str | None:
     """
     Process command mails from brother.
     Format: CMD:<command> [args]
@@ -282,8 +282,8 @@ async def send_heartbeat(send_message_func=None):
     # 4b. Knowledge crystallization (autonomous — runs once per 24h)
     crystallized_count = 0
     try:
-        from memory.knowledge import crystallize_knowledge
         from config import BOT_NAME, OWNER_NAME
+        from memory.knowledge import crystallize_knowledge
         crystallized_count = await crystallize_knowledge(BOT_NAME, OWNER_NAME or "the owner")
         if crystallized_count:
             log.info(f"Crystallized {crystallized_count} knowledge insights")
@@ -458,8 +458,8 @@ async def send_heartbeat(send_message_func=None):
 
         # TRAITS drift — autonomously add one self-discovery (once per 7 days)
         try:
-            from memory.knowledge import update_traits
             from config import BOT_NAME
+            from memory.knowledge import update_traits
             added = await update_traits(BOT_NAME)
             if added:
                 log.info("Added new trait to TRAITS.md")

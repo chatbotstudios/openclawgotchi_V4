@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import subprocess
 import os
+import subprocess
 import sys
+
 
 def check(name, cmd):
     try:

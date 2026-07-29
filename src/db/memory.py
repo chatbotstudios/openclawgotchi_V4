@@ -18,6 +18,7 @@ def get_connection():
 
 from contextlib import contextmanager
 
+
 @contextmanager
 def get_db():
     """Get SQLite connection as context manager (auto-closes)."""

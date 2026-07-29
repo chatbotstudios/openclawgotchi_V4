@@ -9,10 +9,10 @@ import asyncio
 import logging
 from typing import Optional
 
-from config import WORKSPACE_DIR, CLAUDE_TIMEOUT
-from hardware.system import get_stats_string
+from config import CLAUDE_TIMEOUT, WORKSPACE_DIR
 from core.base import LLMConnector, LLMError, RateLimitError
 from core.prompts import build_history_prompt
+from hardware.system import get_stats_string
 
 log = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class ClaudeConnector(LLMConnector):
         self, 
         prompt: str, 
         history: list[dict], 
-        system_prompt: Optional[str] = None
+        system_prompt: str | None = None
     ) -> str:
         """Call Claude CLI."""
         
@@ -48,7 +48,7 @@ class ClaudeConnector(LLMConnector):
         self, 
         user_message: str, 
         history: list[dict],
-        system_prompt: Optional[str] = None
+        system_prompt: str | None = None
     ) -> str:
         """
         Build prompt for Claude CLI.

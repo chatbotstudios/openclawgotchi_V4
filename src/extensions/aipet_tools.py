@@ -1,10 +1,12 @@
 import logging
 import sqlite3
 from datetime import datetime, timezone
-from sdk.tool_builder import register_tool
-from game_engine.state import load_state, save_state
-from game_engine.vitals import add_xp as engine_add_xp, regenerate_hp_on_sleep
+
 from config import DB_PATH
+from game_engine.state import load_state, save_state
+from game_engine.vitals import add_xp as engine_add_xp
+from game_engine.vitals import regenerate_hp_on_sleep
+from sdk.tool_builder import register_tool
 
 log = logging.getLogger(__name__)
 
@@ -144,6 +146,7 @@ def aipet_generate_bounty(name: str, xp_reward: int, category: str = "Procedural
         
         # Also append to progressive.json so Git tracks it
         import json
+
         from config import MISSIONS_DIR
         missions_file = MISSIONS_DIR / "progressive.json"
         

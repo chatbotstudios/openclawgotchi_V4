@@ -2,10 +2,11 @@
 System stats — temperature, memory, uptime.
 """
 
-import subprocess
 import os
-import psutil
+import subprocess
 from dataclasses import dataclass
+
+import psutil
 
 
 @dataclass
@@ -103,7 +104,7 @@ def get_stats_string() -> str:
         self_info = "[SELF] Stats loading..."
     
     try:
-        from config import PROJECT_DIR, DB_PATH
+        from config import DB_PATH, PROJECT_DIR
         paths_info = f"[PATHS] Project: {PROJECT_DIR} | DB: {DB_PATH}"
     except Exception:
         paths_info = ""

@@ -5,7 +5,8 @@ Replicates OpenClaw core infrastructure for Gotchi V2.
 
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from config import PROJECT_DIR, WORKSPACE_DIR
 
 log = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ CORE_FILES = [
     "TOOLS.md"
 ]
 
-def _read_file(filename: str) -> Optional[str]:
+def _read_file(filename: str) -> str | None:
     """Read a file from templates."""
     paths = [
         WORKSPACE_DIR / filename,
@@ -123,7 +124,7 @@ def load_workspace_prompt(include_heartbeat: bool = False) -> str:
     
     return "\n\n---\n\n".join(parts)
 
-def get_workspace_info() -> Dict[str, Any]:
+def get_workspace_info() -> dict[str, Any]:
     """Metadata about the workspace for diagnostics."""
     workflows_dir = PROJECT_DIR / "agents" / "workflows"
     skills_dir = PROJECT_DIR / "agents" / "skills"

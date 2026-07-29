@@ -1,13 +1,14 @@
-import sys
 import os
+import sys
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Ensure the src directory is in the path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from core.events import emit, _listeners
 from core.cognitive_ingestor import init_cognitive_ingestor
+from core.events import _listeners, emit
+
 
 class TestCognitiveIngestor(unittest.TestCase):
     def setUp(self):

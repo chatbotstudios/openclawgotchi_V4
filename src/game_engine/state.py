@@ -1,13 +1,13 @@
-import sqlite3
-import logging
 import json
+import logging
+import sqlite3
 from datetime import datetime, timezone
 from typing import Optional
 
 from config import DB_PATH
-from game_engine.models import AIPETState, AgentStatus
 from db.stats import get_level_progress
 from game_engine.events import events
+from game_engine.models import AgentStatus, AIPETState
 
 log = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class StateManager:
     
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(StateManager, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             cls._instance._cached_state = None
         return cls._instance
 
@@ -61,7 +61,7 @@ class StateManager:
             log.error(f"Failed to load AIPET state from SQLite: {e}")
             return AIPETState()
 
-    def save_state(self, state: Optional[AIPETState] = None) -> bool:
+    def save_state(self, state: AIPETState | None = None) -> bool:
         """Saves the state to SQLite and updates the cache."""
         if state is None:
             if self._cached_state is None:

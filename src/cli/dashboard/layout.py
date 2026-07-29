@@ -1,9 +1,10 @@
+from rich import box
+from rich.align import Align
 from rich.layout import Layout
 from rich.panel import Panel
 from rich.table import Table
-from rich.align import Align
 from rich.text import Text
-from rich import box
+
 
 def generate_layout() -> Layout:
     """Create the base grid layout with fixed compact sizes."""

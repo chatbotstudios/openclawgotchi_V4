@@ -4,19 +4,20 @@ Zero-dependency, multi-threaded HTTP server utilizing standard socketserver and 
 Provides live telemetry, simulated E-Ink screen viewing, and tactical controls.
 """
 
-import os
-import json
-import time
 import glob
-import logging
-import threading
 import http.server
+import json
+import logging
+import os
 import socketserver
-from urllib.parse import parse_qs
+import threading
+import time
 from pathlib import Path
+from urllib.parse import parse_qs
+
 import psutil
 
-from config import PROJECT_DIR, DB_PATH, BOT_NAME, OWNER_NAME
+from config import BOT_NAME, DB_PATH, OWNER_NAME, PROJECT_DIR
 
 log = logging.getLogger("WebDash")
 
@@ -2162,8 +2163,8 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
                     
             elif action == "clear_history":
                 try:
-                    from core.commands import clear_bot_history
                     from config import get_admin_id
+                    from core.commands import clear_bot_history
                     admin_id = get_admin_id()
                     clear_bot_history(admin_id or 0)
                     message = "Active dialog context cleared successfully."
@@ -2254,15 +2255,15 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
                 from core.router import get_router
                 router = get_router()
                 
-                from db.memory import get_history
                 from config import get_admin_id
+                from db.memory import get_history
                 admin_id = get_admin_id() or 0
                 history = get_history(admin_id, limit=10)
                 
-                from config import SYSTEM_PROMPT
-                
                 # Execute async call safely on this backend thread
                 import asyncio
+
+                from config import SYSTEM_PROMPT
                 loop = asyncio.new_event_loop()
                 try:
                     add_system_log(f"[Synapse] Direct synapse transmit dispatched to AI Core: '{prompt[:30]}...'")
@@ -2338,8 +2339,8 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             sys_dict = {"uptime": "?", "temp": "?", "memory": "?", "cpu_load": "?"}
             
         # 2. Gotchi display and RPG stats
-        from hardware import display
         from game_engine.state import state_manager
+        from hardware import display
         
         try:
             state = state_manager.load_state()
@@ -2373,9 +2374,10 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             state = state_manager.get_state()
             
             # Read bettercap configurations if running in that scope
-            from config import BETTERCAP_USER, BETTERCAP_PASS
             import requests
             from requests.auth import HTTPBasicAuth
+
+            from config import BETTERCAP_PASS, BETTERCAP_USER
             
             try:
                 auth = HTTPBasicAuth(BETTERCAP_USER, BETTERCAP_PASS)

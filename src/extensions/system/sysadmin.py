@@ -1,13 +1,14 @@
 import subprocess
-from sdk.tool_builder import register_tool
+
 from config import PROJECT_DIR
+from sdk.tool_builder import register_tool
+
 
 @register_tool
 def git_command(command: str) -> str:
     """Run a git command in the project repo. Use for status, log, diff, add, commit, branch, stash."""
     try:
-        if command.startswith("git "):
-            command = command[4:]
+        command = command.removeprefix("git ")
         from config import AGENT_GITHUB_PAT
         
         git_cmd_prefix = "git"

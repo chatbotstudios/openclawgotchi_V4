@@ -5,6 +5,7 @@ Configuration — paths, environment variables, constants.
 import os
 from pathlib import Path
 from typing import Optional
+
 from dotenv import load_dotenv
 
 # --- Paths ---
@@ -76,7 +77,7 @@ CUSTOM_BASE_URL = os.environ.get("CUSTOM_BASE_URL", "")
 # Dynamic LLM Presets Matrix matching all 15+ Hermes-core providers
 LLM_PRESETS = {}
 
-def _register_preset(name: str, model_prefix: str, api_base: Optional[str] = None):
+def _register_preset(name: str, model_prefix: str, api_base: str | None = None):
     # Determine the actual model tag to use for this preset
     model = DEFAULT_LITE_MODEL
     # If the prefix isn't in the model already, prepend it
@@ -181,7 +182,7 @@ def get_discord_allowed_users() -> list[int]:
 
 
 
-def get_admin_id() -> Optional[int]:
+def get_admin_id() -> int | None:
     """Get first allowed user as admin."""
     users = get_allowed_users()
     return users[0] if users else None

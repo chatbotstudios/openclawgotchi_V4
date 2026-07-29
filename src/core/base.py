@@ -16,7 +16,7 @@ class LLMConnector(ABC):
         self, 
         prompt: str, 
         history: list[dict], 
-        system_prompt: Optional[str] = None
+        system_prompt: str | None = None
     ) -> str:
         """
         Call the LLM with a prompt.
@@ -33,19 +33,15 @@ class LLMConnector(ABC):
             RateLimitError: When rate limited
             LLMError: For other errors
         """
-        pass
     
     @abstractmethod
     def is_available(self) -> bool:
         """Check if this connector is available."""
-        pass
 
 
 class LLMError(Exception):
     """General LLM error."""
-    pass
 
 
 class RateLimitError(LLMError):
     """Rate limit exceeded."""
-    pass

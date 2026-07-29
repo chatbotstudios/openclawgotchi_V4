@@ -1,6 +1,7 @@
 import json
-from sdk.tool_builder import register_tool
+
 from config import CUSTOM_FACES_PATH, DATA_DIR
+from sdk.tool_builder import register_tool
 
 STANDARD_FACES = [
     "happy", "happy2", "sad", "excited", "thinking", "love", "surprised", "grateful",

@@ -1,6 +1,7 @@
 import logging
-from hooks.runner import hook, HookEvent
+
 from core.missions.manager import get_missions, increment_mission_progress
+from hooks.runner import HookEvent, hook
 
 log = logging.getLogger(__name__)
 

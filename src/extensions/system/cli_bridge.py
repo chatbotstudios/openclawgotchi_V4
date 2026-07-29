@@ -1,12 +1,14 @@
+import logging
 import os
 import subprocess
-import logging
-import psutil
 from pathlib import Path
+
+import psutil
+
 from config import PROJECT_DIR
-from sdk.tool_builder import register_tool
-from core.commands import get_status_report, format_status_plain, set_llm_mode
+from core.commands import format_status_plain, get_status_report, set_llm_mode
 from extensions.system.commands import _is_dangerous_command
+from sdk.tool_builder import register_tool
 
 log = logging.getLogger(__name__)
 

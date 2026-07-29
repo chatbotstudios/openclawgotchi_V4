@@ -1,16 +1,16 @@
 import click
+
 from core.cli.utils import format_header
 from core.commands import manage_cron
+
 
 @click.group()
 def tasks():
     """Manage cron tasks, reminders, and config."""
-    pass
 
 @tasks.group(name="cron")
 def cron_group():
     """Manage recurring cron jobs."""
-    pass
 
 @cron_group.command(name="list")
 def cron_list():
@@ -21,7 +21,6 @@ def cron_list():
 @tasks.group()
 def config():
     """Configuration management."""
-    pass
 
 @config.command(name="hunt-on-boot")
 @click.argument('state', type=click.Choice(['on', 'off']))
@@ -36,8 +35,9 @@ def config_hunt(state):
 @click.option('--interval', default=10)
 def jobs(interval):
     """Live CPU/RAM/Service monitoring."""
-    import psutil
     import time
+
+    import psutil
     try:
         while True:
             click.clear()

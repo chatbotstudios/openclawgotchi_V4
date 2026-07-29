@@ -3,14 +3,13 @@ from rich.console import Console
 from rich.table import Table
 
 from core.cli.utils import format_header, success_print
-from core.missions.manager import get_missions, get_mission, update_mission_status
+from core.missions.manager import get_mission, get_missions, update_mission_status
 
 console = Console()
 
 @click.group()
 def missions():
     """🏆 Mission & Quest System — Manage your tactical objectives."""
-    pass
 
 @missions.command()
 @click.option('--status', type=click.Choice(['available', 'active', 'completed', 'abandoned']), help="Filter by status")

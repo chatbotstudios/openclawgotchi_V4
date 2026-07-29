@@ -6,9 +6,10 @@ Both Claude CLI and LiteLLM use the same files.
 """
 
 
-from config import PROJECT_DIR, WORKSPACE_DIR, CUSTOM_FACES_PATH
-from hardware.system import get_stats_string
 import json
+
+from config import CUSTOM_FACES_PATH, PROJECT_DIR, WORKSPACE_DIR
+from hardware.system import get_stats_string
 
 
 def _load_available_faces() -> str:

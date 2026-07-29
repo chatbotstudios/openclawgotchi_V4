@@ -1,22 +1,23 @@
+import sqlite3
+from datetime import datetime, timezone
+
 import click
 from rich.console import Console
 from rich.panel import Panel
+from rich.progress import BarColumn, Progress, TextColumn
 from rich.table import Table
-from rich.progress import Progress, BarColumn, TextColumn
-from datetime import datetime, timezone
-from game_engine.state import load_state, save_state
-from game_engine.vitals import add_xp, xp_to_reach_level, regenerate_hp_on_sleep
-from game_engine.missions import get_missions, trigger_dream
-import sqlite3
+
 from config import DB_PATH
 from core.cli.utils import format_header
+from game_engine.missions import get_missions, trigger_dream
+from game_engine.state import load_state, save_state
+from game_engine.vitals import add_xp, regenerate_hp_on_sleep, xp_to_reach_level
 
 console = Console()
 
 @click.group()
 def aipet():
     """👾 AIPET Game Engine — Check vitals, level up, and manage missions."""
-    pass
 
 @aipet.command()
 def status():
@@ -70,7 +71,6 @@ def add_xp_cmd(amount, source):
 @aipet.group()
 def mission():
     """Manage AIPET missions and bounties."""
-    pass
 
 @mission.command(name="list")
 def list_missions():

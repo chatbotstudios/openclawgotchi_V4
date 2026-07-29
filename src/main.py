@@ -15,8 +15,8 @@ Entry point. All logic is in modules:
 - memory/           — Memory flush system
 """
 
-import sys
 import logging
+import sys
 from pathlib import Path
 
 # Add src to path for imports
@@ -25,20 +25,38 @@ sys.path.insert(0, str(SRC_DIR))
 
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
-from config import BOT_TOKEN, HEARTBEAT_INTERVAL, HEARTBEAT_FIRST_RUN, LEVEL_UP_DISPLAY_DELAY
-from db.memory import init_db
-from hardware.display import show_face
 from bot.handlers import (
-    cmd_start, cmd_clear, cmd_context, cmd_status, cmd_xp, cmd_pro, cmd_use,
-    cmd_remember, cmd_recall, cmd_cron, cmd_memory, cmd_health, cmd_jobs,
-    handle_message
+    cmd_clear,
+    cmd_context,
+    cmd_cron,
+    cmd_health,
+    cmd_jobs,
+    cmd_memory,
+    cmd_pro,
+    cmd_recall,
+    cmd_remember,
+    cmd_start,
+    cmd_status,
+    cmd_use,
+    cmd_xp,
+    handle_message,
 )
 from bot.heartbeat import send_heartbeat
-from hooks.runner import run_hook, HookEvent, discover_and_load_hooks
-from cron.scheduler import get_scheduler
-from core.registry import load_all_extensions, get_tools_and_schemas
+
 # Logging
-from config import DATA_DIR
+from config import (
+    BOT_TOKEN,
+    DATA_DIR,
+    HEARTBEAT_FIRST_RUN,
+    HEARTBEAT_INTERVAL,
+    LEVEL_UP_DISPLAY_DELAY,
+)
+from core.registry import get_tools_and_schemas, load_all_extensions
+from cron.scheduler import get_scheduler
+from db.memory import init_db
+from hardware.display import show_face
+from hooks.runner import HookEvent, discover_and_load_hooks, run_hook
+
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
@@ -84,8 +102,9 @@ async def run_cron_job(job):
         extra={"job_id": job.id, "message": job.message}
     )
     
-    from config import get_admin_id
     from telegram import Bot
+
+    from config import get_admin_id
     
     def is_internal_reminder(j) -> bool:
         """Internal self-reminders should not be sent to user chat."""
@@ -118,8 +137,8 @@ async def run_cron_job(job):
     
     # Call LLM with full context: recent chat history + explicit "scheduled reminder" instruction
     from core.router import get_router
-    from hardware.display import parse_and_execute_commands
     from db.memory import get_history
+    from hardware.display import parse_and_execute_commands
     
     reminder_topic = (job.message or job.name or "Remind the user.").strip()
     history = get_history(chat_id, limit=12)  # last 12 messages — LLM sees how user asked for the reminder
@@ -180,8 +199,9 @@ def main():
     log.info("Database initialized")
     
     # Set up level-up callback via Event Bus (runs in background thread to avoid blocking)
-    from game_engine.events import events
     import threading
+
+    from game_engine.events import events
     
     def on_level_up(data):
         level = data.get("new_level")
@@ -254,8 +274,9 @@ def main():
     # Log hardware diagnostics at boot
     def log_hardware_status():
         import shutil
-        from hardware.system import get_stats
+
         from game_engine.state import load_state
+        from hardware.system import get_stats
         try:
             stats = get_stats()
             
@@ -308,9 +329,10 @@ def main():
         log.info("Booting Dual Uplink (Wi-Fi + BLE)...")
             
         try:
+            import subprocess
+
             from config import HUNT_ON_BOOT
             from hardware.pwn_manager import PwnManager
-            import subprocess
             
             if not HUNT_ON_BOOT:
                 log.info("Radio Silence: Ensuring Bettercap is stopped...")
@@ -369,7 +391,12 @@ def main():
             log.info(f"Cron scheduler started ({len(scheduler.jobs)} jobs)")
             
             # Process any pending command mail from sibling on startup
-            from bot.heartbeat import get_unread_mail, process_command_mail, send_mail, SIBLING_BOT
+            from bot.heartbeat import (
+                SIBLING_BOT,
+                get_unread_mail,
+                process_command_mail,
+                send_mail,
+            )
             for mail in get_unread_mail():
                 cmd_response = process_command_mail(mail["message"])
                 if cmd_response and SIBLING_BOT:

@@ -9,26 +9,40 @@ from telegram import Update
 from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 
-from db.memory import (
-    save_message, get_history, get_message_count,
-    save_user, add_fact, search_facts, get_recent_facts,
-    save_pending_task, get_connection, save_feedback_event
+from bot.onboarding import (
+    check_onboarding_complete,
+    complete_onboarding,
+    get_bootstrap_prompt,
+    needs_onboarding,
 )
-from hardware.display import parse_and_execute_commands, error_screen, show_face
-from hardware.system import get_stats
-from core.router import get_router
-from core.base import RateLimitError, LLMError
-from bot.telegram import is_allowed, get_sender_name, send_long_message
-from bot.onboarding import needs_onboarding, get_bootstrap_prompt, check_onboarding_complete, complete_onboarding
-from hooks.runner import run_hook, HookEvent
+from bot.telegram import get_sender_name, is_allowed, send_long_message
+from config import LLM_PRESETS
+from core.base import LLMError, RateLimitError
 from core.commands import (
-    get_status_report, format_status_markdown, 
-    set_llm_mode, clear_bot_history
+    clear_bot_history,
+    format_status_markdown,
+    get_status_report,
+    set_llm_mode,
 )
+from core.router import get_router
+from cron.scheduler import add_cron_job, list_cron_jobs, remove_cron_job
+from db.memory import (
+    add_fact,
+    get_connection,
+    get_history,
+    get_message_count,
+    get_recent_facts,
+    save_feedback_event,
+    save_message,
+    save_pending_task,
+    save_user,
+    search_facts,
+)
+from hardware.display import error_screen, parse_and_execute_commands, show_face
+from hardware.system import get_stats
+from hooks.runner import HookEvent, run_hook
 from memory.flush import check_and_inject_flush, write_to_daily_log
 from memory.summarize import optimize_history
-from cron.scheduler import add_cron_job, list_cron_jobs, remove_cron_job
-from config import LLM_PRESETS
 
 log = logging.getLogger(__name__)
 
@@ -724,8 +738,9 @@ async def cmd_memory(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_allowed(user.id, chat.id):
         return
 
-    from db.stats import get_stats_summary
     import sqlite3
+
+    from db.stats import get_stats_summary
 
     stats = get_stats()
     gotchi_stats = get_stats_summary()
@@ -769,19 +784,17 @@ async def cmd_health(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_allowed(user.id, chat.id):
         return
 
+    import subprocess
     from db.stats import get_stats_summary
     from config import SRC_DIR, DB_PATH
+    from pathlib import Path
     import subprocess
 
     stats = get_stats()
     gotchi_stats = get_stats_summary()
 
     # Code stats
-    result = subprocess.run(
-        f"find {SRC_DIR} -name '*.py' | wc -l",
-        shell=True, capture_output=True, text=True
-    )
-    py_files = result.stdout.strip() or "unknown"
+    py_files = len(list(Path(SRC_DIR).rglob("*.py"))) or "unknown"
 
     msg = (
         f"🏥 **Health Report**\n\n"

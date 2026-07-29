@@ -1,5 +1,6 @@
 import logging
-from hooks.runner import register_hook, HookEvent
+
+from hooks.runner import HookEvent, register_hook
 
 log = logging.getLogger("Pwnagotchi.Plugins")
 

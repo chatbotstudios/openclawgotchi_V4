@@ -4,10 +4,10 @@ Self-Improvement Tool.
 Usage: ./patch_self.py <file_relative_path> <new_content_string_or_stdin>
 """
 
-import sys
 import os
 import shutil
 import subprocess
+import sys
 from datetime import datetime
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

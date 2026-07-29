@@ -1,7 +1,7 @@
-import subprocess
-import time
-import threading
 import logging
+import subprocess
+import threading
+import time
 
 log = logging.getLogger("TetherWatchdog")
 
@@ -168,7 +168,10 @@ class TetherWatchdog:
                 if getattr(self, '_was_active', False):
                     log.error("🧲 TETHER CRASH DETECTED! Executing hardware forensics dump...")
                     try:
-                        from utils.forensics import get_forensics_logger, dump_kernel_dmesg
+                        from utils.forensics import (
+                            dump_kernel_dmesg,
+                            get_forensics_logger,
+                        )
                         get_forensics_logger().error("--- [TETHER CRASH DETECTED] ---")
                         dump_kernel_dmesg()
                     except Exception:
