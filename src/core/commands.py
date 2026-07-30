@@ -34,7 +34,7 @@ def set_env_var(key: str, value: str):
     return True
 
 @register_tool
-def get_status_report(chat_id: int = None):
+def get_status_report(chat_id: int | None = None):
     """
     Gathers hardware and bot stats into a structured report. 
     Use this to check your own Level, XP, CPU Temperature, and Memory.
@@ -106,7 +106,7 @@ def format_status_plain(report):
     )
 
 @register_tool
-def set_llm_mode(mode_name: str = None):
+def set_llm_mode(mode_name: str | None = None):
     """
     Sets the LLM mode (lite or pro). 
     Use 'lite' for simple tasks and 'pro' for complex reasoning/coding.
@@ -160,7 +160,7 @@ def create_reminder(message: str) -> str:
     return f"Reminder set: {message}"
 
 @register_tool
-def manage_cron(action: str, task: str = None, schedule: str = None) -> str:
+def manage_cron(action: str, task: str | None = None, schedule: str | None = None) -> str:
     """Manage recurring tasks (cron jobs). Actions: list, add, delete."""
     import subprocess
     if action == "list":
@@ -199,7 +199,7 @@ def manage_cron(action: str, task: str = None, schedule: str = None) -> str:
 
 
 @register_tool
-def manage_net(action: str, ssid: str = None, password: str = None) -> str:
+def manage_net(action: str, ssid: str | None = None, password: str | None = None) -> str:
     """Manage Wi-Fi connections and diagnostics. Actions: scan, add, connect, list, status, restart, ping, dns, routes."""
     from core.radio import manage_net as radio_net
     return radio_net(action, ssid, password)
@@ -211,13 +211,13 @@ def manage_wifi_interface(action: str) -> str:
     return radio_wifi(action)
 
 @register_tool
-def manage_ble_adapter(action: str, value: str = None) -> str:
+def manage_ble_adapter(action: str, value: str | None = None) -> str:
     """Manage Bluetooth adapter state and broadcasting. Actions: on, off, status, scan, info, broadcast."""
     from core.radio import manage_ble_adapter as radio_ble
     return radio_ble(action, value)
 
 @register_tool
-def manage_reminders(action: str, msg: str = None) -> str:
+def manage_reminders(action: str, msg: str | None = None) -> str:
     """Manage one-shot reminders. Actions: add, list, delete."""
     # For now, reminders are just displayed. In a full system, these would be in DB.
     if action == "add":

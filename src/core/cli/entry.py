@@ -198,7 +198,7 @@ try:
         if tool_name not in cli.commands:
             cmd = ToolCommand(tool_name, func)
             # Enable extra arguments parsing without throwing click options errors
-            cmd.context_settings = dict(ignore_unknown_options=True, allow_extra_args=True)
+            cmd.context_settings = {"ignore_unknown_options": True, "allow_extra_args": True}
             cli.add_command(cmd)
 except Exception as e:
     print(f"Warning: Failed to dynamically register tools as CLI commands: {e}", file=sys.stderr)

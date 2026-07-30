@@ -157,7 +157,7 @@ def list_tools():
     load_all_extensions(str(PROJECT_DIR / "src" / "extensions"))
     tools = get_registered_tools()
     format_header("Available Tools")
-    for name in tools.keys():
+    for name in tools:
         click.echo(f"• {name}")
 
 @click.group()

@@ -12,7 +12,7 @@ class OfflineHuntFilter(logging.Filter):
     def filter(self, record):
         # Suppress discord.client reconnect spam if it's a DNS error (caused by offline hunt monitor mode)
         if record.getMessage() and "Attempting a reconnect in" in record.getMessage() and record.exc_info:
-            exc_type, exc_value, _ = record.exc_info
+            _exc_type, exc_value, _ = record.exc_info
             if "Temporary failure in name resolution" in str(exc_value):
                 return False
         return True
@@ -429,7 +429,7 @@ async def cmd_xp(interaction: discord.Interaction):
     await interaction.followup.send("\n".join(lines))
 
 @bot_instance.tree.command(name="context", description="View or trim model context window")
-async def cmd_context(interaction: discord.Interaction, action: str = None):
+async def cmd_context(interaction: discord.Interaction, action: str | None = None):
     if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
     if action == "trim":
         import sqlite3
@@ -511,7 +511,7 @@ async def cmd_cron(interaction: discord.Interaction, name: str, interval: str, m
     await interaction.response.send_message(f"⏰ Job added: {name}" + notifications)
 
 @bot_instance.tree.command(name="pwn", description="Pwnagotchi Subconscious Control")
-async def cmd_pwn(interaction: discord.Interaction, action: str = "status", target: str = None):
+async def cmd_pwn(interaction: discord.Interaction, action: str = "status", target: str | None = None):
     if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
     await interaction.response.defer()
     from extensions.pwn.wifi import (
@@ -581,7 +581,7 @@ async def cmd_brain_backup(interaction: discord.Interaction):
     try:
         system_prompt = build_system_context(is_heartbeat=True)
         log.info(f"💬 [/brain-backup] Routing prompt to LLM: {prompt}")
-        response, connector = await router.call(prompt, history=[], system_prompt=system_prompt)
+        response, _connector = await router.call(prompt, history=[], system_prompt=system_prompt)
         
         tool_footer = ""
         if "__TOOL_FOOTER__" in response:
@@ -589,7 +589,7 @@ async def cmd_brain_backup(interaction: discord.Interaction):
             response = parts[0].rstrip()
             tool_footer = parts[1].strip()
             
-        clean_text, cmds = parse_and_execute_commands(response)
+        clean_text, _cmds = parse_and_execute_commands(response)
         
         if tool_footer:
             clean_text += f"\n\n{tool_footer}"
@@ -603,7 +603,7 @@ async def cmd_brain_backup(interaction: discord.Interaction):
         await interaction.followup.send(f"❌ LLM Router failed: {e}")
 
 @bot_instance.tree.command(name="jobs", description="List or remove scheduled tasks")
-async def cmd_jobs(interaction: discord.Interaction, action: str = None, job_id: str = None):
+async def cmd_jobs(interaction: discord.Interaction, action: str | None = None, job_id: str | None = None):
     if not is_allowed(interaction.user.id): return await interaction.response.send_message("Access denied.", ephemeral=True)
     await interaction.response.defer()
     
@@ -663,7 +663,7 @@ async def cmd_dream(interaction: discord.Interaction):
             response = parts[0].rstrip()
             tool_footer = parts[1].strip()
             
-        clean_text, cmds = parse_and_execute_commands(response)
+        clean_text, _cmds = parse_and_execute_commands(response)
         
         if tool_footer:
             clean_text += f"\n\n__TOOL_FOOTER__\n```\n{tool_footer}\n```"

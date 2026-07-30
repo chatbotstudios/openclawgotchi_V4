@@ -17,7 +17,14 @@ from urllib.parse import parse_qs
 
 import psutil
 
-from config import BOT_NAME, DB_PATH, OWNER_NAME, PROJECT_DIR, AGENT_GITHUB_PAT, DISCORD_BOT_TOKEN
+from config import (
+    AGENT_GITHUB_PAT,
+    BOT_NAME,
+    DB_PATH,
+    DISCORD_BOT_TOKEN,
+    OWNER_NAME,
+    PROJECT_DIR,
+)
 
 # Dashboard auth token (optional — if set, all endpoints require ?token= or Authorization header)
 DASHBOARD_TOKEN = os.environ.get("DASHBOARD_TOKEN", "").strip()
@@ -310,16 +317,14 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
         if not DASHBOARD_TOKEN:
             return True  # No auth configured
         # Check query param: ?token=xxx
-        from urllib.parse import urlparse, parse_qs
+        from urllib.parse import parse_qs, urlparse
         parsed = urlparse(self.path)
         params = parse_qs(parsed.query)
         if params.get('token', [None])[0] == DASHBOARD_TOKEN:
             return True
         # Check Authorization header: Bearer xxx
         auth_header = self.headers.get('Authorization', '')
-        if auth_header.startswith('Bearer ') and auth_header[7:] == DASHBOARD_TOKEN:
-            return True
-        return False
+        return bool(auth_header.startswith('Bearer ') and auth_header[7:] == DASHBOARD_TOKEN)
 
     def _send_unauthorized(self):
         self.send_response(401)
@@ -419,7 +424,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             try:
                 while not getattr(self.server, '_shutdown_request', False):
                     stats = self.gather_full_live_stats()
-                    self.wfile.write(f"data: {json.dumps(stats)}\n\n".encode('utf-8'))
+                    self.wfile.write(f"data: {json.dumps(stats)}\n\n".encode())
                     self.wfile.flush()
                     time.sleep(1)
             except (BrokenPipeError, ConnectionResetError, OSError):
@@ -507,6 +512,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
             elif action == "telegram_uplink":
                 try:
                     import requests
+
                     from config import BOT_TOKEN
                     if BOT_TOKEN:
                         r = requests.get(
@@ -655,7 +661,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
 
                 from config import SYSTEM_PROMPT
                 add_system_log(f"[Synapse] Direct synapse transmit dispatched to AI Core: '{prompt[:30]}...'")
-                response, connector = asyncio.run(
+                response, _connector = asyncio.run(
                     router.call(prompt, history, SYSTEM_PROMPT)
                 )
                 
@@ -778,6 +784,7 @@ class WebDashboardHandler(http.server.BaseHTTPRequestHandler):
                 
                 import requests
                 from requests.auth import HTTPBasicAuth
+
                 from config import BETTERCAP_PASS, BETTERCAP_USER
                 
                 try:

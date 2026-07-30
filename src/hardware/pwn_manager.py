@@ -100,9 +100,9 @@ class PwnManager:
             
             cmd = [
                 "sudo", "bettercap", "-iface", "wlan0mon",
-                "-eval", f"set api.rest.user {api_user}; set api.rest.pass {api_pass}; "
+                "-eval", (f"set api.rest.user {api_user}; set api.rest.pass {api_pass}; "
                          f"api.rest on; ble.recon on; wifi.recon on; "
-                         f"set wifi.handshakes.path {handshake_path}"
+                         f"set wifi.handshakes.path {handshake_path}")
             ]
             
             self.bettercap_proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

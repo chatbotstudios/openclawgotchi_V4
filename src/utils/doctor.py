@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import subprocess
 import os
-import sys
 import shlex
+import subprocess
+import sys
+
 
 def check(name, cmd):
     """Run a simple command (no shell pipes) and return (ok, output)."""

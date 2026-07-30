@@ -48,10 +48,7 @@ class TetherWatchdog:
             
             # Strict validation: Check that bnep0 actually has a valid IP address
             ip_res = subprocess.run(["ip", "-4", "addr", "show", "dev", "bnep0"], capture_output=True, text=True)
-            if "inet " not in ip_res.stdout or "169.254." in ip_res.stdout:
-                return False
-                
-            return True
+            return not ("inet " not in ip_res.stdout or "169.254." in ip_res.stdout)
         except:
             return False
 

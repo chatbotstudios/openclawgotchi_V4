@@ -68,7 +68,7 @@ def write_to_daily_log(entry: str):
     log.debug(f"Logged to {today}.md: {entry[:50]}...")
 
 
-def get_daily_log(date: str = None) -> str:
+def get_daily_log(date: str | None = None) -> str:
     """Read a daily log file."""
     if date is None:
         date = datetime.now().strftime("%Y-%m-%d")
@@ -150,12 +150,12 @@ async def summarize_conversation_with_llm(history: list[dict], chat_id: int = 0)
         
         preset = LLM_PRESETS.get(DEFAULT_LITE_PRESET, LLM_PRESETS["glm"])
         model = preset["model"]
-        kwargs = dict(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=150,
-            temperature=0.3,
-        )
+        kwargs = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 150,
+            "temperature": 0.3,
+        }
         if preset.get("api_base"):
             kwargs["api_base"] = preset["api_base"]
         

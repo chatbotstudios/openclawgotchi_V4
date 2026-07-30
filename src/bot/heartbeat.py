@@ -35,11 +35,11 @@ def _sanitize_reflection_text(text: str) -> str:
         if not stripped:
             continue
         lower = stripped.lower()
-        if lower.startswith("**heartbeat") or lower.startswith("heartbeat"):
+        if lower.startswith(("**heartbeat", "heartbeat")):
             continue
-        if lower.startswith("**system") or lower.startswith("system:"):
+        if lower.startswith(("**system", "system:")):
             continue
-        if lower.startswith("**рефлек") or lower.startswith("рефлек"):
+        if lower.startswith(("**рефлек", "рефлек")):
             continue
         if stripped.startswith("---"):
             continue
@@ -171,7 +171,7 @@ async def process_pending_tasks(send_message_func):
             if history:
                 history = history[:-1]
             
-            response, connector = await router.call(text, history)
+            response, _connector = await router.call(text, history)
             
             # Handle error responses
             if response.startswith("Error:"):
@@ -256,7 +256,7 @@ async def send_heartbeat(send_message_func=None):
         feedback_ids = []
 
     # 1. Apply auto-mood first
-    mood, mood_text = apply_auto_mood()
+    _mood, _mood_text = apply_auto_mood()
 
     # 2. Award heartbeat XP
     on_heartbeat()

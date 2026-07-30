@@ -299,7 +299,7 @@ def main():
             log.info(f"⚡ CPU Load: {stats.cpu_load}")
             
             # Storage
-            total, used, free = shutil.disk_usage("/")
+            total, _used, free = shutil.disk_usage("/")
             gb = 1024**3
             log.info(f"💾 Storage: {free/gb:.1f}GB / {total/gb:.1f}GB Available")
             

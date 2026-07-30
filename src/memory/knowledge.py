@@ -190,12 +190,12 @@ async def update_traits(bot_name: str) -> bool:
         from config import DEFAULT_LITE_PRESET, LLM_PRESETS
 
         preset = LLM_PRESETS.get(DEFAULT_LITE_PRESET, LLM_PRESETS["glm"])
-        kwargs = dict(
-            model=preset["model"],
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=80,
-            temperature=0.8,
-        )
+        kwargs = {
+            "model": preset["model"],
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 80,
+            "temperature": 0.8,
+        }
         if preset.get("api_base"):
             kwargs["api_base"] = preset["api_base"]
 
@@ -281,12 +281,12 @@ async def crystallize_knowledge(bot_name: str, owner_name: str) -> int:
         from config import DEFAULT_LITE_PRESET, LLM_PRESETS
 
         preset = LLM_PRESETS.get(DEFAULT_LITE_PRESET, LLM_PRESETS["glm"])
-        kwargs = dict(
-            model=preset["model"],
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=350,
-            temperature=0.7,
-        )
+        kwargs = {
+            "model": preset["model"],
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 350,
+            "temperature": 0.7,
+        }
         if preset.get("api_base"):
             kwargs["api_base"] = preset["api_base"]
 
