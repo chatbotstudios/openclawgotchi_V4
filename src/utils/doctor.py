@@ -197,6 +197,62 @@ def run_checks() -> dict:
     return checks
 
 
+def _get_recommendations(checks: dict, all_ok: bool, uptime_days: int) -> list[str]:
+    """Generate actionable recommendations based on check results."""
+    recs = []
+    if not all_ok:
+        recs.append("Some checks failed — review details below.")
+    
+    # Disk
+    c = checks.get("disk", {})
+    if c.get("used_pct") and c["used_pct"] > 80:
+        recs.append("Disk usage >80% — run 'gotchi db clean --older-than 30d' to free space")
+    elif c.get("used_pct") and c["used_pct"] > 90:
+        recs.append("DISK CRITICAL — free space immediately or the bot may crash")
+    
+    # Memory
+    c = checks.get("memory", {})
+    if c.get("pct") and c["pct"] > 85:
+        recs.append("RAM usage >85% — consider disabling LiteLLM tools or reducing model context")
+    elif c.get("pct") and c["pct"] > 95:
+        recs.append("RAM CRITICAL — the Pi Zero may OOM. Restart the service.")
+    
+    # Temperature
+    c = checks.get("temperature", {})
+    if c.get("celsius") and c["celsius"] > 70:
+        recs.append(f"CPU {c['celsius']}°C — hot! Ensure heatsink/fan, reduce Bettercap aggression")
+    
+    # LLM
+    c = checks.get("llm", {})
+    if not c.get("ok") and c.get("output") == "none":
+        recs.append("No LLM API keys configured — set at least one in .env (e.g. DEEPSEEK_API_KEY)")
+    
+    # Handshakes
+    c = checks.get("handshakes", {})
+    hs_count = c.get("count", 0)
+    if hs_count == 0 and uptime_days > 1:
+        recs.append(f"No handshakes captured in {uptime_days}+ days — try 'gotchi pwn status' to check radio")
+    elif hs_count > 0:
+        pass  # Got some captures — no recommendation needed
+    
+    # Service
+    c = checks.get("service", {})
+    if c.get("output") != "active":
+        recs.append("Bot service is not running — start with 'sudo systemctl start gotchi'")
+    
+    # Display
+    c = checks.get("display", {})
+    if c.get("driver") == "simulator":
+        recs.append("Display in simulator mode — no E-Ink hardware detected")
+    
+    # Logs
+    c = checks.get("logs", {})
+    if c.get("output"):
+        recs.append("Recent errors in logs — check 'journalctl -u gotchi -n 50' for details")
+    
+    return recs
+
+
 def main():
     bot_name = os.environ.get("BOT_NAME", "Gotchi")
     import os as _os
@@ -231,6 +287,22 @@ def main():
     all_ok = True
 
     checks = run_checks()
+    
+    # Compact summary table
+    status_icons = {k: "✅" if v["ok"] else ("⚠️" if k in ("temperature","llm","display","logs") else "❌") for k, v in checks.items()}
+    table_lines = []
+    row = []
+    for i, (name, icon) in enumerate(status_icons.items()):
+        label = name[:6].ljust(6)
+        row.append(f"{icon} {label}")
+        if (i + 1) % 4 == 0:
+            table_lines.append("  " + "  ".join(row))
+            row = []
+    if row:
+        table_lines.append("  " + "  ".join(row))
+    for line in table_lines:
+        print(line)
+    print("")
 
     # 1. Internet
     c = checks["internet"]
@@ -329,6 +401,15 @@ def main():
     else:
         print(f"[⚠️] Logs (Recent Errors):\n{c['output']}")
 
+    # Recommendations
+    uptime_days = checks.get("uptime", {}).get("days", 0)
+    recs = _get_recommendations(checks, all_ok, uptime_days)
+    if recs:
+        print("")
+        print("  ── Recommendations ──")
+        for r in recs:
+            print(f"  ▶ {r}")
+    
     print("==========================")
     total = len(checks)
     passed = sum(1 for c in checks.values() if c["ok"])
