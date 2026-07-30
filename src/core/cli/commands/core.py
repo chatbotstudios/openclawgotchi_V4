@@ -98,7 +98,8 @@ def help_cmd(ctx):
 @click.command()
 @click.option('--full', is_flag=True, help="Run a full diagnostic sweep")
 @click.option('--json', 'as_json', is_flag=True, help="Output in JSON format")
-def doctor(full, as_json):
+@click.option('-w', '--watch', type=int, default=0, metavar='N', help="Watch mode: refresh every N seconds")
+def doctor(full, as_json, watch):
     """Full system diagnostic."""
     if not as_json:
         format_header("Gotchi Doctor")
@@ -108,6 +109,9 @@ def doctor(full, as_json):
     import sys as _sys
     if as_json and '--json' not in _sys.argv:
         _sys.argv.append('--json')
+    if watch:
+        if '--watch' not in _sys.argv:
+            _sys.argv.extend(['--watch', str(watch)])
     run_diagnostics()
 
 @click.command()

@@ -116,11 +116,52 @@ def run_checks() -> dict:
         llm_result = {"ok": False, "output": str(e), "providers": []}
     checks["llm"] = llm_result
 
-    # 7. Service Status
+    # 7. Handshake Count
+    hs_result = {"ok": True, "output": "0", "count": 0}
+    try:
+        _src = os.path.join(os.path.dirname(__file__), "..")
+        if _src not in sys.path:
+            sys.path.insert(0, _src)
+        from config import PROJECT_DIR
+        handshake_dir = PROJECT_DIR / "handshakes"
+        if handshake_dir.exists():
+            pcaps = list(handshake_dir.glob("*.pcap"))
+            hs_result = {"ok": True, "output": str(len(pcaps)), "count": len(pcaps)}
+    except Exception as e:
+        hs_result = {"ok": False, "output": str(e), "count": 0}
+    checks["handshakes"] = hs_result
+
+    # 8. Cron Jobs
+    cron_result = {"ok": True, "output": "0", "count": 0}
+    try:
+        _src = os.path.join(os.path.dirname(__file__), "..")
+        if _src not in sys.path:
+            sys.path.insert(0, _src)
+        from cron.scheduler import get_scheduler
+        jobs = get_scheduler().list_jobs()
+        cron_result = {"ok": True, "output": str(len(jobs)), "count": len(jobs)}
+    except Exception as e:
+        cron_result = {"ok": False, "output": str(e), "count": 0}
+    checks["cron"] = cron_result
+
+    # 9. AIPET State
+    aipet_result = {"ok": True, "output": "", "level": 0, "xp": 0, "hp": 0}
+    try:
+        _src = os.path.join(os.path.dirname(__file__), "..")
+        if _src not in sys.path:
+            sys.path.insert(0, _src)
+        from game_engine.state import state_manager
+        state = state_manager.load_state()
+        aipet_result = {"ok": True, "output": f"Lv{state.level} {state.title} ({state.xp} XP, {state.hp:.0f} HP)", "level": state.level, "xp": state.xp, "hp": state.hp}
+    except Exception as e:
+        aipet_result = {"ok": False, "output": str(e), "level": 0, "xp": 0, "hp": 0}
+    checks["aipet"] = aipet_result
+
+    # 10. Service Status
     ok, out = check('Service', 'systemctl is-active gotchi')
     checks["service"] = {"ok": ok, "output": out}
 
-    # 8. Display Driver
+    # 11. Display Driver
     display_result = {"ok": False, "output": "", "driver": "unknown"}
     try:
         _src = os.path.join(os.path.dirname(__file__), "..")
@@ -158,16 +199,32 @@ def run_checks() -> dict:
 
 def main():
     bot_name = os.environ.get("BOT_NAME", "Gotchi")
+    import os as _os
+    _sys_orig = sys.argv.copy()
+
+    # Watch mode: re-run every N seconds
+    watch_interval = 0
+    if "--watch" in sys.argv:
+        try:
+            idx = sys.argv.index("--watch")
+            watch_interval = int(sys.argv[idx + 1]) if idx + 1 < len(sys.argv) else 5
+        except (ValueError, IndexError):
+            watch_interval = 5
 
     if "--json" in sys.argv:
         checks = run_checks()
-        all_ok = all(c["ok"] for c in checks.values())
+        total = len(checks)
+        passed = sum(1 for c in checks.values() if c["ok"])
+        score = round(passed / total * 100) if total else 0
         print(json.dumps({
-            "status": "healthy" if all_ok else "issues",
+            "status": "healthy" if score >= 90 else "degraded" if score >= 50 else "critical",
+            "score": score,
+            "passed": passed,
+            "total": total,
             "timestamp": datetime.now().isoformat(),
             "checks": checks
         }))
-        sys.exit(0 if all_ok else 1)
+        sys.exit(0 if score >= 90 else 1)
         return
 
     print(f"=== 🏥 {bot_name} Doctor ===")
@@ -229,14 +286,35 @@ def main():
     else:
         print(f"[⚠️] LLM: {c['output']}")
 
-    # 7. Display Driver
+    # 7. Handshake Count
+    c = checks["handshakes"]
+    if c["ok"]:
+        print(f"  [📡] Handshakes: {c['output']} PCAPs")
+    else:
+        print(f"  [⚠️] Handshakes: {c['output']}")
+
+    # 8. Cron Jobs
+    c = checks["cron"]
+    if c["ok"]:
+        print(f"  [⏰] Cron Jobs: {c['output']} active")
+    else:
+        print(f"  [⚠️] Cron Jobs: {c['output']}")
+
+    # 9. AIPET State
+    c = checks["aipet"]
+    if c["ok"]:
+        print(f"  [🎮] AIPET: {c['output']}")
+    else:
+        print(f"  [⚠️] AIPET: {c['output']}")
+
+    # 10. Display Driver
     c = checks["display"]
     if c["ok"]:
         print(f"[✅] Display: {c['output']}")
     else:
         print(f"[⚠️] Display: {c['output']}")
 
-    # 8. Service Status
+    # 12. Service Status
     c = checks["service"]
     if c["output"] == "active":
         print("[✅] Service: Active")
@@ -244,7 +322,7 @@ def main():
         print(f"[❌] Service: {c['output']}")
         all_ok = False
 
-    # 9. Recent Errors
+    # 13. Recent Errors
     c = checks["logs"]
     if not c["output"]:
         print("[✅] Logs: No recent errors")
@@ -252,11 +330,31 @@ def main():
         print(f"[⚠️] Logs (Recent Errors):\n{c['output']}")
 
     print("==========================")
+    total = len(checks)
+    passed = sum(1 for c in checks.values() if c["ok"])
+    score = round(passed / total * 100) if total else 0
+    bar_len = 20
+    filled = round(score / 100 * bar_len)
+    bar = "█" * filled + "░" * (bar_len - filled)
+    print(f"  Health: {bar} {score}% ({passed}/{total} checks passed)")
+    print("==========================")
     if all_ok:
         print("Result: SYSTEM HEALTHY")
+        if watch_interval:
+            import time as _t
+            _t.sleep(watch_interval)
+            _os.system("clear" if _os.name == "posix" else "cls")
+            _sys.stdout.flush()
+            _os.execv(_sys_orig[0], _sys_orig)
         sys.exit(0)
     else:
-        print("Result: ISSUES DETECTED")
+        print(f"Result: ISSUES DETECTED — {total - passed} check(s) failing")
+        if watch_interval:
+            import time as _t
+            _t.sleep(watch_interval)
+            _os.system("clear" if _os.name == "posix" else "cls")
+            _sys.stdout.flush()
+            _os.execv(_sys_orig[0], _sys_orig)
         sys.exit(1)
 
 
