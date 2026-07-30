@@ -337,26 +337,55 @@ def main():
     def start_pwn_systems():
         # BLE adapter is no longer forced offline on boot to allow Tether Watchdog Dual Uplink
         log.info("Booting Dual Uplink (Wi-Fi + BLE)...")
-            
-        try:
-            import subprocess
+        
+        from config import MOCK_HARDWARE, HUNT_ON_BOOT
+        if MOCK_HARDWARE:
+            log.info("MOCK_HARDWARE=1: Skipping Pwnagotchi Subconscious.")
+            return
+        
+        import time as _time
+        retry_delay = 30  # Start at 30s, cap at 300s
+        max_retry = 300
+        
+        while True:
+            try:
+                import subprocess
 
-            from config import HUNT_ON_BOOT
-            from hardware.pwn_manager import PwnManager
-            
-            if not HUNT_ON_BOOT:
-                log.info("Radio Silence: Ensuring Bettercap is stopped...")
-                import sys
-                cli_entry = [sys.executable, "-m", "core.cli.entry", "bettercap", "stop"]
-                subprocess.run(cli_entry, capture_output=True)
+                from hardware.pwn_manager import PwnManager
+                
+                if not HUNT_ON_BOOT:
+                    log.info("Radio Silence: Ensuring Bettercap is stopped...")
+                    import sys
+                    cli_entry = [sys.executable, "-m", "core.cli.entry", "bettercap", "stop"]
+                    subprocess.run(cli_entry, capture_output=True)
 
-            manager = PwnManager()
-            manager.start(hunt_on_boot=HUNT_ON_BOOT)
+                manager = PwnManager()
+                result = manager.start(hunt_on_boot=HUNT_ON_BOOT)
+                
+                if result:
+                    log.info("Pwnagotchi Subconscious started successfully.")
+                    # Monitor the process and restart if it dies
+                    while True:
+                        if manager.bettercap_proc and manager.bettercap_proc.poll() is not None:
+                            log.warning("Bettercap process died! Restarting...")
+                            break
+                        _time.sleep(30)
+                else:
+                    log.warning("Pwnagotchi Subconscious failed to start.")
+                
+                # Reset retry delay on successful but then-failed run
+                retry_delay = 30
+                
+            except ImportError as e:
+                log.error(f"Failed to load Pwnagotchi features: {e}")
+                break  # Can't recover from import errors
+            except Exception as e:
+                log.error(f"Error starting Pwnagotchi features: {e}")
             
-        except ImportError as e:
-            log.error(f"Failed to load Pwnagotchi features: {e}")
-        except Exception as e:
-            log.error(f"Error starting Pwnagotchi features: {e}")
+            # Exponential backoff retry
+            log.info(f"Pwnagotchi Subconscious retry in {retry_delay}s...")
+            _time.sleep(retry_delay)
+            retry_delay = min(retry_delay * 2, max_retry)
     
     threading.Thread(target=start_pwn_systems, daemon=True).start()
     
