@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-import subprocess
+import json
 import os
-import sys
 import shlex
+import subprocess
+import sys
+from datetime import datetime
+
 
 def check(name, cmd):
     """Run a simple command (no shell pipes) and return (ok, output)."""
@@ -17,79 +20,167 @@ def check(name, cmd):
     except Exception as e:
         return False, str(e)
 
-def main():
-    bot_name = os.environ.get("BOT_NAME", "Gotchi")
-    print(f"=== 🏥 {bot_name} Doctor ===")
-    all_ok = True
+
+def run_checks() -> dict:
+    """Run all health checks and return structured results."""
+    checks = {}
 
     # 1. Internet
     ok, out = check("Internet", "ping -c 1 google.com")
-    if ok:
-        print("[✅] Internet: OK")
-    else:
-        print(f"[❌] Internet: FAIL\n{out}")
-        all_ok = False
+    checks["internet"] = {"ok": ok, "output": out}
 
     # 2. Disk Space
+    disk_result = {"ok": False, "output": "", "used_pct": None}
     try:
         df_out = subprocess.check_output(["df", "-h", "/"], text=True, timeout=10)
         lines = df_out.strip().splitlines()
         out = lines[-1] if lines else ""
-        ok = True
+        used_pct = int(out.split()[-2].replace("%", ""))
+        disk_result = {"ok": True, "output": f"{used_pct}% used", "used_pct": used_pct}
     except Exception as e:
-        out = str(e)
-        ok = False
-    if ok:
-        try:
-            used_pct = int(out.split()[-2].replace("%", ""))
-            if used_pct < 90:
-                print(f"[✅] Disk: {used_pct}% used")
-            else:
-                print(f"[⚠️] Disk: {used_pct}% used (CRITICAL)")
-                all_ok = False
-        except Exception:
-            print(f"[❌] Disk: Failed to parse df output\n{out}")
-            all_ok = False
-    else:
-        print(f"[❌] Disk: FAIL\n{out}")
-        all_ok = False
+        disk_result = {"ok": False, "output": str(e), "used_pct": None}
+    checks["disk"] = disk_result
 
     # 3. Temperature
+    temp_result = {"ok": False, "output": "", "celsius": None}
     try:
         temp_raw = subprocess.check_output(["vcgencmd", "measure_temp"], text=True, timeout=5).strip()
-        ok, out = True, temp_raw
+        temp = float(temp_raw.replace("temp=", "").replace("'C", "").replace("°C", "").strip())
+        temp_result = {"ok": True, "output": f"{temp}°C", "celsius": temp}
     except Exception:
         try:
             with open("/sys/class/thermal/thermal_zone0/temp") as f:
                 temp_val = float(f.read().strip()) / 1000
-            ok, out = True, f"{temp_val}°C"
+            temp_result = {"ok": True, "output": f"{temp_val}°C", "celsius": temp_val}
         except Exception:
-            ok = False
-            out = ""
-    if ok:
+            temp_result = {"ok": False, "output": "", "celsius": None}
+    checks["temperature"] = temp_result
+
+    # 4. Uptime
+    uptime_result = {"ok": True, "output": "", "days": 0, "hours": 0}
+    try:
+        with open("/proc/uptime") as f:
+            uptime_sec = float(f.read().split()[0])
+        days = int(uptime_sec // 86400)
+        hours = int((uptime_sec % 86400) // 3600)
+        mins = int((uptime_sec % 3600) // 60)
+        uptime_result = {"ok": True, "output": f"{days}d {hours}h {mins}m", "days": days, "hours": hours}
+    except Exception as e:
+        uptime_result = {"ok": False, "output": str(e), "days": 0, "hours": 0}
+    checks["uptime"] = uptime_result
+
+    # 5. Memory
+    mem_result = {"ok": False, "output": "", "available_mb": 0, "total_mb": 0, "pct": 0}
+    try:
+        import psutil
+        mem = psutil.virtual_memory()
+        avail_mb = int(mem.available / (1024 * 1024))
+        total_mb = int(mem.total / (1024 * 1024))
+        pct = int(mem.percent)
+        ok = pct < 90
+        mem_result = {"ok": ok, "output": f"{avail_mb}/{total_mb} MB free ({pct}% used)", "available_mb": avail_mb, "total_mb": total_mb, "pct": pct}
+    except Exception:
         try:
-            temp = float(out.replace("temp=", "").replace("'C", "").replace("°C", "").strip())
-            if temp < 70:
-                print(f"[✅] Temp: {temp}°C")
-            else:
-                print(f"[⚠️] Temp: {temp}°C (HOT)")
-                all_ok = False
+            with open("/proc/meminfo") as f:
+                data = f.read()
+            total_line = [l for l in data.splitlines() if "MemTotal" in l][0]
+            avail_line = [l for l in data.splitlines() if "MemAvailable" in l][0]
+            total_kb = int(total_line.split()[1])
+            avail_kb = int(avail_line.split()[1])
+            avail_mb = avail_kb // 1024
+            total_mb = total_kb // 1024
+            pct = int((total_kb - avail_kb) / total_kb * 100)
+            ok = pct < 90
+            mem_result = {"ok": ok, "output": f"{avail_mb}/{total_mb} MB free ({pct}% used)", "available_mb": avail_mb, "total_mb": total_mb, "pct": pct}
         except Exception:
-            print(f"[❌] Temp: Failed to parse temperature\n{out}")
-            all_ok = False
-    else:
-        print("[⚠️] Temp: Unavailable")
-        all_ok = False
+            mem_result = {"ok": False, "output": "unavailable", "available_mb": 0, "total_mb": 0, "pct": 0}
+    checks["memory"] = mem_result
 
-    # 4. Service Status
+    # 6. LLM Providers (check which API keys are configured, without revealing values)
+    llm_result = {"ok": False, "output": "", "providers": []}
+    try:
+        providers = []
+        for var, name in [
+            ("DEEPSEEK_API_KEY", "deepseek"), ("OPENROUTER_API_KEY", "openrouter"),
+            ("ANTHROPIC_API_KEY", "anthropic"), ("OPENAI_API_KEY", "openai"),
+            ("GOOGLE_API_KEY", "google"), ("GEMINI_API_KEY", "gemini"),
+            ("GROQ_API_KEY", "groq"), ("TOGETHER_API_KEY", "together"),
+        ]:
+            if os.environ.get(var):
+                providers.append(name)
+        if not providers:
+            providers.append("none")
+        ok = len([p for p in providers if p != "none"]) > 0
+        llm_result = {"ok": ok, "output": ", ".join(providers) if providers else "none", "providers": providers}
+    except Exception as e:
+        llm_result = {"ok": False, "output": str(e), "providers": []}
+    checks["llm"] = llm_result
+
+    # 7. Handshake Count
+    hs_result = {"ok": True, "output": "0", "count": 0}
+    try:
+        _src = os.path.join(os.path.dirname(__file__), "..")
+        if _src not in sys.path:
+            sys.path.insert(0, _src)
+        from config import PROJECT_DIR
+        handshake_dir = PROJECT_DIR / "handshakes"
+        if handshake_dir.exists():
+            pcaps = list(handshake_dir.glob("*.pcap"))
+            hs_result = {"ok": True, "output": str(len(pcaps)), "count": len(pcaps)}
+    except Exception as e:
+        hs_result = {"ok": False, "output": str(e), "count": 0}
+    checks["handshakes"] = hs_result
+
+    # 8. Cron Jobs
+    cron_result = {"ok": True, "output": "0", "count": 0}
+    try:
+        _src = os.path.join(os.path.dirname(__file__), "..")
+        if _src not in sys.path:
+            sys.path.insert(0, _src)
+        from cron.scheduler import get_scheduler
+        jobs = get_scheduler().list_jobs()
+        cron_result = {"ok": True, "output": str(len(jobs)), "count": len(jobs)}
+    except Exception as e:
+        cron_result = {"ok": False, "output": str(e), "count": 0}
+    checks["cron"] = cron_result
+
+    # 9. AIPET State
+    aipet_result = {"ok": True, "output": "", "level": 0, "xp": 0, "hp": 0}
+    try:
+        _src = os.path.join(os.path.dirname(__file__), "..")
+        if _src not in sys.path:
+            sys.path.insert(0, _src)
+        from game_engine.state import state_manager
+        state = state_manager.load_state()
+        aipet_result = {"ok": True, "output": f"Lv{state.level} {state.title} ({state.xp} XP, {state.hp:.0f} HP)", "level": state.level, "xp": state.xp, "hp": state.hp}
+    except Exception as e:
+        aipet_result = {"ok": False, "output": str(e), "level": 0, "xp": 0, "hp": 0}
+    checks["aipet"] = aipet_result
+
+    # 10. Service Status
     ok, out = check('Service', 'systemctl is-active gotchi')
-    if out == 'active':
-        print("[✅] Service: Active")
-    else:
-        print(f"[❌] Service: {out}")
-        all_ok = False
+    checks["service"] = {"ok": ok, "output": out}
 
-    # 5. Recent Errors
+    # 11. Display Driver
+    display_result = {"ok": False, "output": "", "driver": "unknown"}
+    try:
+        _src = os.path.join(os.path.dirname(__file__), "..")
+        if _src not in sys.path:
+            sys.path.insert(0, _src)
+        from config import MOCK_HARDWARE
+        if MOCK_HARDWARE:
+            display_result = {"ok": True, "output": "Mock EPD (MOCK_HARDWARE=1)", "driver": "mock"}
+        else:
+            from hardware.display import _epd_initialized
+            if _epd_initialized:
+                display_result = {"ok": True, "output": "Waveshare 2.13 E-Ink (hardware)", "driver": "real"}
+            else:
+                display_result = {"ok": False, "output": "Simulator mode (no hardware)", "driver": "simulator"}
+    except Exception as e:
+        display_result = {"ok": False, "output": str(e), "driver": "error"}
+    checks["display"] = display_result
+
+    # 9. Recent Errors
     try:
         journal_out = subprocess.check_output(
             ["journalctl", "-u", "gotchi", "-n", "50", "--no-pager"],
@@ -101,19 +192,252 @@ def main():
     except Exception:
         out = ""
         ok = False
-    if not out:
+    checks["logs"] = {"ok": ok, "output": out}
+
+    return checks
+
+
+def _get_recommendations(checks: dict, all_ok: bool, uptime_days: int) -> list[str]:
+    """Generate actionable recommendations based on check results."""
+    recs = []
+    if not all_ok:
+        recs.append("Some checks failed — review details below.")
+    
+    # Disk
+    c = checks.get("disk", {})
+    if c.get("used_pct") and c["used_pct"] > 80:
+        recs.append("Disk usage >80% — run 'gotchi db clean --older-than 30d' to free space")
+    elif c.get("used_pct") and c["used_pct"] > 90:
+        recs.append("DISK CRITICAL — free space immediately or the bot may crash")
+    
+    # Memory
+    c = checks.get("memory", {})
+    if c.get("pct") and c["pct"] > 85:
+        recs.append("RAM usage >85% — consider disabling LiteLLM tools or reducing model context")
+    elif c.get("pct") and c["pct"] > 95:
+        recs.append("RAM CRITICAL — the Pi Zero may OOM. Restart the service.")
+    
+    # Temperature
+    c = checks.get("temperature", {})
+    if c.get("celsius") and c["celsius"] > 70:
+        recs.append(f"CPU {c['celsius']}°C — hot! Ensure heatsink/fan, reduce Bettercap aggression")
+    
+    # LLM
+    c = checks.get("llm", {})
+    if not c.get("ok") and c.get("output") == "none":
+        recs.append("No LLM API keys configured — set at least one in .env (e.g. DEEPSEEK_API_KEY)")
+    
+    # Handshakes
+    c = checks.get("handshakes", {})
+    hs_count = c.get("count", 0)
+    if hs_count == 0 and uptime_days > 1:
+        recs.append(f"No handshakes captured in {uptime_days}+ days — try 'gotchi pwn status' to check radio")
+    elif hs_count > 0:
+        pass  # Got some captures — no recommendation needed
+    
+    # Service
+    c = checks.get("service", {})
+    if c.get("output") != "active":
+        recs.append("Bot service is not running — start with 'sudo systemctl start gotchi'")
+    
+    # Display
+    c = checks.get("display", {})
+    if c.get("driver") == "simulator":
+        recs.append("Display in simulator mode — no E-Ink hardware detected")
+    
+    # Logs
+    c = checks.get("logs", {})
+    if c.get("output"):
+        recs.append("Recent errors in logs — check 'journalctl -u gotchi -n 50' for details")
+    
+    return recs
+
+
+def main():
+    bot_name = os.environ.get("BOT_NAME", "Gotchi")
+    import os as _os
+    _sys_orig = sys.argv.copy()
+
+    # Watch mode: re-run every N seconds
+    watch_interval = 0
+    if "--watch" in sys.argv:
+        try:
+            idx = sys.argv.index("--watch")
+            watch_interval = int(sys.argv[idx + 1]) if idx + 1 < len(sys.argv) else 5
+        except (ValueError, IndexError):
+            watch_interval = 5
+
+    if "--json" in sys.argv:
+        checks = run_checks()
+        total = len(checks)
+        passed = sum(1 for c in checks.values() if c["ok"])
+        score = round(passed / total * 100) if total else 0
+        print(json.dumps({
+            "status": "healthy" if score >= 90 else "degraded" if score >= 50 else "critical",
+            "score": score,
+            "passed": passed,
+            "total": total,
+            "timestamp": datetime.now().isoformat(),
+            "checks": checks
+        }))
+        sys.exit(0 if score >= 90 else 1)
+        return
+
+    print(f"=== 🏥 {bot_name} Doctor ===")
+    all_ok = True
+
+    checks = run_checks()
+    
+    # Compact summary table
+    status_icons = {k: "✅" if v["ok"] else ("⚠️" if k in ("temperature","llm","display","logs") else "❌") for k, v in checks.items()}
+    table_lines = []
+    row = []
+    for i, (name, icon) in enumerate(status_icons.items()):
+        label = name[:6].ljust(6)
+        row.append(f"{icon} {label}")
+        if (i + 1) % 4 == 0:
+            table_lines.append("  " + "  ".join(row))
+            row = []
+    if row:
+        table_lines.append("  " + "  ".join(row))
+    for line in table_lines:
+        print(line)
+    print("")
+
+    # 1. Internet
+    c = checks["internet"]
+    if c["ok"]:
+        print("[✅] Internet: OK")
+    else:
+        print(f"[❌] Internet: FAIL\n{c['output']}")
+        all_ok = False
+
+    # 2. Disk Space
+    c = checks["disk"]
+    if c["ok"]:
+        if c["used_pct"] < 90:
+            print(f"[✅] Disk: {c['used_pct']}% used")
+        else:
+            print(f"[⚠️] Disk: {c['used_pct']}% used (CRITICAL)")
+            all_ok = False
+    else:
+        print(f"[❌] Disk: FAIL\n{c['output']}")
+        all_ok = False
+
+    # 3. Temperature
+    c = checks["temperature"]
+    if c["ok"]:
+        if c["celsius"] < 70:
+            print(f"[✅] Temp: {c['celsius']}°C")
+        else:
+            print(f"[⚠️] Temp: {c['celsius']}°C (HOT)")
+            all_ok = False
+    else:
+        print("[⚠️] Temp: Unavailable")
+        all_ok = False
+
+    # 4. Uptime
+    c = checks["uptime"]
+    if c["ok"]:
+        print(f"[✅] Uptime: {c['output']}")
+    else:
+        print(f"[⚠️] Uptime: {c['output']}")
+
+    # 5. Memory
+    c = checks["memory"]
+    if c["ok"]:
+        print(f"[✅] RAM: {c['output']}")
+    else:
+        print(f"[❌] RAM: {c['output']}")
+        all_ok = False
+
+    # 6. LLM Providers
+    c = checks["llm"]
+    if c["ok"]:
+        print(f"[✅] LLM: {c['output']}")
+    else:
+        print(f"[⚠️] LLM: {c['output']}")
+
+    # 7. Handshake Count
+    c = checks["handshakes"]
+    if c["ok"]:
+        print(f"  [📡] Handshakes: {c['output']} PCAPs")
+    else:
+        print(f"  [⚠️] Handshakes: {c['output']}")
+
+    # 8. Cron Jobs
+    c = checks["cron"]
+    if c["ok"]:
+        print(f"  [⏰] Cron Jobs: {c['output']} active")
+    else:
+        print(f"  [⚠️] Cron Jobs: {c['output']}")
+
+    # 9. AIPET State
+    c = checks["aipet"]
+    if c["ok"]:
+        print(f"  [🎮] AIPET: {c['output']}")
+    else:
+        print(f"  [⚠️] AIPET: {c['output']}")
+
+    # 10. Display Driver
+    c = checks["display"]
+    if c["ok"]:
+        print(f"[✅] Display: {c['output']}")
+    else:
+        print(f"[⚠️] Display: {c['output']}")
+
+    # 12. Service Status
+    c = checks["service"]
+    if c["output"] == "active":
+        print("[✅] Service: Active")
+    else:
+        print(f"[❌] Service: {c['output']}")
+        all_ok = False
+
+    # 13. Recent Errors
+    c = checks["logs"]
+    if not c["output"]:
         print("[✅] Logs: No recent errors")
     else:
-        print(f"[⚠️] Logs (Recent Errors):\n{out}")
-        # Not marking as fail, just warning
+        print(f"[⚠️] Logs (Recent Errors):\n{c['output']}")
 
+    # Recommendations
+    uptime_days = checks.get("uptime", {}).get("days", 0)
+    recs = _get_recommendations(checks, all_ok, uptime_days)
+    if recs:
+        print("")
+        print("  ── Recommendations ──")
+        for r in recs:
+            print(f"  ▶ {r}")
+    
+    print("==========================")
+    total = len(checks)
+    passed = sum(1 for c in checks.values() if c["ok"])
+    score = round(passed / total * 100) if total else 0
+    bar_len = 20
+    filled = round(score / 100 * bar_len)
+    bar = "█" * filled + "░" * (bar_len - filled)
+    print(f"  Health: {bar} {score}% ({passed}/{total} checks passed)")
     print("==========================")
     if all_ok:
         print("Result: SYSTEM HEALTHY")
+        if watch_interval:
+            import time as _t
+            _t.sleep(watch_interval)
+            _os.system("clear" if _os.name == "posix" else "cls")
+            _sys.stdout.flush()
+            _os.execv(_sys_orig[0], _sys_orig)
         sys.exit(0)
     else:
-        print("Result: ISSUES DETECTED")
+        print(f"Result: ISSUES DETECTED — {total - passed} check(s) failing")
+        if watch_interval:
+            import time as _t
+            _t.sleep(watch_interval)
+            _os.system("clear" if _os.name == "posix" else "cls")
+            _sys.stdout.flush()
+            _os.execv(_sys_orig[0], _sys_orig)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

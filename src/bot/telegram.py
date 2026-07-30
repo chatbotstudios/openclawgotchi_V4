@@ -53,7 +53,7 @@ def strip_markdown(text: str) -> str:
     return text
 
 
-def is_allowed(user_id: int, chat_id: int = None) -> bool:
+def is_allowed(user_id: int, chat_id: int | None = None) -> bool:
     """Check if user/chat is authorized."""
     if chat_id:
         allowed_groups = get_allowed_groups()
@@ -77,7 +77,7 @@ def get_sender_name(user) -> str:
 async def send_long_message(
     update: Update, 
     text: str, 
-    parse_mode: str = None
+    parse_mode: str | None = None
 ):
     """Send message, splitting if needed. Falls back to plain text on parse error."""
     if not text.strip():
@@ -87,7 +87,7 @@ async def send_long_message(
     if parse_mode:
         text = sanitize_markdown(text)
     
-    async def send_chunk(chunk: str, mode: str = None):
+    async def send_chunk(chunk: str, mode: str | None = None):
         try:
             await update.message.reply_text(chunk, parse_mode=mode)
             return True
@@ -108,7 +108,7 @@ async def send_long_message(
             await send_chunk(chunk, parse_mode)
 
 
-async def send_message(bot, chat_id: int, text: str, parse_mode: str = None):
+async def send_message(bot, chat_id: int, text: str, parse_mode: str | None = None):
     """Send message to a specific chat."""
     if not text.strip():
         return
@@ -116,7 +116,7 @@ async def send_message(bot, chat_id: int, text: str, parse_mode: str = None):
     if parse_mode:
         text = sanitize_markdown(text)
     
-    async def send_chunk(chunk: str, mode: str = None):
+    async def send_chunk(chunk: str, mode: str | None = None):
         try:
             await bot.send_message(chat_id=chat_id, text=chunk, parse_mode=mode)
             return True

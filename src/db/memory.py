@@ -2,10 +2,13 @@
 Database operations — messages, facts, pending tasks.
 """
 
+import logging
 import sqlite3
 from datetime import datetime
 
 from config import DB_PATH, HISTORY_LIMIT
+
+log = logging.getLogger(__name__)
 
 
 def get_connection():
@@ -115,6 +118,17 @@ def init_db():
         except Exception:
             pass
     
+    # Outgoing message queue (retry on heartbeat if network was down during cron send)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS outgoing_queue (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            chat_id INTEGER NOT NULL,
+            text TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            retry_count INTEGER DEFAULT 0
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -297,6 +311,51 @@ def get_unsurfaced_feedback(limit: int = 5) -> list[dict]:
          "bot_response": r[3], "timestamp": r[4]}
         for r in rows
     ]
+
+
+# --- Outgoing Message Queue ---
+
+
+def queue_outgoing_message(chat_id: int, text: str):
+    """Save a message to the outgoing queue for retry on next heartbeat."""
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO outgoing_queue (chat_id, text) VALUES (?, ?)",
+        (chat_id, text[:4000]),
+    )
+    conn.commit()
+    conn.close()
+    log.debug(f"Queued outgoing message for chat {chat_id}")
+
+
+def get_outgoing_queue() -> list[tuple]:
+    """Get all queued messages with retry_count < 3."""
+    conn = get_connection()
+    rows = conn.execute(
+        "SELECT id, chat_id, text, created_at, retry_count "
+        "FROM outgoing_queue WHERE retry_count < 3 ORDER BY id ASC"
+    ).fetchall()
+    conn.close()
+    return rows
+
+
+def increment_outgoing_retry(msg_id: int):
+    """Increment retry_count for a queued message."""
+    conn = get_connection()
+    conn.execute(
+        "UPDATE outgoing_queue SET retry_count = retry_count + 1 WHERE id = ?",
+        (msg_id,),
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_outgoing_message(msg_id: int):
+    """Remove a successfully sent message from the queue."""
+    conn = get_connection()
+    conn.execute("DELETE FROM outgoing_queue WHERE id = ?", (msg_id,))
+    conn.commit()
+    conn.close()
 
 
 def mark_feedback_surfaced(ids: list[int]):

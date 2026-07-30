@@ -26,7 +26,7 @@ def manage_wifi_interface(action: str) -> str:
         
     return "Invalid Wi-Fi action."
 
-def manage_ble_adapter(action: str, value: str = None) -> str:
+def manage_ble_adapter(action: str, value: str | None = None) -> str:
     """Manage Bluetooth adapter state. Actions: on, off, status, scan, broadcast."""
     action = action.lower()
     
@@ -57,7 +57,7 @@ def manage_ble_adapter(action: str, value: str = None) -> str:
         return "BLE Broadcasting (Beacon) ENABLED. Device is now discoverable and pairable."
     return "Invalid BLE action."
 
-def manage_net(action: str, ssid: str = None, password: str = None) -> str:
+def manage_net(action: str, ssid: str | None = None, password: str | None = None) -> str:
     """Manage Network connections. Actions: ping, dns, routes, scan, connect."""
     if action == "ping":
         res = subprocess.run(["ping", "-c", "4", "8.8.8.8"], capture_output=True, text=True)

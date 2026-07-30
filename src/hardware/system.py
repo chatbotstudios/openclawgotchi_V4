@@ -3,8 +3,9 @@ System stats — temperature, memory, uptime.
 """
 
 import os
-import psutil
 from dataclasses import dataclass
+
+import psutil
 
 
 @dataclass
@@ -48,7 +49,7 @@ def get_stats() -> SystemStats:
             # Fallback to psutil sensors_temperatures
             temps = psutil.sensors_temperatures()
             if temps:
-                for name, entries in temps.items():
+                for entries in temps.values():
                     if entries:
                         stats.temp = f"{entries[0].current}°C"
                         break

@@ -130,10 +130,13 @@ def cli():
     """🦋 OPENCLAWGOTCHI V3 — Tactical CLI Interface"""
 
 from core.cli.commands.core import backup
+from core.cli.commands.core import export, db_clean
 
 # Register core commands
 cli.add_command(status)
 cli.add_command(backup)
+cli.add_command(export)
+cli.add_command(db_clean)
 cli.add_command(doctor)
 cli.add_command(logs)
 cli.add_command(restart)
@@ -198,7 +201,7 @@ try:
         if tool_name not in cli.commands:
             cmd = ToolCommand(tool_name, func)
             # Enable extra arguments parsing without throwing click options errors
-            cmd.context_settings = dict(ignore_unknown_options=True, allow_extra_args=True)
+            cmd.context_settings = {"ignore_unknown_options": True, "allow_extra_args": True}
             cli.add_command(cmd)
 except Exception as e:
     print(f"Warning: Failed to dynamically register tools as CLI commands: {e}", file=sys.stderr)

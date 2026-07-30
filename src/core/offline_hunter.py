@@ -23,7 +23,7 @@ class OfflineHunter:
     - Runs Bettercap auditing autonomously
     - Re-establishes connectivity and restores original settings
     """
-    def __init__(self, project_dir: Path = None):
+    def __init__(self, project_dir: Path | None = None):
         self.project_dir = project_dir or PROJECT_DIR
         self.state_file = self.project_dir / "gotchi_states.json"
         self.env_file = self.project_dir / ".env"

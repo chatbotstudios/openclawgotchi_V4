@@ -77,7 +77,7 @@ def check_syntax(file_path: str) -> str:
         if not p.exists():
             return f"File not found: {file_path}"
         
-        if not p.suffix == ".py":
+        if p.suffix != ".py":
             return f"Not a Python file: {file_path}"
         
         result = subprocess.run(

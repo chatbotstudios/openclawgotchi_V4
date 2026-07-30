@@ -1,11 +1,15 @@
 """
 LiteLLM connector — modular plugin architecture.
 """
+import concurrent.futures
 import contextvars
 import json
 import logging
 import os
 from typing import Optional
+
+# Bounded thread pool for tool execution — prevents thread starvation on single-core ARM
+_tool_executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
 
 from config import (
     CUSTOM_BASE_URL,
@@ -52,9 +56,9 @@ def _format_tool_action(func_name: str, args: dict, result: str) -> str:
     icon = "🔧"
     if func_name.startswith("pwn_") or func_name == "launch_offline_hunt":
         icon = "🕵️"
-    elif func_name.startswith("net_") or func_name.startswith("manage_wifi") or func_name.startswith("tether_") or func_name.startswith("manage_ble"):
+    elif func_name.startswith(("net_", "manage_wifi", "tether_", "manage_ble")):
         icon = "📡"
-    elif func_name.startswith("remember_") or func_name.startswith("recall_") or func_name == "write_daily_log" or func_name == "flush_context":
+    elif func_name.startswith(("remember_", "recall_")) or func_name == "write_daily_log" or func_name == "flush_context":
         icon = "🧠"
     elif "cron" in func_name or "schedule" in func_name or "reminder" in func_name:
         icon = "⏰"
@@ -87,7 +91,7 @@ def _build_tool_footer(actions: list[str]) -> str:
 class LiteLLMConnector(LLMConnector):
     name = "litellm"
     
-    def __init__(self, model: str = None, api_base: str = None, preset: str = None):
+    def __init__(self, model: str | None = None, api_base: str | None = None, preset: str | None = None):
         self.preset = preset.lower() if preset else DEFAULT_LITE_PRESET.lower()
         self.raw_model = model if model else DEFAULT_LITE_MODEL
         self.model = self.raw_model
@@ -95,7 +99,7 @@ class LiteLLMConnector(LLMConnector):
         self.api_key = None
         self._resolve_provider()
 
-    def set_model(self, model: str, api_base: str = None):
+    def set_model(self, model: str, api_base: str | None = None):
         self.raw_model = model
         self.model = model
         if api_base:
@@ -465,7 +469,8 @@ class LiteLLMConnector(LLMConnector):
                         func = TOOL_MAP.get(func_name)
                         if func:
                             try:
-                                result = await asyncio.to_thread(func, **args)
+                                loop = asyncio.get_running_loop()
+                                result = await loop.run_in_executor(_tool_executor, lambda: func(**args))
                             except Exception as e:
                                 result = f"Error executing {func_name}: {e}"
                         else:

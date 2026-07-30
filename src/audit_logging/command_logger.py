@@ -27,7 +27,7 @@ def log_command(
     username: str = "",
     text: str = "",
     source: str = "telegram",
-    extra: dict = None
+    extra: dict | None = None
 ):
     """
     Log a command or message to the audit trail.
@@ -110,7 +110,7 @@ def log_heartbeat(action: str, result: str = ""):
         log.warning(f"Failed to log heartbeat: {e}")
 
 
-def log_error(error_type: str, message: str, context: dict = None):
+def log_error(error_type: str, message: str, context: dict | None = None):
     """Log errors for debugging."""
     _ensure_log_dir()
     

@@ -8,7 +8,7 @@ from core.missions.models import Mission
 
 log = logging.getLogger(__name__)
 
-def _send_discord_webhook(payload: dict, channel_id: str = None):
+def _send_discord_webhook(payload: dict, channel_id: str | None = None):
     target_channel = channel_id or DISCORD_HEARTBEATS_CHANNEL
     if not DISCORD_BOT_TOKEN or not target_channel or target_channel == "0":
         return

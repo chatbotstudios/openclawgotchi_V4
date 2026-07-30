@@ -143,7 +143,7 @@ def start_animation_daemon():
     log.info("Starting Persistent E-Ink Renderer Daemon (Adaptive Mode)...")
     threading.Thread(target=_render_thread_loop, daemon=True, name="EinkRenderer").start()
 
-def update_display(mood: str = None, text: str = None, full_refresh: bool = False, is_animation_tick: bool = False):
+def update_display(mood: str | None = None, text: str | None = None, full_refresh: bool = False, is_animation_tick: bool = False):
     global _current_mood, _current_text, _last_activity_time, _display_update_count
     
     if mood:
