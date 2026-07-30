@@ -1,11 +1,15 @@
 """
 LiteLLM connector — modular plugin architecture.
 """
+import concurrent.futures
 import contextvars
 import json
 import logging
 import os
 from typing import Optional
+
+# Bounded thread pool for tool execution — prevents thread starvation on single-core ARM
+_tool_executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
 
 from config import (
     CUSTOM_BASE_URL,
@@ -465,7 +469,8 @@ class LiteLLMConnector(LLMConnector):
                         func = TOOL_MAP.get(func_name)
                         if func:
                             try:
-                                result = await asyncio.to_thread(func, **args)
+                                loop = asyncio.get_running_loop()
+                                result = await loop.run_in_executor(_tool_executor, lambda: func(**args))
                             except Exception as e:
                                 result = f"Error executing {func_name}: {e}"
                         else:

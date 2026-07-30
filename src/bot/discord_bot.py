@@ -697,29 +697,9 @@ def run_discord():
         discord.backoff.ExponentialBackoff.delay = _capped_delay
     
     global bot_instance
-    retry_delay = 10
-    
-    while True:
-        try:
-            log.info("💬 Starting OpenClawGotchi Discord Bot...")
-            bot_instance.run(DISCORD_BOT_TOKEN, log_handler=None)
-            break # Exit loop if run() finishes normally
-        except Exception as e:
-            log.error(f"Discord Bot crashed/failed: {e}")
-            
-            # Recreate bot instance to fix "Session is closed" errors on retry
-            log.info("💬 Re-initializing bot instance for recovery...")
-            old_tree = bot_instance.tree
-            bot_instance = OpenClawDiscord()
-            
-            # Transfer registered slash commands to the new instance
-            for cmd in old_tree.get_commands():
-                try:
-                    bot_instance.tree.add_command(cmd)
-                except Exception as register_err:
-                    log.warning(f"Failed to transfer command {cmd.name}: {register_err}")
-            
-            log.info(f"💬 Retrying in {retry_delay}s...")
-            import time
-            time.sleep(retry_delay)
-            retry_delay = min(retry_delay + 5, 15) # Cap at 15s so it quickly recovers after offline hunt
+    try:
+        log.info("💬 Starting OpenClawGotchi Discord Bot...")
+        bot_instance.run(DISCORD_BOT_TOKEN, log_handler=None)
+    except Exception as e:
+        log.error(f"Discord Bot terminated: {e}")
+        log.info("💬 Bot process exiting. systemd Restart=always will revive it cleanly.")
