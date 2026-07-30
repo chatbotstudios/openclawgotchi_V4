@@ -36,6 +36,9 @@ class PwnManager:
 
     def wait_for_interface(self, iface="wlan0mon", timeout=15):
         """Wait for monitor interface to appear"""
+        from config import MOCK_HARDWARE
+        if MOCK_HARDWARE:
+            return True
         for _ in range(timeout):
             if subprocess.run(["ip", "link", "show", iface], capture_output=True).returncode == 0:
                 return True
@@ -61,6 +64,10 @@ class PwnManager:
         return False
 
     def start(self, hunt_on_boot=True):
+        from config import MOCK_HARDWARE
+        if MOCK_HARDWARE:
+            log.info("MOCK_HARDWARE=1: Skipping Bettercap/radio subsystem.")
+            return True
         try:
             if not hunt_on_boot:
                 log.info("HUNT_ON_BOOT is false, skipping daemon start.")

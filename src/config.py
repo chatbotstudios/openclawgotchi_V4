@@ -39,6 +39,7 @@ BETTERCAP_URL = os.environ.get("BETTERCAP_URL", "http://localhost:8081/api")
 BETTERCAP_USER = os.environ.get("BETTERCAP_USER", "pwnagotchi")
 BETTERCAP_PASS = os.environ.get("BETTERCAP_PASS", "pwnagotchi")
 WPA_SEC_KEY = os.environ.get("WPA_SEC_KEY", "")  # comma-separated IDs
+MOCK_HARDWARE = _env_flag("MOCK_HARDWARE", False)
 ALLOWED_GROUPS = os.environ.get("ALLOWED_GROUPS", "")  # comma-separated IDs
 DISCORD_ALLOWED_USERS = os.environ.get("DISCORD_ALLOWED_USERS", "")
 DISCORD_CHANNEL_ID = os.environ.get("DISCORD_CHANNEL_ID", "0")
@@ -129,6 +130,7 @@ if pro_preset_lower not in LLM_PRESETS:
 
 HUNT_ON_BOOT = _env_flag("HUNT_ON_BOOT", False)
 DARK_MODE = _env_flag("DARK_MODE", False)
+MOCK_HARDWARE = _env_flag("MOCK_HARDWARE", False)
 
 # --- Constants ---
 HEARTBEAT_INTERVAL = 21600  # 6 hours in seconds

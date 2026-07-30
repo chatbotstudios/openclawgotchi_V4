@@ -8,8 +8,8 @@ log = logging.getLogger(__name__)
 
 
 class EPD:
-    WIDTH = 250
-    HEIGHT = 122
+    WIDTH = 122
+    HEIGHT = 250
 
     def __init__(self):
         self.width = self.WIDTH
