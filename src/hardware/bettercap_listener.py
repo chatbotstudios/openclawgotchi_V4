@@ -75,12 +75,23 @@ class NervousSystem:
                 log.warning(f"REFLEX BLOCKED: Subconscious reported handshake for {ap_mac} but file is missing or empty.")
 
             if is_valid:
-                # Hardware Reflex: Flash the hunting face instantly
-                update_display(mood="hunting", text="SAY: Got Handshake! | STATUS: MODE: P")
+                # Hardware Reflex: Flash the excited face instantly
+                update_display(mood="excited", text="SAY: Got Handshake! | STATUS: MODE: P")
                 
                 # Memory Reflex: Inject this into the LLM's long-term memory
                 fact = f"My subconscious daemon captured a VALID WPA handshake for AP MAC: {ap_mac}. File saved to {pcap_file}."
                 add_fact(content=fact, category="pwning")
+                
+                # Reward Reflex: Award XP for the capture
+                try:
+                    from game_engine.vitals import add_xp
+                    size_kb = os.path.getsize(pcap_file) // 1024
+                    xp_gain = 20 + max(0, size_kb // 2)  # 20 base + 1 per 2KB
+                    xp_gain = min(xp_gain, 100)  # Cap at 100 XP per capture
+                    add_xp(xp_gain, source=f"capture:{ap_mac[:8]}")
+                    log.info(f"🏆 Capture reward: +{xp_gain} XP for {ap_mac[:8]} ({size_kb}KB file)")
+                except Exception as e:
+                    log.warning(f"Failed to award capture XP: {e}")
                 
                 # Plugin Hook
                 run_hook(HookEvent(event_type="pwn.handshake", action="capture", data=data))
