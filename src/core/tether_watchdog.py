@@ -33,8 +33,8 @@ class TetherWatchdog:
     def _get_tether_mac(self) -> str:
         """Extract the paired iPhone MAC from the NetworkManager profile."""
         try:
-            cmd = "sudo nmcli -g bluetooth.bdaddr connection show iPhoneHotspot"
-            res = subprocess.run(cmd.split(), capture_output=True, text=True)
+            cmd = ["sudo", "nmcli", "-g", "bluetooth.bdaddr", "connection", "show", "iPhoneHotspot"]
+            res = subprocess.run(cmd, capture_output=True, text=True)
             return res.stdout.strip().replace("\\", "")
         except:
             return ""
