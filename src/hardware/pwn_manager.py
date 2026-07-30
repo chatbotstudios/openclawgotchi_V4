@@ -105,7 +105,11 @@ class PwnManager:
                          f"set wifi.handshakes.path {handshake_path}")
             ]
             
-            self.bettercap_proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            # Start Bettercap with logging for diagnostics
+            log_dir = project_root / "logs"
+            log_dir.mkdir(exist_ok=True)
+            bc_log = open(log_dir / "bettercap.log", "a")
+            self.bettercap_proc = subprocess.Popen(cmd, stdout=bc_log, stderr=subprocess.STDOUT)
             
             # 4. Wait for REST API
             if not self._wait_for_bettercap_api(timeout=10):

@@ -19,7 +19,7 @@ try:
     from config import BETTERCAP_PASS, BETTERCAP_USER
 except ImportError:
     BETTERCAP_USER = "gotchi"
-    BETTERCAP_PASS = "123456"
+    BETTERCAP_PASS = __import__('secrets').token_hex(16)
 
 class NervousSystem:
     """

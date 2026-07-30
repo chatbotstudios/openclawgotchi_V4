@@ -14,7 +14,7 @@ except ImportError:
     PWN_WHITELIST_MACS = []
     BETTERCAP_URL = "http://localhost:8081/api"
     BETTERCAP_USER = "gotchi"
-    BETTERCAP_PASS = "123456"
+    BETTERCAP_PASS = __import__('secrets').token_hex(16)
 
 log = logging.getLogger("PwnSubconscious")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
