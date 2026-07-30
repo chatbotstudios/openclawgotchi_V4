@@ -65,7 +65,7 @@ class CategorizedGroup(click.Group):
             "📡 Pwn & Wireless Auditing": [
                 "pwn_status", "pwn_crack", "pwn_check_cracks", "pwn_show_qr", "pwn_hide_qr",
                 "pwn_pause", "pwn_lock_target", "pwn_whitelist", "pwn_system_control",
-                "pwn_ble_scan", "pwn_ble_track", "pwn_ble_purge", "pwn"
+                "pwn_ble_scan", "pwn_ble_track", "pwn_ble_purge", "pwn", "pcap"
             ],
             "🌐 Networking & Tethering": [
                 "net_scan", "net_connect", "net_status", "tether_scan", "tether_pair",
@@ -131,7 +131,7 @@ def cli():
     """🦋 OPENCLAWGOTCHI V3 — Tactical CLI Interface"""
 
 from core.cli.commands.core import backup
-from core.cli.commands.core import export, db_clean
+from core.cli.commands.core import export, db_clean, pcap
 
 # Register core commands
 cli.add_command(status)
@@ -160,6 +160,7 @@ cli.add_command(network)
 cli.add_command(tasks)
 cli.add_command(missions)
 cli.add_command(aipet)
+cli.add_command(pcap)
 
 # --- Dynamic Tool CLI Registration ---
 try:

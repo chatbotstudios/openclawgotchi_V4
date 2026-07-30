@@ -35,6 +35,8 @@ DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN", "").strip()
 ALLOWED_USERS = os.environ.get("ALLOWED_USERS", "")  # comma-separated IDs
 # --- Pwnagotchi Integration
 PWN_WHITELIST_MACS = os.environ.get("PWN_WHITELIST_MACS", "").split(",")
+# Comma-separated list of SSIDs that should never be deauthenticated
+SSID_WHITELIST = [s.strip() for s in os.environ.get("SSID_WHITELIST", "").split(",") if s.strip()]
 BETTERCAP_URL = os.environ.get("BETTERCAP_URL", "http://localhost:8081/api")
 BETTERCAP_USER = os.environ.get("BETTERCAP_USER", "pwnagotchi")
 BETTERCAP_PASS = os.environ.get("BETTERCAP_PASS", "pwnagotchi")

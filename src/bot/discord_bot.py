@@ -1,6 +1,10 @@
 import asyncio
+import json
 import logging
+import os
 import random
+import subprocess
+import sys
 
 import discord
 from discord.ext import commands, tasks
@@ -681,6 +685,49 @@ async def cmd_dream(interaction: discord.Interaction):
     except Exception as e:
         log.error(f"Dream routing failed: {e}")
         await interaction.followup.send(f"❌ LLM Router failed: {e}")
+
+@bot_instance.tree.command(name="doctor", description="Run system health diagnostics")
+async def cmd_doctor(interaction: discord.Interaction):
+    if not is_allowed(interaction.user.id):
+        return await interaction.response.send_message("Access denied.", ephemeral=True)
+    await interaction.response.defer(ephemeral=False)
+    try:
+        from config import PROJECT_DIR
+        result = subprocess.run(
+            [sys.executable, "-m", "utils.doctor", "--json"],
+            capture_output=True, text=True, timeout=15,
+            cwd=str(PROJECT_DIR / "src"),
+        )
+        data = json.loads(result.stdout)
+
+        status_emoji = {"healthy": "✅", "degraded": "⚠️", "critical": "🔴"}
+        embed = discord.Embed(
+            title=f"{status_emoji.get(data['status'], '❓')} Gotchi Health",
+            description=f"Score: **{data.get('score',0)}%** ({data.get('passed',0)}/{data.get('total',0)} checks passing)",
+            color=0x00ff00 if data['status'] == 'healthy' else (0xffaa00 if data['status'] == 'degraded' else 0xff0000),
+        )
+
+        # Summarize checks with pass/fail icons
+        summary_lines = []
+        for name, c in data.get("checks", {}).items():
+            icon = "✅" if c.get("ok") else "❌"
+            val = c.get("output", "")[:60]
+            summary_lines.append(f"{icon} **{name.title()}**: {val}")
+        embed.add_field(name="Checks", value="\n".join(summary_lines[:15]), inline=False)
+
+        # Recommendations (from doctor output)
+        recs = data.get("recommendations", [])
+        if recs:
+            embed.add_field(
+                name="Recommendations",
+                value="\n".join(f"• {r}" for r in recs[:5]),
+                inline=False,
+            )
+
+        embed.set_footer(text=f"⏱ {data.get('timestamp', '')[:19]}")
+        await interaction.followup.send(embed=embed)
+    except Exception as e:
+        await interaction.followup.send(f"❌ Doctor check failed: {e}")
 
 def run_discord():
     if not DISCORD_BOT_TOKEN:

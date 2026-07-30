@@ -112,6 +112,24 @@ class PwnManager:
                 log.warning("Bettercap started but REST API is not responding. Daemons may crash.")
             else:
                 log.info("Bettercap API is online.")
+
+                # Apply SSID whitelist so known networks are never deauthed
+                from config import SSID_WHITELIST
+                if SSID_WHITELIST:
+                    import requests
+                    from requests.auth import HTTPBasicAuth
+                    api_user, api_pass = self._get_api_creds()
+                    for ssid in SSID_WHITELIST:
+                        try:
+                            req = requests.post(
+                                "http://127.0.0.1:8081/api/session",
+                                json={"cmd": f"wifi.deauth whitelist {ssid}"},
+                                auth=HTTPBasicAuth(api_user, api_pass),
+                                timeout=2
+                            )
+                            log.info(f"Added '{ssid}' to deauth whitelist: {req.status_code}")
+                        except Exception as e:
+                            log.warning(f"Failed to whitelist SSID '{ssid}': {e}")
                 
             # 5. Start Python layers
             from .bettercap_listener import NervousSystem

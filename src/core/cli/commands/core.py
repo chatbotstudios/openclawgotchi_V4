@@ -1,5 +1,6 @@
 import subprocess
 from pathlib import Path
+import datetime
 
 import click
 
@@ -69,7 +70,7 @@ def help_cmd(ctx):
     click.echo("📡 Pwn & Wireless Auditing:")
     click.echo("  pwn_status, pwn_crack, pwn_check_cracks, pwn_show_qr, pwn_hide_qr,")
     click.echo("  pwn_pause, pwn_lock_target, pwn_whitelist, pwn_system_control,")
-    click.echo("  pwn_ble_scan, pwn_ble_track, pwn_ble_purge")
+    click.echo("  pwn_ble_scan, pwn_ble_track, pwn_ble_purge, pcap (list/show)")
     click.echo("")
     click.echo("🌐 Networking & Tethering:")
     click.echo("  net_scan, net_connect, net_status, tether_scan, tether_pair,")
@@ -535,3 +536,73 @@ def init(interactive):
     env_path.write_text('\n'.join(lines))
     click.echo(f"\n✅ Configuration saved to {env_path}")
     click.echo("  Run 'gotchi doctor' to verify your setup.")
+
+@click.group()
+def pcap():
+    """Manage handshake captures."""
+
+@pcap.command()
+@click.option('-n', '--limit', type=int, default=10, help='Show last N captures (default: 10)')
+@click.option('--all', 'show_all', is_flag=True, help='Show ALL captures')
+def list(limit, show_all):
+    """List captured handshake PCAP files with details."""
+    handshake_dir = PROJECT_DIR / "handshakes"
+    if not handshake_dir.exists():
+        click.echo("No handshakes directory found.")
+        return
+    
+    pcaps = list(handshake_dir.glob("*.pcap")) + list(handshake_dir.glob("*.2500"))
+    pcaps.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    
+    if not pcaps:
+        click.echo("No handshake captures found.")
+        return
+    
+    total_size = sum(p.stat().st_size for p in pcaps)
+    click.echo(f"📡 Handshake captures: {len(pcaps)} files ({total_size/1024:.0f} KB total)")
+    click.echo("")
+    
+    limit_num = len(pcaps) if show_all else limit
+    for i, pcap in enumerate(pcaps[:limit_num], 1):
+        size = pcap.stat().st_size
+        mtime = datetime.datetime.fromtimestamp(pcap.stat().st_mtime).strftime('%Y-%m-%d %H:%M')
+        essid = pcap.stem.replace('.', ':')
+        click.echo(f"  {i:3}. {mtime}  {size:>6}B  {essid}")
+    if limit_num < len(pcaps):
+        click.echo(f"  ... and {len(pcaps) - limit_num} more (use --all to show all)")
+
+@pcap.command()
+@click.argument('index', type=int)
+def show(index):
+    """Show details of a specific handshake capture by list index."""
+    handshake_dir = PROJECT_DIR / "handshakes"
+    if not handshake_dir.exists():
+        click.echo("No handshakes directory found.")
+        return
+    pcaps = list(handshake_dir.glob("*.pcap")) + list(handshake_dir.glob("*.2500"))
+    pcaps.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    
+    if index < 1 or index > len(pcaps):
+        click.echo(f"Index out of range: 1-{len(pcaps)}")
+        return
+    
+    pcap = pcaps[index - 1]
+    stat = pcap.stat()
+    size_kb = stat.st_size / 1024
+    mtime = datetime.datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+    
+    click.echo(f"📄 Handshake #{index}")
+    click.echo(f"  Path: {pcap}")
+    click.echo(f"  Size: {size_kb:.1f} KB")
+    click.echo(f"  Captured: {mtime}")
+    click.echo(f"  Extension: {pcap.suffix}")
+    
+    if pcap.suffix == '.2500':
+        try:
+            first_line = pcap.read_text().splitlines()[0]
+            parts = first_line.split(':')
+            if len(parts) >= 6:
+                click.echo(f"  ESSID: {parts[-1]}")
+                click.echo(f"  BSSID: {':'.join(parts[:6]).upper()}")
+        except Exception:
+            pass
