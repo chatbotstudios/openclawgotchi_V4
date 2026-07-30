@@ -77,17 +77,18 @@ else
                         sudo gpg --dearmor -o /etc/apt/keyrings/raspberrypi.gpg
                     # Remove old-style entry (apt-key deprecation migration)
                     sudo rm -f /etc/apt/sources.list.d/raspi.list
-                    echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/raspberrypi.gpg] http://archive.raspberrypi.org/debian/ bookworm main" | \
+                    # Note: trusted=yes works around sqv rejecting the SHA1 binding
+                    # signature on Raspberry Pi's official key after 2026-02-01.
+                    echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/raspberrypi.gpg trusted=yes] http://archive.raspberrypi.org/debian/ bookworm main" | \
                         sudo tee /etc/apt/sources.list.d/raspi.list
                     sudo apt-get update -y -qq
                 fi
-                # Force classic gpgv for this repo — Raspberry Pi's key uses a SHA1
-                # binding signature which sqv (Sequoia) rejects after 2026-02-01.
-                # Run independently of keyring check so re-runs also get the fix.
-                if [ ! -f /etc/apt/apt.conf.d/99force-gpgv ]; then
-                    echo "  [Pi Setup] Forcing gpgv for Pi repo key (sqv SHA1 workaround)..."
-                    echo 'APT::Key::OpenPGP::Verified "gpgv";' | \
-                        sudo tee /etc/apt/apt.conf.d/99force-gpgv
+                # On re-run: ensure the sources list has trusted=yes (sqv workaround)
+                if [ -f /etc/apt/sources.list.d/raspi.list ] && \
+                   ! grep -q "trusted=yes" /etc/apt/sources.list.d/raspi.list 2>/dev/null; then
+                    echo "  [Pi Setup] Updating raspi.list with trusted=yes (sqv SHA1 workaround)..."
+                    echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/raspberrypi.gpg trusted=yes] http://archive.raspberrypi.org/debian/ bookworm main" | \
+                        sudo tee /etc/apt/sources.list.d/raspi.list
                     sudo apt-get update -y -qq
                 fi
             else
