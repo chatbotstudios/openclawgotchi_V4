@@ -267,6 +267,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     <span class="green-dot-icon"></span>
                     <span>DIAGNOSTIC EVENT OUTPUT LOGGER</span>
                 </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="log-filter-group">
+                    <button class="log-filter-btn active" data-filter="all" onclick="setLogFilter('all')">ALL</button>
+                    <button class="log-filter-btn" data-filter="system" onclick="setLogFilter('system')">SYS</button>
+                    <button class="log-filter-btn" data-filter="chat" onclick="setLogFilter('chat')">CHAT</button>
+                    <button class="log-filter-btn" data-filter="error" onclick="setLogFilter('error')">ERR</button>
+                </div>
                 <div class="console-controls">
                     <button class="console-btn" onclick="toggleConsoleMinimize()" title="Minimize Console">_</button>
                     <button class="console-btn" onclick="toggleConsoleMaximize()" title="Maximize/Restore Console">⬜</button>

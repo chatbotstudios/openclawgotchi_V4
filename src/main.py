@@ -69,6 +69,48 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+# ── Signal handlers for graceful shutdown ──────────────────────────────
+
+import signal
+
+def _signal_handler(signum, frame):
+    """Graceful shutdown on SIGTERM/SIGINT."""
+    log.warning(f"Received signal {signum}, shutting down gracefully...")
+    try:
+        from db.stats import flush_stats
+        flush_stats()
+        log.info("Stats buffer flushed.")
+    except Exception as e:
+        log.warning(f"Stats flush failed: {e}")
+
+    try:
+        from hardware.display import _epd, _epd_initialized
+        if _epd_initialized:
+            _epd.sleep()
+            log.info("EPD display put to sleep.")
+    except Exception as e:
+        log.warning(f"EPD sleep failed: {e}")
+
+    try:
+        from core.tether_watchdog import watchdog
+        watchdog.stop()
+        log.info("Tether watchdog stopped.")
+    except Exception as e:
+        log.warning(f"Watchdog stop failed: {e}")
+
+    try:
+        from cron.scheduler import get_scheduler
+        get_scheduler().stop()
+        log.info("Cron scheduler stopped.")
+    except Exception as e:
+        log.warning(f"Cron stop failed: {e}")
+
+    log.info("Shutdown complete.")
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, _signal_handler)
+signal.signal(signal.SIGINT, _signal_handler)
+
 
 async def run_cron_job(job):
     """Callback for cron scheduler — trigger LLM with chat context and send reply to owner."""

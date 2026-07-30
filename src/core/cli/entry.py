@@ -37,6 +37,7 @@ logging.basicConfig(
 
 from core.cli.commands.core import (
     clear,
+    config,
     dash,
     doctor,
     help_cmd,
@@ -149,6 +150,9 @@ cli.add_command(help_cmd)
 cli.add_command(run_bot)
 cli.add_command(setup)
 cli.add_command(serve)
+
+# Register config group
+cli.add_command(config)
 
 # Register groups
 cli.add_command(pwn)

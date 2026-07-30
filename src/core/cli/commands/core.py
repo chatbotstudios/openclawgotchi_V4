@@ -306,7 +306,9 @@ def db_clean(older_than, keep_last, clean_handshakes, dry_run, clean_all):
 
 @click.command()
 @click.argument('action', required=False, default='tail')
-def logs(action):
+@click.option('-f', '--follow', is_flag=True, help='Follow mode: stream logs in real-time with colorized output')
+@click.option('--lines', type=int, default=50, help='Number of lines to show (default: 50)')
+def logs(action, follow, lines):
     """Stream or manage bot logs. Actions: tail, clear, extended."""
     import shutil
     if not shutil.which("journalctl"):
@@ -316,12 +318,40 @@ def logs(action):
         click.secho("   gotchi run-bot", fg='bright_cyan', bold=True)
         return
 
-    if action == 'tail':
-        subprocess.run(["journalctl", "-u", "gotchi", "-n", "50", "-f"])
-    elif action == 'clear':
+    if action == 'clear':
         subprocess.run(["sudo", "journalctl", "--vacuum-time=1s"])
+        return
     elif action == 'extended':
         subprocess.run(["journalctl", "-u", "gotchi"])
+        return
+
+    # tail or default: colorize output
+    do_follow = follow or (action == 'tail' and lines > 0)
+    cmd = ["journalctl", "-u", "gotchi", "-n", str(lines)]
+    if do_follow:
+        cmd.append("-f")
+
+    def _colorize(line: str) -> str:
+        """Apply ANSI color codes based on log line content."""
+        if 'ERROR' in line:
+            return f"\033[91m{line}\033[0m"
+        if 'WARNING' in line:
+            return f"\033[93m{line}\033[0m"
+        if any(m in line for m in ('heartbeat', '💬', '🧠')):
+            return f"\033[96m{line}\033[0m"
+        if any(m in line for m in ('pwn', '📡', '📶')):
+            return f"\033[95m{line}\033[0m"
+        return f"\033[0m{line}\033[0m"
+
+    try:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        for raw_line in proc.stdout:
+            click.echo(_colorize(raw_line.rstrip('\n')))
+        proc.wait()
+    except KeyboardInterrupt:
+        proc.terminate()
+    except Exception as e:
+        click.echo(f"Failed to stream logs: {e}", err=True)
 
 @click.command()
 def restart():
@@ -422,3 +452,86 @@ def serve(port):
         server.serve_forever()
     except Exception as e:
         click.echo(f"Error starting web server: {e}", err=True)
+
+
+@click.group()
+def config():
+    """Manage bot configuration."""
+
+
+@config.command()
+@click.option('--interactive', is_flag=True, default=True)
+def init(interactive):
+    """Interactive configuration wizard to set up API keys and hardware settings."""
+    click.echo("=== 🦋 Gotchi Configuration Wizard ===")
+    click.echo("Press Enter to skip any field. Existing values shown in brackets.\n")
+
+    import os
+    from pathlib import Path
+    env_path = Path('/root/openclawgotchi/.env')
+
+    # Read current .env
+    env_vars = {}
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            if '=' in line and not line.startswith('#'):
+                k, v = line.split('=', 1)
+                env_vars[k.strip()] = v.strip()
+
+    def prompt_field(name, desc, default=''):
+        current = env_vars.get(name, default)
+        prompt = f"  {desc} [{current}]: " if current else f"  {desc}: "
+        val = input(prompt).strip()
+        return val if val else current
+
+    # Bot Identity
+    click.echo("\n--- Bot Identity ---")
+    bot_name = prompt_field('BOT_NAME', 'Bot name', 'Gotchi')
+    owner = prompt_field('OWNER_NAME', 'Your name')
+
+    # Platform
+    click.echo("\n--- Chat Platform ---")
+    platform = prompt_field('BOT_PLATFORM', 'Platform (discord/telegram)', 'discord')
+    if platform == 'discord':
+        prompt_field('DISCORD_BOT_TOKEN', 'Discord Bot Token')
+        prompt_field('DISCORD_CHANNEL_ID', 'Discord Channel ID')
+    elif platform == 'telegram':
+        prompt_field('TELEGRAM_BOT_TOKEN', 'Telegram Bot Token')
+
+    # LLM
+    click.echo("\n--- LLM Provider (pick one) ---")
+    click.echo("  Supported: deepseek, openrouter, google, openai, anthropic, groq")
+    provider = prompt_field('DEFAULT_LITE_PRESET', 'LLM provider', 'deepseek')
+    key_map = {
+        'deepseek': 'DEEPSEEK_API_KEY',
+        'openrouter': 'OPENROUTER_API_KEY',
+        'google': 'GOOGLE_API_KEY',
+        'openai': 'OPENAI_API_KEY',
+        'anthropic': 'ANTHROPIC_API_KEY',
+    }
+    if provider in key_map:
+        prompt_field(key_map[provider], f'{provider.title()} API Key')
+
+    # Hardware
+    click.echo("\n--- Hardware ---")
+    mock = prompt_field('MOCK_HARDWARE', 'Mock hardware mode? (0=real Pi, 1=simulator)', '0')
+    hunt = prompt_field('HUNT_ON_BOOT', 'Auto-start Wi-Fi hunting on boot? (true/false)', 'false')
+
+    # Dashboard auth
+    click.echo("\n--- Web Dashboard ---")
+    dash_token = prompt_field('DASHBOARD_TOKEN', 'Dashboard auth token (optional)')
+
+    # Write .env
+    lines = []
+    for key in ['BOT_NAME', 'OWNER_NAME', 'BOT_PLATFORM', 'DISCORD_BOT_TOKEN', 'DISCORD_CHANNEL_ID',
+                'TELEGRAM_BOT_TOKEN', 'DEFAULT_LITE_PRESET', 'DEEPSEEK_API_KEY', 'OPENROUTER_API_KEY',
+                'GOOGLE_API_KEY', 'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'MOCK_HARDWARE',
+                'HUNT_ON_BOOT', 'DASHBOARD_TOKEN']:
+        if key in env_vars or key in ['BOT_NAME', 'BOT_PLATFORM', 'MOCK_HARDWARE', 'HUNT_ON_BOOT']:
+            val = env_vars.get(key, '')
+            if val:
+                lines.append(f'{key}={val}')
+    lines.append('')
+    env_path.write_text('\n'.join(lines))
+    click.echo(f"\n✅ Configuration saved to {env_path}")
+    click.echo("  Run 'gotchi doctor' to verify your setup.")

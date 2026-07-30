@@ -914,3 +914,32 @@ body {
         font-size: 1.2rem;
     }
 }
+
+/* Log level filter buttons */
+.log-filter-group {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.log-filter-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.65rem;
+    font-family: 'Share Tech Mono', monospace;
+    transition: all 0.2s ease;
+}
+
+.log-filter-btn.active {
+    background: var(--cyan);
+    color: #000;
+    border-color: var(--cyan);
+}
+
+.log-filter-btn:hover {
+    border-color: var(--cyan);
+}

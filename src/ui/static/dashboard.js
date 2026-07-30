@@ -44,6 +44,12 @@
         let consoleMaximized = false;
         let consoleMinimized = false;
 
+        // Log level filter state: 'all' | 'system' | 'chat' | 'error'
+        let _logFilter = 'all';
+
+        // Cache the last stats data for filter re-rendering
+        let _lastDashboardData = null;
+
         // Generate the physical 5x8 circular LED grid screen
         function initLedMatrix() {
             const matrixGrid = document.getElementById('led-matrix-grid');
@@ -639,6 +645,11 @@
                 if (data.logs && data.logs.length > 0) {
                     const reversedLogs = [...data.logs].reverse();
                     reversedLogs.forEach(line => {
+                        // Apply log level filter
+                        if (_logFilter === 'system' && line.includes('[CHAT:')) return;
+                        if (_logFilter === 'chat' && !line.includes('[CHAT:')) return;
+                        if (_logFilter === 'error' && !line.toLowerCase().includes('error')) return;
+
                         const div = document.createElement('div');
                         div.className = 'console-line';
                         
@@ -660,6 +671,9 @@
 
                 // Refresh E-Paper waveshare thumbnail
                 document.getElementById('epd-image').src = '/simulator.png?t=' + new Date().getTime();
+                
+                // Cache data for filter re-rendering
+                _lastDashboardData = data;
         }
 
         // Action dispatcher
@@ -825,6 +839,19 @@
 
         function clearConsoleLog() {
             executeAction('clear_history');
+        }
+
+        // Log level filter control
+        function setLogFilter(filter) {
+            _logFilter = filter;
+            // Toggle active class on filter buttons
+            document.querySelectorAll('.log-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            // Re-render logs with the new filter if we have cached data
+            if (_lastDashboardData) {
+                updateDashboard(_lastDashboardData);
+            }
         }
 
         // Sliding overlay panel configuration editor
