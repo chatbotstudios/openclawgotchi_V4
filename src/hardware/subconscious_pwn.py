@@ -32,7 +32,9 @@ class PwnDaemon:
         self.history = {}  # Tracks how many times we've interacted with a MAC
         self.current_channel = 0
         self.channels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]  # Standard 2.4GHz
-        self.max_interactions = 3 # Max deauths per target to avoid spamming
+        self.max_interactions = 3  # Max deauths per target to avoid spamming
+        # Load whitelist once at startup (reload via reload_whitelist())
+        self._whitelist = PWN_WHITELIST_MACS[:] if PWN_WHITELIST_MACS else []
 
     def _request(self, method, endpoint, payload=None):
         """Wrapper for Bettercap REST API calls"""
@@ -59,7 +61,7 @@ class PwnDaemon:
 
     def _should_interact(self, mac):
         """Check if we should deauth this target (not whitelisted, not over-spammed)"""
-        if mac.lower() in [w.lower() for w in PWN_WHITELIST_MACS]:
+        if mac.lower() in [w.lower() for w in self._whitelist]:
             return False
             
         if mac not in self.history:
@@ -68,6 +70,18 @@ class PwnDaemon:
             
         self.history[mac] += 1
         return self.history[mac] <= self.max_interactions
+
+    def reload_whitelist(self):
+        """Reload PWN_WHITELIST_MACS from .env (call sparingly — file I/O on SD)."""
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+            import os as _os
+            raw = _os.environ.get("PWN_WHITELIST_MACS", "")
+            self._whitelist = [m.strip().lower() for m in raw.split(",") if m.strip()]
+            log.info(f"Whitelist reloaded: {len(self._whitelist)} entries")
+        except Exception as e:
+            log.warning(f"Whitelist reload failed: {e}")
 
     def attack_loop(self):
         log.info("Subconscious Pwn Daemon Started. Initializing wlan0mon recon...")
@@ -97,14 +111,6 @@ class PwnDaemon:
                 if target_bssid:
                     log.info(f"Target Lock Active: Daemon is focused exclusively on {target_bssid}")
                         
-                # Dynamic Whitelist Reload
-                global PWN_WHITELIST_MACS
-                if os.path.exists(".env"):
-                    with open(".env", "r") as f:
-                        for line in f:
-                            if line.startswith("PWN_WHITELIST_MACS="):
-                                PWN_WHITELIST_MACS = line.split("=", 1)[1].strip().split(",")
-
                 # 1. Fetch current environment state
                 session = self.get_session()
                 if not session or 'wifi' not in session or 'aps' not in session['wifi']:
