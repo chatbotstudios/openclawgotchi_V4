@@ -2,8 +2,8 @@
 Database operations — messages, facts, pending tasks.
 """
 
-import sqlite3
 import logging
+import sqlite3
 from datetime import datetime
 
 from config import DB_PATH, HISTORY_LIMIT

@@ -338,7 +338,7 @@ def main():
         # BLE adapter is no longer forced offline on boot to allow Tether Watchdog Dual Uplink
         log.info("Booting Dual Uplink (Wi-Fi + BLE)...")
         
-        from config import MOCK_HARDWARE, HUNT_ON_BOOT
+        from config import HUNT_ON_BOOT, MOCK_HARDWARE
         if MOCK_HARDWARE:
             log.info("MOCK_HARDWARE=1: Skipping Pwnagotchi Subconscious.")
             return
