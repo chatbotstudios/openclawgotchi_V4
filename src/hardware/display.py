@@ -37,8 +37,19 @@ _epd_driver = None
 
 def _init_epd():
     global _epd, _epd_initialized, _epd_driver
+    from config import MOCK_HARDWARE
+    # Ensure drivers directory is on the path for mock_epd too
+    drivers_dir = str(PROJECT_DIR / "src" / "drivers")
+    if drivers_dir not in sys.path:
+        sys.path.append(drivers_dir)
+    if MOCK_HARDWARE:
+        import mock_epd as epd_driver
+        _epd_driver = epd_driver
+        _epd = epd_driver.EPD()
+        _epd_initialized = True
+        log.info("E-Ink Display: Mock mode (no hardware)")
+        return
     try:
-        sys.path.append(str(PROJECT_DIR / "src" / "drivers"))
         import epd2in13_V4 as epd_driver
         _epd_driver = epd_driver
         _epd = epd_driver.EPD()
