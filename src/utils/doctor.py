@@ -56,11 +56,90 @@ def run_checks() -> dict:
             temp_result = {"ok": False, "output": "", "celsius": None}
     checks["temperature"] = temp_result
 
-    # 4. Service Status
+    # 4. Uptime
+    uptime_result = {"ok": True, "output": "", "days": 0, "hours": 0}
+    try:
+        with open("/proc/uptime") as f:
+            uptime_sec = float(f.read().split()[0])
+        days = int(uptime_sec // 86400)
+        hours = int((uptime_sec % 86400) // 3600)
+        mins = int((uptime_sec % 3600) // 60)
+        uptime_result = {"ok": True, "output": f"{days}d {hours}h {mins}m", "days": days, "hours": hours}
+    except Exception as e:
+        uptime_result = {"ok": False, "output": str(e), "days": 0, "hours": 0}
+    checks["uptime"] = uptime_result
+
+    # 5. Memory
+    mem_result = {"ok": False, "output": "", "available_mb": 0, "total_mb": 0, "pct": 0}
+    try:
+        import psutil
+        mem = psutil.virtual_memory()
+        avail_mb = int(mem.available / (1024 * 1024))
+        total_mb = int(mem.total / (1024 * 1024))
+        pct = int(mem.percent)
+        ok = pct < 90
+        mem_result = {"ok": ok, "output": f"{avail_mb}/{total_mb} MB free ({pct}% used)", "available_mb": avail_mb, "total_mb": total_mb, "pct": pct}
+    except Exception:
+        try:
+            with open("/proc/meminfo") as f:
+                data = f.read()
+            total_line = [l for l in data.splitlines() if "MemTotal" in l][0]
+            avail_line = [l for l in data.splitlines() if "MemAvailable" in l][0]
+            total_kb = int(total_line.split()[1])
+            avail_kb = int(avail_line.split()[1])
+            avail_mb = avail_kb // 1024
+            total_mb = total_kb // 1024
+            pct = int((total_kb - avail_kb) / total_kb * 100)
+            ok = pct < 90
+            mem_result = {"ok": ok, "output": f"{avail_mb}/{total_mb} MB free ({pct}% used)", "available_mb": avail_mb, "total_mb": total_mb, "pct": pct}
+        except Exception:
+            mem_result = {"ok": False, "output": "unavailable", "available_mb": 0, "total_mb": 0, "pct": 0}
+    checks["memory"] = mem_result
+
+    # 6. LLM Providers (check which API keys are configured, without revealing values)
+    llm_result = {"ok": False, "output": "", "providers": []}
+    try:
+        providers = []
+        for var, name in [
+            ("DEEPSEEK_API_KEY", "deepseek"), ("OPENROUTER_API_KEY", "openrouter"),
+            ("ANTHROPIC_API_KEY", "anthropic"), ("OPENAI_API_KEY", "openai"),
+            ("GOOGLE_API_KEY", "google"), ("GEMINI_API_KEY", "gemini"),
+            ("GROQ_API_KEY", "groq"), ("TOGETHER_API_KEY", "together"),
+        ]:
+            if os.environ.get(var):
+                providers.append(name)
+        if not providers:
+            providers.append("none")
+        ok = len([p for p in providers if p != "none"]) > 0
+        llm_result = {"ok": ok, "output": ", ".join(providers) if providers else "none", "providers": providers}
+    except Exception as e:
+        llm_result = {"ok": False, "output": str(e), "providers": []}
+    checks["llm"] = llm_result
+
+    # 7. Service Status
     ok, out = check('Service', 'systemctl is-active gotchi')
     checks["service"] = {"ok": ok, "output": out}
 
-    # 5. Recent Errors
+    # 8. Display Driver
+    display_result = {"ok": False, "output": "", "driver": "unknown"}
+    try:
+        _src = os.path.join(os.path.dirname(__file__), "..")
+        if _src not in sys.path:
+            sys.path.insert(0, _src)
+        from config import MOCK_HARDWARE
+        if MOCK_HARDWARE:
+            display_result = {"ok": True, "output": "Mock EPD (MOCK_HARDWARE=1)", "driver": "mock"}
+        else:
+            from hardware.display import _epd_initialized
+            if _epd_initialized:
+                display_result = {"ok": True, "output": "Waveshare 2.13 E-Ink (hardware)", "driver": "real"}
+            else:
+                display_result = {"ok": False, "output": "Simulator mode (no hardware)", "driver": "simulator"}
+    except Exception as e:
+        display_result = {"ok": False, "output": str(e), "driver": "error"}
+    checks["display"] = display_result
+
+    # 9. Recent Errors
     try:
         journal_out = subprocess.check_output(
             ["journalctl", "-u", "gotchi", "-n", "50", "--no-pager"],
@@ -128,7 +207,36 @@ def main():
         print("[⚠️] Temp: Unavailable")
         all_ok = False
 
-    # 4. Service Status
+    # 4. Uptime
+    c = checks["uptime"]
+    if c["ok"]:
+        print(f"[✅] Uptime: {c['output']}")
+    else:
+        print(f"[⚠️] Uptime: {c['output']}")
+
+    # 5. Memory
+    c = checks["memory"]
+    if c["ok"]:
+        print(f"[✅] RAM: {c['output']}")
+    else:
+        print(f"[❌] RAM: {c['output']}")
+        all_ok = False
+
+    # 6. LLM Providers
+    c = checks["llm"]
+    if c["ok"]:
+        print(f"[✅] LLM: {c['output']}")
+    else:
+        print(f"[⚠️] LLM: {c['output']}")
+
+    # 7. Display Driver
+    c = checks["display"]
+    if c["ok"]:
+        print(f"[✅] Display: {c['output']}")
+    else:
+        print(f"[⚠️] Display: {c['output']}")
+
+    # 8. Service Status
     c = checks["service"]
     if c["output"] == "active":
         print("[✅] Service: Active")
@@ -136,7 +244,7 @@ def main():
         print(f"[❌] Service: {c['output']}")
         all_ok = False
 
-    # 5. Recent Errors
+    # 9. Recent Errors
     c = checks["logs"]
     if not c["output"]:
         print("[✅] Logs: No recent errors")

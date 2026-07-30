@@ -104,6 +104,10 @@ def doctor(full, as_json):
         format_header("Gotchi Doctor")
     
     from utils.doctor import main as run_diagnostics
+    # Pass CLI flags as sys.argv so doctor.main() can read them
+    import sys as _sys
+    if as_json and '--json' not in _sys.argv:
+        _sys.argv.append('--json')
     run_diagnostics()
 
 @click.command()
