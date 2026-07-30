@@ -110,11 +110,15 @@ def test_tether_status_offline():
 
 def test_watchdog_internet_check():
     watchdog = TetherWatchdog()
-    with patch("subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(returncode=0)
+    from unittest.mock import mock_open
+    # Mock /proc/net/route to simulate a gateway present
+    fake_route = "Iface\tDestination\tGateway\tFlags\tRefCnt\tUse\tMetric\tMask\tMTU\tWindow\tIRTT\nbnep0\t00000000\t0A14AC14\t0003\t0\t0\t0\t00000000\t0\t0\t0\n"
+    with patch("builtins.open", mock_open(read_data=fake_route)):
         assert watchdog._has_internet() is True
-        
-        mock_run.side_effect = Exception("error")
+    
+    # Mock /proc/net/route to simulate NO gateway
+    fake_route_no = "Iface\tDestination\tGateway\tFlags\tRefCnt\tUse\tMetric\tMask\tMTU\tWindow\tIRTT\nbnep0\t00000000\t00000000\t0001\t0\t0\t0\t00000000\t0\t0\t0\n"
+    with patch("builtins.open", mock_open(read_data=fake_route_no)):
         assert watchdog._has_internet() is False
 
 

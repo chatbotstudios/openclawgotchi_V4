@@ -128,14 +128,25 @@ def _load_all_faces() -> dict:
 
 _animation_tick = 0
 
+_ble_icon_cache = {"value": "", "expires": 0}
+
 def get_bluetooth_icon() -> str:
+    import time as _time
+    now = _time.monotonic()
+    if now < _ble_icon_cache["expires"]:
+        return _ble_icon_cache["value"]
+    
     if sys.platform != "linux":
+        _ble_icon_cache["value"] = "B"
+        _ble_icon_cache["expires"] = now + 10
         return "B"  # Default for macOS/Windows development/testing
 
     try:
         # 1. Check if adapter exists (hci0) and check rfkill soft block
         hci_path = Path("/sys/class/bluetooth/hci0")
         if not hci_path.exists():
+            _ble_icon_cache["value"] = "X"
+            _ble_icon_cache["expires"] = now + 10
             return "X"
 
         # Check rfkill via /sys/class/rfkill/ (more reliable than /proc/rfkill)
@@ -155,12 +166,16 @@ def get_bluetooth_icon() -> str:
             pass
 
         if rfkill_soft_blocked:
+            _ble_icon_cache["value"] = "X"
+            _ble_icon_cache["expires"] = now + 10
             return "X"
 
         # 2. Check if discovering / scanning (ISCAN-like state)
         try:
             discovering = (hci_path / "discovering").read_text().strip()
             if discovering == "1":
+                _ble_icon_cache["value"] = "(B)"
+                _ble_icon_cache["expires"] = now + 5
                 return "(B)"
         except Exception:
             pass
@@ -169,11 +184,14 @@ def get_bluetooth_icon() -> str:
         try:
             bnep_operstate = Path("/sys/class/net/bnep0/operstate")
             if bnep_operstate.exists() and bnep_operstate.read_text().strip() == "up":
+                _ble_icon_cache["value"] = "B✓"
+                _ble_icon_cache["expires"] = now + 10
                 return "B✓"
         except Exception:
             pass
 
         # 4. Check for active scanning / broadcasting processes via /proc
+        # This is cached for 10s to avoid iterating /proc on every frame
         try:
             for proc_dir in Path("/proc").iterdir():
                 if proc_dir.name.isdigit():
@@ -181,14 +199,20 @@ def get_bluetooth_icon() -> str:
                         cmdline = (proc_dir / "cmdline").read_text()
                         for proc_name in ("bluetoothctl", "hcitool", "bettercap"):
                             if proc_name in cmdline:
+                                _ble_icon_cache["value"] = "<<B>>"
+                                _ble_icon_cache["expires"] = now + 10
                                 return "<<B>>"
                     except Exception:
                         continue
         except Exception:
             pass
 
+        _ble_icon_cache["value"] = "B"
+        _ble_icon_cache["expires"] = now + 10
         return "B"
     except Exception:
+        _ble_icon_cache["value"] = "B"
+        _ble_icon_cache["expires"] = now + 10
         return "B"
 
 def get_wifi_icon() -> str:

@@ -49,10 +49,11 @@ The following environment configurations in `.env` govern Bluetooth tethering de
 *Note on Pairing PINs*: During the initial `gotchi network tether pair` flow, a 6-digit Secure Simple Pairing (SSP) code is displayed. The user must tap "Pair" on the phone or confirm on the terminal. Once paired and trusted, no PIN or code entry is required for subsequent connections or watchdog pulses.
 
 ### 5. Watchdog (Autonomous Recovery)
-The unit features a background pulse that monitors internet connectivity. To preserve battery, the indefinite Steady/Magnetic mode is disabled.
-*   **Burst Mode**: For the first 5 minutes of disconnection (or upon boot/prompt), it pulses every 30 seconds.
-*   **Stealth Mode**: Disabled. The watchdog terminates completely after the 5-minute burst.
-*   **Reflex**: It automatically executes the "Connect -> NM Up" sequence if no internet is detected during the burst.
+The unit features a background pulse that monitors internet connectivity without forking subprocesses.
+- **Burst Mode**: For the first 5 minutes of disconnection (or upon boot), it pulses every 30 seconds.
+- **Steady Mode**: After 5 minutes, transitions to 120-second intervals and runs **indefinitely** until stopped.
+- **Health Checks**: Reads `/proc/net/route` for default gateway status (no `ping`). Checks `/sys/class/net/bnep0/operstate` for link state (no `nmcli`).
+- **Mock Hardware**: When `MOCK_HARDWARE=1` is set, the watchdog is fully disabled for development/testing.
 
 ## 🛡️ Service Integrity & Troubleshooting
 

@@ -16,44 +16,49 @@ class TetherWatchdog:
         self.running = False
         self.start_time = 0
         self._thread = None
+        self._was_active = False
+        self.net_fails = 0
+        self._last_keepalive = 0.0
 
     def _has_internet(self) -> bool:
-        """Check if we have a working internet connection."""
+        """Check if we have a default gateway (zero subprocess)."""
         try:
-            # Ping Google DNS with a short timeout
-            subprocess.run(["ping", "-c", "1", "-W", "2", "8.8.8.8"], 
-                           capture_output=True, check=True, timeout=3)
-            return True
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            with open("/proc/net/route") as f:
+                for line in f.readlines()[1:]:  # skip header
+                    parts = line.strip().split()
+                    if len(parts) >= 3:
+                        if parts[1] == "00000000" and parts[2] != "00000000":
+                            return True
             return False
-        except Exception as e:
-            log.debug(f"Watchdog: Internet check failed: {e}")
+        except Exception:
             return False
 
     def _get_tether_mac(self) -> str:
         """Extract the paired iPhone MAC from the NetworkManager profile."""
         try:
-            cmd = "sudo nmcli -g bluetooth.bdaddr connection show iPhoneHotspot"
-            res = subprocess.run(cmd.split(), capture_output=True, text=True)
+            cmd = ["sudo", "nmcli", "-g", "bluetooth.bdaddr", "connection", "show", "iPhoneHotspot"]
+            res = subprocess.run(cmd, capture_output=True, text=True)
             return res.stdout.strip().replace("\\", "")
         except:
             return ""
 
     def _is_tether_active(self) -> bool:
-        """Check if the iPhoneHotspot is currently active in NetworkManager."""
+        """Check if bnep0 link is up (zero subprocess)."""
         try:
-            res = subprocess.run(["nmcli", "-t", "-f", "NAME,STATE", "con", "show", "--active"], capture_output=True, text=True, timeout=5)
-            if "iPhoneHotspot:activated" not in res.stdout:
+            from pathlib import Path
+            p = Path("/sys/class/net/bnep0/operstate")
+            if not p.exists():
                 return False
-            
-            # Strict validation: Check that bnep0 actually has a valid IP address
-            ip_res = subprocess.run(["ip", "-4", "addr", "show", "dev", "bnep0"], capture_output=True, text=True)
-            return not ("inet " not in ip_res.stdout or "169.254." in ip_res.stdout)
-        except:
+            return p.read_text().strip() == "up"
+        except Exception:
             return False
 
     def _keepalive_ping(self, mac: str):
-        """Send packets over BNEP to prevent iOS idle drop."""
+        """Send packets over BNEP to prevent iOS idle drop (max once per minute)."""
+        now = time.monotonic()
+        if now - self._last_keepalive < 60:
+            return
+        self._last_keepalive = now
         try:
             # 1. IP-level ping to the hardcoded iPhone Personal Hotspot gateway
             subprocess.run(["ping", "-c", "1", "172.20.10.1"], capture_output=True, timeout=2)
@@ -162,7 +167,7 @@ class TetherWatchdog:
             
             if not is_active:
                 # Detect crash edge-case and dump forensics
-                if getattr(self, '_was_active', False):
+                if self._was_active:
                     log.error("🧲 TETHER CRASH DETECTED! Executing hardware forensics dump...")
                     try:
                         from utils.forensics import (
@@ -182,7 +187,7 @@ class TetherWatchdog:
                 else:
                     log.debug("No 'iPhoneHotspot' profile found. Skipping watchdog pulse.")
             elif not has_net:
-                self.net_fails = getattr(self, 'net_fails', 0) + 1
+                self.net_fails = self.net_fails + 1
                 if self.net_fails >= 3:
                     if mac:
                         log.warning("🧲 No internet for 3 consecutive pulses! Bouncing tether...")
@@ -200,8 +205,8 @@ class TetherWatchdog:
             elapsed = time.time() - self.start_time
             
             if elapsed >= self.burst_duration:
-                log.info(f"🧲 Watchdog Burst Mode ({self.burst_duration}s) complete. Shutting down tether watchdog.")
-                break
+                current_interval = self.interval_steady
+                log.debug(f"🧲 Watchdog entered steady mode ({current_interval}s interval)")
             else:
                 current_interval = self.interval_burst
             
@@ -220,6 +225,10 @@ class TetherWatchdog:
 
     def start(self):
         if self.running: return
+        from config import MOCK_HARDWARE
+        if MOCK_HARDWARE:
+            log.info("MOCK_HARDWARE=1: Tether Watchdog disabled.")
+            return
         self.running = True
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()

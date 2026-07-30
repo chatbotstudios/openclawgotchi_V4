@@ -1,6 +1,5 @@
 import logging
 import os
-import random
 import time
 from threading import Thread
 
@@ -14,7 +13,7 @@ except ImportError:
     PWN_WHITELIST_MACS = []
     BETTERCAP_URL = "http://localhost:8081/api"
     BETTERCAP_USER = "gotchi"
-    BETTERCAP_PASS = "123456"
+    BETTERCAP_PASS = __import__('secrets').token_hex(16)
 
 log = logging.getLogger("PwnSubconscious")
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
@@ -30,9 +29,9 @@ class PwnDaemon:
         self.auth = HTTPBasicAuth(BETTERCAP_USER, BETTERCAP_PASS)
         self.running = False
         self.history = {}  # Tracks how many times we've interacted with a MAC
-        self.current_channel = 0
-        self.channels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]  # Standard 2.4GHz
-        self.max_interactions = 3 # Max deauths per target to avoid spamming
+        self.max_interactions = 3  # Max deauths per target to avoid spamming
+        # Load whitelist once at startup (reload via reload_whitelist())
+        self._whitelist = PWN_WHITELIST_MACS[:] if PWN_WHITELIST_MACS else []
 
     def _request(self, method, endpoint, payload=None):
         """Wrapper for Bettercap REST API calls"""
@@ -59,7 +58,7 @@ class PwnDaemon:
 
     def _should_interact(self, mac):
         """Check if we should deauth this target (not whitelisted, not over-spammed)"""
-        if mac.lower() in [w.lower() for w in PWN_WHITELIST_MACS]:
+        if mac.lower() in [w.lower() for w in self._whitelist]:
             return False
             
         if mac not in self.history:
@@ -69,13 +68,26 @@ class PwnDaemon:
         self.history[mac] += 1
         return self.history[mac] <= self.max_interactions
 
+    def reload_whitelist(self):
+        """Reload PWN_WHITELIST_MACS from .env (call sparingly — file I/O on SD)."""
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+            import os as _os
+            raw = _os.environ.get("PWN_WHITELIST_MACS", "")
+            self._whitelist = [m.strip().lower() for m in raw.split(",") if m.strip()]
+            log.info(f"Whitelist reloaded: {len(self._whitelist)} entries")
+        except Exception as e:
+            log.warning(f"Whitelist reload failed: {e}")
+
     def attack_loop(self):
         log.info("Subconscious Pwn Daemon Started. Initializing wlan0mon recon...")
         
-        # Turn on wifi.recon and ble.recon
+        # Turn on wifi.recon and ble.recon, delay clear to preserve initial discoveries
         self.run_cmd('wifi.recon on')
-        self.run_cmd('wifi.clear')
         self.run_cmd('ble.recon on')
+        time.sleep(3)
+        self.run_cmd('wifi.clear')
         self.run_cmd('ble.clear')
         
         self.running = True
@@ -97,14 +109,6 @@ class PwnDaemon:
                 if target_bssid:
                     log.info(f"Target Lock Active: Daemon is focused exclusively on {target_bssid}")
                         
-                # Dynamic Whitelist Reload
-                global PWN_WHITELIST_MACS
-                if os.path.exists(".env"):
-                    with open(".env", "r") as f:
-                        for line in f:
-                            if line.startswith("PWN_WHITELIST_MACS="):
-                                PWN_WHITELIST_MACS = line.split("=", 1)[1].strip().split(",")
-
                 # 1. Fetch current environment state
                 session = self.get_session()
                 if not session or 'wifi' not in session or 'aps' not in session['wifi']:
@@ -146,23 +150,16 @@ class PwnDaemon:
                 if target_bssid:
                     target_ch = next((ap['channel'] for ap in aps if ap['mac'].lower() == target_bssid), None)
                     if target_ch:
-                        if self.current_channel != target_ch:
-                            self.run_cmd(f"wifi.recon.channel {target_ch}")
-                            self.current_channel = target_ch
-                            log.info(f"Target Locked: Hopped to CH {target_ch} exclusively for {target_bssid}")
+                        log.info(f"Target Locked: Targeting {target_bssid} on CH {target_ch}")
                         time.sleep(2)
                         continue
 
-                # If we didn't do anything exciting, hop channel quickly. 
-                # If we deauthed, stay a bit longer to catch the handshake.
+                # Bettercap handles its own channel hopping via wifi.recon on.
+                # Just sleep between cycles to avoid busy-waiting the Pi Zero.
                 wait_time = 5 if deauthed else 2
                 time.sleep(wait_time)
-
-                # Hop to next random channel
-                next_channel = random.choice(self.channels)
-                self.run_cmd(f"wifi.recon.channel {next_channel}")
-                self.current_channel = next_channel
-                log.info(f"Hopped to channel {next_channel}. Currently tracking {len(aps)} APs.")
+                
+                log.info(f"Daemon cycle complete. Currently tracking {len(aps)} APs.")
 
             except Exception as e:
                 log.error(f"Error in attack loop: {e}")

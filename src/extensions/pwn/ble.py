@@ -4,11 +4,13 @@ import os
 import requests
 from requests.auth import HTTPBasicAuth
 
-from config import BETTERCAP_PASS, BETTERCAP_URL, BETTERCAP_USER
+from config import BETTERCAP_PASS, BETTERCAP_URL, BETTERCAP_USER, PROJECT_DIR
 from hooks.runner import HookEvent, run_hook
 from sdk.tool_builder import register_tool
 
-BLE_LOG_DIR = "handshakes/BLE"
+BLE_LOG_DIR = str(PROJECT_DIR / "handshakes" / "BLE")
+_ble_recon_sent = False
+
 
 def get_auth():
     return HTTPBasicAuth(BETTERCAP_USER, BETTERCAP_PASS)
@@ -44,11 +46,15 @@ def pwn_ble_scan() -> str:
         devices = session.get("ble", {}).get("devices", [])
         
         if not devices:
-            # Self-healing: Try to force ble.recon on if it seems dead
-            try:
-                requests.post(f"{BETTERCAP_URL}/session", auth=get_auth(), json={"cmd": "ble.recon on"}, timeout=2)
-            except: pass
-            return "No BLE devices detected yet. (Sent 'ble.recon on' pulse - try again in 5s)."
+            global _ble_recon_sent
+            if not _ble_recon_sent:
+                try:
+                    requests.post(f"{BETTERCAP_URL}/session", auth=get_auth(), json={"cmd": "ble.recon on"}, timeout=2)
+                    _ble_recon_sent = True
+                except:
+                    pass
+                return "No BLE devices detected yet. (Started BLE recon - try again in 5s)."
+            return "No BLE devices detected. BLE recon already active - waiting for devices..."
             
         # Sort by signal strength
         sorted_devs = sorted(devices, key=lambda x: x.get('rssi', -100), reverse=True)

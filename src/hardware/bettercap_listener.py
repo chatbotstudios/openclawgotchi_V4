@@ -19,7 +19,7 @@ try:
     from config import BETTERCAP_PASS, BETTERCAP_USER
 except ImportError:
     BETTERCAP_USER = "gotchi"
-    BETTERCAP_PASS = "123456"
+    BETTERCAP_PASS = __import__('secrets').token_hex(16)
 
 class NervousSystem:
     """
@@ -27,7 +27,13 @@ class NervousSystem:
     It listens to the WebSocket event stream and triggers physical reflexes.
     """
     def __init__(self):
-        self.ws_uri = f"ws://{BETTERCAP_USER}:{BETTERCAP_PASS}@localhost:8081/api"
+        ws_host = "localhost"
+        ws_port = "8081"
+        self.ws_uri = f"ws://{ws_host}:{ws_port}/api"
+        # Build auth header once (avoids credentials in URI/logs)
+        import base64
+        auth_raw = f"{BETTERCAP_USER}:{BETTERCAP_PASS}"
+        self._ws_auth_header = {"Authorization": f"Basic {base64.b64encode(auth_raw.encode()).decode()}"}
         self.running = False
 
     async def _listen_loop(self):
@@ -35,7 +41,7 @@ class NervousSystem:
         while self.running:
             try:
                 # We use ping_timeout=None to keep the connection alive indefinitely
-                async with websockets.connect(self.ws_uri, ping_timeout=None) as ws:
+                async with websockets.connect(self.ws_uri, extra_headers=self._ws_auth_header, ping_timeout=None) as ws:
                     log.info("Nervous System successfully bound to Subconscious.")
                     
                     # Plugin Hook

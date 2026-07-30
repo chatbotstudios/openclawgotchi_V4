@@ -75,8 +75,10 @@ class PwnManager:
                 
             log.info("Starting Pwnagotchi Subconscious...")
                 
-            # 1. Ensure clean state
-            subprocess.run(["sudo", "pkill", "-9", "bettercap"], capture_output=True, check=False)
+            # 1. Ensure clean state — only kill if actually running
+            if subprocess.run(["pgrep", "bettercap"], capture_output=True).returncode == 0:
+                subprocess.run(["sudo", "pkill", "-9", "bettercap"], capture_output=True, check=False)
+                time.sleep(1)
             
             # 2. Switch to monitor mode (use CLI for consistency)
             try:
@@ -105,7 +107,11 @@ class PwnManager:
                          f"set wifi.handshakes.path {handshake_path}")
             ]
             
-            self.bettercap_proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            # Start Bettercap with logging for diagnostics
+            log_dir = project_root / "logs"
+            log_dir.mkdir(exist_ok=True)
+            bc_log = open(log_dir / "bettercap.log", "a")
+            self.bettercap_proc = subprocess.Popen(cmd, stdout=bc_log, stderr=subprocess.STDOUT)
             
             # 4. Wait for REST API
             if not self._wait_for_bettercap_api(timeout=10):

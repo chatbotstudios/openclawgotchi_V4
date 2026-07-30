@@ -82,4 +82,26 @@ The user can interact with these systems via the SSH CLI. If the user asks for a
 | **Hunting** (◕‿◕) | Handshake just captured! |
 | **Tracking** (✜‿✜) | Locked onto a BLE target. |
 | **Excited** (✪‿✪) | Target is extremely close (HOT). |
-| **Confused** (u_u) | Bettercap API is offline or authenticated failed. |
+| **Confused** (u_u) | Bettercap API is offline or authentication failed. |
+| **Tracking** (✜‿✜) | Locked onto a BLE target. |
+
+## 🔧 Architecture & Recent Changes
+
+### Credential Security
+- **WebSocket URI no longer embeds credentials** (P0-2): Auth passed via `extra_headers` as Base64 Basic Auth header. Credentials never appear in logs or process listings.
+- **Static password removed** (P1-5): Fallback `BETTERCAP_PASS = "123456"` replaced with `secrets.token_hex(16)` random generation.
+
+### Whitelist Management
+- **Cached in memory** (P0-1): `PWN_WHITELIST_MACS` loaded once at init into `self._whitelist`. No runtime `.env` re-read on every attack cycle.
+- **Reload on demand**: Call `reload_whitelist()` to refresh from `.env` without restart.
+
+### Diagnostics
+- **Bettercap output logged** (P1-3): stdout/stderr piped to `logs/bettercap.log` instead of `/dev/null`.
+- **Conditional pkill** (P2-6): `pkill -9 bettercap` only runs if `pgrep` finds a living process.
+
+### Channel Management
+- **Bettercap handles its own channel hopping** (P2-8): Custom `random.choice` cycling removed. Bettercap's `wifi.recon on` automatically sweeps channels.
+- **Startup delay** (P2-7): `wifi.clear`/`ble.clear` delayed 3 seconds after `recon on` to preserve initial discoveries.
+
+### Ble.recon Self-Healing
+- **Once-per-session** (P2-5): `ble.recon on` is sent at most once per session (guarded by `_ble_recon_sent` flag). No redundant API calls on empty scans.
