@@ -220,6 +220,10 @@ class TetherWatchdog:
 
     def start(self):
         if self.running: return
+        from config import MOCK_HARDWARE
+        if MOCK_HARDWARE:
+            log.info("MOCK_HARDWARE=1: Tether Watchdog disabled.")
+            return
         self.running = True
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
