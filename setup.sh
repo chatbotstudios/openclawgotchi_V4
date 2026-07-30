@@ -71,6 +71,8 @@ else
                 if [[ ! -f /etc/apt/keyrings/raspberrypi.gpg ]]; then
                     echo "  [Pi Setup] Adding Raspberry Pi OS repositories for $ARCH architecture..."
                     sudo mkdir -p /etc/apt/keyrings
+                    # Ensure gpg is available (not always present on minimal images)
+                    which gpg >/dev/null 2>&1 || sudo apt-get install -y -qq gnupg
                     wget -qO - https://archive.raspberrypi.org/debian/raspberrypi.gpg.key | \
                         sudo gpg --dearmor -o /etc/apt/keyrings/raspberrypi.gpg
                     # Remove old-style entry (apt-key deprecation migration)
