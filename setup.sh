@@ -79,15 +79,16 @@ else
                     sudo rm -f /etc/apt/sources.list.d/raspi.list
                     echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/raspberrypi.gpg] http://archive.raspberrypi.org/debian/ bookworm main" | \
                         sudo tee /etc/apt/sources.list.d/raspi.list
-                    # Force classic gpgv for this repo — Raspberry Pi's key uses a SHA1
-                    # binding signature which sqv (Sequoia) rejects after 2026-02-01.
-                    if [ ! -f /etc/apt/apt.conf.d/99force-gpgv ]; then
-                        echo 'APT::Key::OpenPGP::Verified "gpgv";' | \
-                            sudo tee /etc/apt/apt.conf.d/99force-gpgv
-                    fi
                     sudo apt-get update -y -qq
-                else
-                    echo "  [Pi Setup] Raspberry Pi key already present."
+                fi
+                # Force classic gpgv for this repo — Raspberry Pi's key uses a SHA1
+                # binding signature which sqv (Sequoia) rejects after 2026-02-01.
+                # Run independently of keyring check so re-runs also get the fix.
+                if [ ! -f /etc/apt/apt.conf.d/99force-gpgv ]; then
+                    echo "  [Pi Setup] Forcing gpgv for Pi repo key (sqv SHA1 workaround)..."
+                    echo 'APT::Key::OpenPGP::Verified "gpgv";' | \
+                        sudo tee /etc/apt/apt.conf.d/99force-gpgv
+                    sudo apt-get update -y -qq
                 fi
             else
                 echo "  ⚠️ Warning: You selected Raspberry Pi Deployment, but your architecture ($ARCH) is not ARM."
