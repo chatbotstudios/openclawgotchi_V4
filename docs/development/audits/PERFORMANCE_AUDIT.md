@@ -9,11 +9,14 @@ The most critical bottleneck lies in the UI rendering loop, which aggressively f
 
 # Critical Issues (Must-Fix)
 
-### 1. Subprocess Forking in the UI Rendering Loop
-**Location:** `src/ui/gotchi_ui.py` -> `get_system_stats()`  
-**Risk Description:** Every time the E-Ink display refreshes (which could be every few seconds), `get_system_stats()` attempts to run `subprocess.check_output` for `vcgencmd`, `free -m`, and `top -bn1` to gather CPU, Temp, and Memory data.  
-**Why it matters:** Forking a new process (`subprocess`) is incredibly expensive on a single-core ARM CPU. Doing this in the hot UI loop guarantees CPU spikes, thermal throttling, and massive latency.  
-**Recommended Fix:** Replace all `subprocess` calls with direct file reads from `/proc/stat`, `/proc/meminfo`, and `/sys/class/thermal/thermal_zone0/temp`. If `psutil` is installed, use it globally and cache the results for 10-15 seconds rather than polling on every frame.
+### 1. Subprocess Forking in UI Rendering and Watchdog Loops
+**Location:** `src/ui/gotchi_ui.py` -> `get_system_stats()`, `src/ui/gotchi_ui.py` -> `get_bluetooth_icon()`, `src/core/tether_watchdog.py`
+**Risk Description:** Every time the E-Ink display refreshes (which could be every few seconds), `get_system_stats()` attempts to run `subprocess.check_output` for `vcgencmd`, `free -m`, and `top -bn1` to gather CPU, Temp, and Memory data. Similarly, the tether watchdog was forking `ping`, `nmcli`, and `ip` subprocesses every 30 seconds. The BLE icon scanned `/proc` on every frame.
+**Why it matters:** Forking a new process (`subprocess`) is incredibly expensive on a single-core ARM CPU. Doing this in the hot UI loop guarantees CPU spikes, thermal throttling, and massive latency.
+**Resolved (P1)**: 
+- Tether watchdog: Replaced `ping` with `/proc/net/route` reads. Replaced `nmcli` + `ip` with `/sys/class/net/bnep0/operstate` reads. Zero subprocess for health checks.
+- BLE icon: 10s TTL cache in `get_bluetooth_icon()` eliminates `/proc` scanning on every frame.
+**Remaining**: `get_system_stats()` still uses subprocess for `vcgencmd` / `free` / `top`.
 
 ### 2. Uncapped Heartbeat Processing Load
 **Location:** `src/bot/heartbeat.py` -> `send_heartbeat()`  

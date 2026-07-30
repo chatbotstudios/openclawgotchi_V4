@@ -24,9 +24,13 @@ The most critical findings involve **unrestricted prompt injection leading to re
 
 ### 2.3. Hardcoded Credentials & Insecure Bettercap API
 **Location:** `src/hardware/pwn_manager.py` and `src/extensions/pwn/wifi.py`
-**Risk Description:** Bettercap is launched with hardcoded credentials: `set api.rest.user gotchi; set api.rest.pass 123456;`. Furthermore, the API is exposed on HTTP (not HTTPS).
-**Why it matters:** Any local process or user on the Pi (or anyone who gains access via the LLM) can interact with Bettercap's API, initiate deauth storms, or read captured handshakes.
-**Suggested Fix:** Generate a random API key on startup, store it in `.env`, and pass it to Bettercap dynamically. Bind the API to `127.0.0.1` strictly.
+**Risk Description:** Bettercap's REST API was previously accessible with hardcoded credentials (`gotchi:123456`) and exposed on HTTP (not HTTPS).
+**Why it matters:** Any local process or user on the Pi (or anyone who gains access via the LLM) could interact with Bettercap's API, initiate deauth storms, or read captured handshakes.
+**Status: RESOLVED (P0/P1)**
+- WebSocket URI no longer embeds `user:pass@` — credentials passed via Base64 `extra_headers` header.
+- Fallback `123456` replaced with `secrets.token_hex(16)` random 32-char hex string in both `subconscious_pwn.py` and `bettercap_listener.py`.
+- Bettercap credentials are now generated at runtime when no `.env` is present.
+**Remaining Risk**: API still served over HTTP (not HTTPS). Mitigated by binding to `127.0.0.1`.
 
 ---
 

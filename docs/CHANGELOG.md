@@ -2,6 +2,31 @@
 
 All notable changes to OpenClawGotchi V3 will be documented in this file.
 
+## [v5.1] - 2026-07-30
+### Tether Watchdog Overhaul
+- **P0 — Permanent Watchdog**: Burst→Steady mode transition. After 5min burst (30s poll), watchdog enters indefinite steady mode (120s poll) instead of dying.
+- **P1 — Zero Subprocess Health Checks**: Replaced `ping 8.8.8.8` with `/proc/net/route` reads. Replaced `nmcli` + `ip` with `/sys/class/net/bnep0/operstate`. Keepalive throttled to max once/60s.
+- **MOCK_HARDWARE Guard**: Watchdog fully disabled for non-Pi development/testing.
+- **BLE Icon Caching**: 10s TTL cache on `get_bluetooth_icon()` eliminates `/proc` scanning on every E-Ink frame.
+
+### Bettercap Security & Architecture
+- **P0 — Credentials Removed from WebSocket URI**: Auth now passed via Base64 `extra_headers` header. No `user:pass@` in logs or `ps aux`.
+- **P0 — Static Password Removed**: Fallback `123456` replaced with `secrets.token_hex(16)` random generation in both `subconscious_pwn.py` and `bettercap_listener.py`.
+- **P0 — .env Re-Read Removed from Hot Loop**: `PWN_WHITELIST_MACS` cached in `self._whitelist` at init. Added `reload_whitelist()` for on-demand refresh.
+- **P1 — Bettercap Logging**: stdout/stderr piped to `logs/bettercap.log` instead of `/dev/null`.
+- **P1 — `global` Keyword Removed**: `PWN_WHITELIST_MACS` no longer uses `global` in attack loop.
+- **P2 — Conditional pkill**: `pkill -9 bettercap` only runs if `pgrep` finds a living process.
+- **P2 — Startup Delay**: `wifi.clear`/`ble.clear` delayed 3s after `recon on`.
+- **P2 — Custom Channel Hopping Removed**: Bettercap's built-in `wifi.recon on` handles channel scanning. Removed `random.choice` cycling.
+- **BLE Self-Healing Throttle**: `ble.recon on` sent at most once per session (guarded by `_ble_recon_sent` flag).
+
+### BLE Audit Fixes
+- **P1 — MOCK_HARDWARE for Tether Watchdog**: Guard added to `start()`, skips all subprocess calls.
+- **P1 — BLE Icon Cache**: 10s TTL on `get_bluetooth_icon()` stops `/proc` scan on every E-Ink frame.
+- **P2 — BLE_LOG_DIR Absolute Path**: Uses `PROJECT_DIR / "handshakes" / "BLE"` instead of relative path.
+- **P2 — cmd.split() Safety**: Explicit arg list in `tether_watchdog.py` instead of `cmd.split()`.
+- **P2 — Ble.recon Once-Per-Session**: `_ble_recon_sent` flag prevents redundant API calls.
+
 ## [v4.0] - 2026-06-12
 ### Added
 - **Restful Dream Patch**: The Gotchi now organically regenerates `+10.0 HP` automatically whenever a procedural dream is triggered, linking the AI simulation engine to the hardware vitals layer.
