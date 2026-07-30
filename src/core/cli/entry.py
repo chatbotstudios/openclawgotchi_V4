@@ -130,10 +130,13 @@ def cli():
     """🦋 OPENCLAWGOTCHI V3 — Tactical CLI Interface"""
 
 from core.cli.commands.core import backup
+from core.cli.commands.core import export, db_clean
 
 # Register core commands
 cli.add_command(status)
 cli.add_command(backup)
+cli.add_command(export)
+cli.add_command(db_clean)
 cli.add_command(doctor)
 cli.add_command(logs)
 cli.add_command(restart)

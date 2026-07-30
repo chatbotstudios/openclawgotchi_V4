@@ -114,6 +114,196 @@ def doctor(full, as_json, watch):
             _sys.argv.extend(['--watch', str(watch)])
     run_diagnostics()
 
+
+@click.command()
+@click.option('-o', '--output', default=None, help="Output path for export zip (default: project root)")
+def export(output):
+    """Create a full backup of bot state: DB, workspace, handshakes, config."""
+    import zipfile, datetime
+    from config import DB_PATH
+    
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_name = f"gotchi-backup-{timestamp}.zip"
+    output_path = Path(output) if output else PROJECT_DIR / backup_name
+    
+    click.echo(f"📦 Creating backup: {output_path}")
+    
+    # Files/dirs to include
+    paths = {
+        ".env": PROJECT_DIR / ".env",
+        "gotchi.db": DB_PATH,
+        "workspace": PROJECT_DIR / "workspace",
+        "handshakes": PROJECT_DIR / "handshakes",
+        "data": PROJECT_DIR / "data",
+        "agents/skills": PROJECT_DIR / "agents" / "skills",
+    }
+    
+    # Exclude patterns
+    exclude_dirs = {"__pycache__", ".venv", "venv", "node_modules", ".git", ".pytest_cache"}
+    exclude_exts = {".pyc", ".pyo"}
+    
+    added = 0
+    skipped = 0
+    with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for arcname, src in paths.items():
+            if not src.exists():
+                click.echo(f"  ⚠️  Skipping {arcname} (not found)")
+                skipped += 1
+                continue
+            
+            if src.is_file():
+                zf.write(src, arcname)
+                added += 1
+            elif src.is_dir():
+                for file_path in src.rglob("*"):
+                    # Skip excluded dirs
+                    if any(p in file_path.parts for p in exclude_dirs):
+                        continue
+                    if file_path.suffix in exclude_exts:
+                        continue
+                    if file_path.is_file():
+                        zf.write(file_path, f"{arcname}/{file_path.relative_to(src)}")
+                        added += 1
+    
+    size_mb = output_path.stat().st_size / (1024 * 1024)
+    click.echo(f"  ✅ Backup complete: {added} files ({size_mb:.1f} MB)")
+    click.echo(f"  📍 {output_path}")
+    if skipped:
+        click.echo(f"  ⚠️  {skipped} item(s) skipped (not found)")
+
+
+@click.command()
+@click.option('--older-than', type=int, default=0, metavar='DAYS', help="Delete messages older than N days")
+@click.option('--keep-last', type=int, default=0, metavar='N', help="Keep only the last N messages per user")
+@click.option('--handshakes', 'clean_handshakes', type=int, default=0, metavar='DAYS', help="Delete handshake PCAPs older than N days")
+@click.option('--dry-run', is_flag=True, help="Show what would be deleted without deleting")
+@click.option('--all', 'clean_all', is_flag=True, help="Delete all messages and pending tasks")
+def db_clean(older_than, keep_last, clean_handshakes, dry_run, clean_all):
+    """Clean up old database records and handshake files to save space."""
+    import sqlite3, datetime, glob
+    
+    from config import DB_PATH, PROJECT_DIR
+    
+    total_freed = 0
+    
+    if clean_all:
+        click.echo("🧹 Full database cleanup requested...")
+    
+    # ── Messages cleanup ──
+    if older_than > 0 or clean_all:
+        try:
+            conn = sqlite3.connect(str(DB_PATH))
+            cutoff = (datetime.datetime.now() - datetime.timedelta(days=older_than)).isoformat() if older_than > 0 else "1970-01-01"
+            
+            if clean_all:
+                count = conn.execute("SELECT COUNT(*) FROM messages").fetchone()[0]
+                if dry_run:
+                    click.echo(f"  [DRY RUN] Would delete all {count} messages")
+                else:
+                    conn.execute("DELETE FROM messages")
+                    conn.commit()
+                    click.echo(f"  🗑️  Deleted all {count} messages")
+                    total_freed += count
+            elif older_than > 0:
+                count = conn.execute("SELECT COUNT(*) FROM messages WHERE timestamp < ?", (cutoff,)).fetchone()[0]
+                if dry_run:
+                    click.echo(f"  [DRY RUN] Would delete {count} messages older than {older_than} days")
+                else:
+                    conn.execute("DELETE FROM messages WHERE timestamp < ?", (cutoff,))
+                    conn.commit()
+                    click.echo(f"  🗑️  Deleted {count} messages older than {older_than} days")
+                    total_freed += count
+            conn.close()
+        except Exception as e:
+            click.echo(f"  ❌ Messages cleanup failed: {e}")
+    
+    # ── Keep-last messages ──
+    if keep_last > 0:
+        try:
+            conn = sqlite3.connect(str(DB_PATH))
+            # Get all distinct user_ids
+            user_ids = conn.execute("SELECT DISTINCT user_id FROM messages").fetchall()
+            deleted_total = 0
+            for (uid,) in user_ids:
+                # Count total for this user
+                total = conn.execute("SELECT COUNT(*) FROM messages WHERE user_id = ?", (uid,)).fetchone()[0]
+                if total > keep_last:
+                    # Get the ID of the Nth from last message to keep
+                    keep_from = conn.execute(
+                        "SELECT id FROM messages WHERE user_id = ? ORDER BY id DESC LIMIT 1 OFFSET ?",
+                        (uid, keep_last - 1)
+                    ).fetchone()
+                    if keep_from:
+                        to_delete = conn.execute(
+                            "SELECT COUNT(*) FROM messages WHERE user_id = ? AND id < ?",
+                            (uid, keep_from[0])
+                        ).fetchone()[0]
+                        if dry_run:
+                            click.echo(f"  [DRY RUN] Would delete {to_delete} old messages for user {uid} (keeping last {keep_last})")
+                        else:
+                            conn.execute("DELETE FROM messages WHERE user_id = ? AND id < ?", (uid, keep_from[0]))
+                            deleted_total += to_delete
+            if not dry_run and deleted_total:
+                conn.commit()
+                click.echo(f"  🗑️  Trimmed {deleted_total} old messages (keeping last {keep_last} per user)")
+                total_freed += deleted_total
+            conn.close()
+        except Exception as e:
+            click.echo(f"  ❌ Keep-last cleanup failed: {e}")
+    
+    # ── Pending tasks / outgoing queue cleanup ──
+    if clean_all:
+        try:
+            conn = sqlite3.connect(str(DB_PATH))
+            for table in ["pending_tasks", "outgoing_queue"]:
+                count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                if count:
+                    if dry_run:
+                        click.echo(f"  [DRY RUN] Would clear {count} items from {table}")
+                    else:
+                        conn.execute(f"DELETE FROM {table}")
+                        click.echo(f"  🗑️  Cleared {count} items from {table}")
+                        total_freed += count
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            click.echo(f"  ❌ Queue cleanup failed: {e}")
+    
+    # ── Handshake PCAP cleanup ──
+    if clean_handshakes > 0 or clean_all:
+        handshake_dir = PROJECT_DIR / "handshakes"
+        if handshake_dir.exists():
+            cutoff_time = datetime.datetime.now() - datetime.timedelta(days=clean_handshakes) if clean_handshakes > 0 else datetime.datetime.now() + datetime.timedelta(days=1)
+            
+            for pcap in list(handshake_dir.glob("*.pcap")) + list(handshake_dir.glob("*.2500")):
+                if clean_all or (clean_handshakes > 0 and datetime.datetime.fromtimestamp(pcap.stat().st_mtime) < cutoff_time):
+                    if dry_run:
+                        click.echo(f"  [DRY RUN] Would delete {pcap.name}")
+                    else:
+                        pcap.unlink()
+                        click.echo(f"  🗑️  Deleted handshake: {pcap.name}")
+                        total_freed += 1
+    
+    # ── Vacuum DB ──
+    if not dry_run and total_freed > 0:
+        try:
+            conn = sqlite3.connect(str(DB_PATH))
+            before = Path(DB_PATH).stat().st_size
+            conn.execute("VACUUM")
+            conn.close()
+            after = Path(DB_PATH).stat().st_size
+            saved_mb = (before - after) / (1024 * 1024)
+            if saved_mb > 0.1:
+                click.echo(f"  💾 Database vacuum: {saved_mb:.1f} MB freed")
+        except Exception as e:
+            click.echo(f"  ❌ Vacuum failed: {e}")
+    
+    if dry_run:
+        click.echo("  [DRY RUN] No changes made — pass --dry-run again to confirm")
+    else:
+        click.echo(f"  ✅ Cleanup complete: {total_freed} records/files freed")
+        click.echo("  💡 Run 'gotchi doctor' to verify freed space")
+
 @click.command()
 @click.argument('action', required=False, default='tail')
 def logs(action):
