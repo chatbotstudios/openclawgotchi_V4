@@ -255,17 +255,72 @@ def create_custom_tool(name: str, description: str, parameters_json: str, python
     Create a new LLM tool dynamically.
     The code will be saved to src/extensions/dynamic/{name}.py and instantly available on next boot.
     ALWAYS call safe_restart() immediately after creating a tool to activate it!
+    
+    Safety: The submitted code is scanned for dangerous patterns before saving.
     """
     try:
+        # ── Safety scan: block dangerous patterns ──
+        DANGEROUS_PATTERNS = {
+            "os.system": "arbitrary shell execution",
+            "subprocess.run": "arbitrary process execution",
+            "subprocess.Popen": "arbitrary process execution",
+            "subprocess.call": "arbitrary process execution",
+            "subprocess.check_output": "arbitrary process execution",
+            "eval(": "arbitrary code execution via eval",
+            "exec(": "arbitrary code execution via exec",
+            "compile(": "dynamic code compilation",
+            "__import__(": "dynamic module import",
+            "socket.": "network socket access",
+            "ctypes.": "native code access via ctypes",
+            "shutil.rmtree": "destructive file deletion",
+            "shutil.move": "file move operation",
+            "os.remove": "destructive file operation",
+            "os.unlink": "destructive file operation",
+            "os.rmdir": "destructive file operation",
+            "os.chmod": "file permission change",
+            "os.chown": "file ownership change",
+            "open(": "file system write access (use @register_tool file utils instead)",
+        }
+        
+        violations = []
+        for pattern, reason in DANGEROUS_PATTERNS.items():
+            if pattern in python_code:
+                violations.append(f"  - {pattern} ({reason})")
+        
+        if violations:
+            block_msg = (
+                f"❌ BLOCKED: Tool '{name}' rejected — dangerous patterns detected:\n"
+                + "\n".join(violations)
+                + "\n\nTools must use the SDK's built-in utilities. "
+                "For file operations, use the available file tools. "
+                "For HTTP requests, use the available web tools."
+            )
+            log.warning(f"BLOCKED custom tool '{name}': {len(violations)} dangerous pattern(s)")
+            return block_msg
+        
+        # ── Also check for obfuscated dangerous calls ──
+        lower_code = python_code.lower()
+        obfuscated_patterns = ["base64", "b64decode", "fromhex", "decode("]
+        for pattern in obfuscated_patterns:
+            if pattern in lower_code:
+                block_msg = (
+                    f"❌ BLOCKED: Tool '{name}' rejected — obfuscated code detected ({pattern}). "
+                    "Custom tools must be plain Python without encoding tricks."
+                )
+                log.warning(f"BLOCKED custom tool '{name}': obfuscated pattern {pattern}")
+                return block_msg
+        
+        # ── Safety pass: write the tool ──
         dynamic_dir = PROJECT_DIR / "src" / "extensions" / "dynamic"
         dynamic_dir.mkdir(parents=True, exist_ok=True)
         
         file_path = dynamic_dir / f"{name}.py"
         
         # Inject the decorator into the user's code
-        final_code = "from sdk.tool_builder import register_tool\\n\\n@register_tool\\n" + python_code.strip()
+        final_code = "from sdk.tool_builder import register_tool\n\n@register_tool\n" + python_code.strip()
         
         file_path.write_text(final_code)
+        log.info(f"Custom tool '{name}' created ({len(python_code)} bytes) — safety scan passed")
         
         return f"Tool '{name}' created successfully at {file_path}! Run safe_restart() to load it into your brain."
     except Exception as e:

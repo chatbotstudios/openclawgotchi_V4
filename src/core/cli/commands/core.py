@@ -541,10 +541,10 @@ def init(interactive):
 def pcap():
     """Manage handshake captures."""
 
-@pcap.command()
+@pcap.command(name='list')
 @click.option('-n', '--limit', type=int, default=10, help='Show last N captures (default: 10)')
 @click.option('--all', 'show_all', is_flag=True, help='Show ALL captures')
-def list(limit, show_all):
+def list_captures(limit, show_all):
     """List captured handshake PCAP files with details."""
     handshake_dir = PROJECT_DIR / "handshakes"
     if not handshake_dir.exists():
@@ -596,13 +596,18 @@ def show(index):
     click.echo(f"  Size: {size_kb:.1f} KB")
     click.echo(f"  Captured: {mtime}")
     click.echo(f"  Extension: {pcap.suffix}")
-    
+    # Try to read ESSID if it's a .2500 file (hashcat format)
     if pcap.suffix == '.2500':
         try:
             first_line = pcap.read_text().splitlines()[0]
-            parts = first_line.split(':')
-            if len(parts) >= 6:
-                click.echo(f"  ESSID: {parts[-1]}")
-                click.echo(f"  BSSID: {':'.join(parts[:6]).upper()}")
+            parts = first_line.split('*')
+            if len(parts) >= 7:
+                bssid = parts[2] if len(parts[2]) == 12 else None
+                essid_raw = parts[6] if len(parts) > 6 else None
+                essid = bytes.fromhex(essid_raw).decode('utf-8', errors='replace') if essid_raw else None
+                if bssid:
+                    click.echo(f"  BSSID: {':'.join(bssid[i:i+2] for i in range(0, 12, 2)).upper()}")
+                if essid:
+                    click.echo(f"  ESSID: {essid}")
         except Exception:
             pass
