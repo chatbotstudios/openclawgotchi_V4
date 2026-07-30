@@ -68,11 +68,18 @@ else
         if [[ "${GOTCHI_DEPLOYMENT}" == "Device" ]]; then
             ARCH=$(dpkg --print-architecture)
             if [[ "$ARCH" == "arm64" || "$ARCH" == "armhf" ]]; then
-                if [[ ! -f /etc/apt/sources.list.d/raspi.list ]]; then
+                if [[ ! -f /etc/apt/keyrings/raspberrypi.gpg ]]; then
                     echo "  [Pi Setup] Adding Raspberry Pi OS repositories for $ARCH architecture..."
-                    wget -qO - https://archive.raspberrypi.org/debian/raspberrypi.gpg.key | sudo apt-key add -
-                    echo "deb http://archive.raspberrypi.org/debian/ bookworm main" | sudo tee /etc/apt/sources.list.d/raspi.list
+                    sudo mkdir -p /etc/apt/keyrings
+                    wget -qO - https://archive.raspberrypi.org/debian/raspberrypi.gpg.key | \
+                        sudo gpg --dearmor -o /etc/apt/keyrings/raspberrypi.gpg
+                    # Remove old-style entry (apt-key deprecation migration)
+                    sudo rm -f /etc/apt/sources.list.d/raspi.list
+                    echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/raspberrypi.gpg] http://archive.raspberrypi.org/debian/ bookworm main" | \
+                        sudo tee /etc/apt/sources.list.d/raspi.list
                     sudo apt-get update -y -qq
+                else
+                    echo "  [Pi Setup] Raspberry Pi key already present."
                 fi
             else
                 echo "  ⚠️ Warning: You selected Raspberry Pi Deployment, but your architecture ($ARCH) is not ARM."
