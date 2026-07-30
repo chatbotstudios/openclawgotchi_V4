@@ -16,6 +16,8 @@ class TetherWatchdog:
         self.running = False
         self.start_time = 0
         self._thread = None
+        self._was_active = False
+        self.net_fails = 0
 
     def _has_internet(self) -> bool:
         """Check if we have a working internet connection."""
@@ -162,7 +164,7 @@ class TetherWatchdog:
             
             if not is_active:
                 # Detect crash edge-case and dump forensics
-                if getattr(self, '_was_active', False):
+                if self._was_active:
                     log.error("🧲 TETHER CRASH DETECTED! Executing hardware forensics dump...")
                     try:
                         from utils.forensics import (
@@ -182,7 +184,7 @@ class TetherWatchdog:
                 else:
                     log.debug("No 'iPhoneHotspot' profile found. Skipping watchdog pulse.")
             elif not has_net:
-                self.net_fails = getattr(self, 'net_fails', 0) + 1
+                self.net_fails = self.net_fails + 1
                 if self.net_fails >= 3:
                     if mac:
                         log.warning("🧲 No internet for 3 consecutive pulses! Bouncing tether...")
@@ -200,8 +202,8 @@ class TetherWatchdog:
             elapsed = time.time() - self.start_time
             
             if elapsed >= self.burst_duration:
-                log.info(f"🧲 Watchdog Burst Mode ({self.burst_duration}s) complete. Shutting down tether watchdog.")
-                break
+                current_interval = self.interval_steady
+                log.debug(f"🧲 Watchdog entered steady mode ({current_interval}s interval)")
             else:
                 current_interval = self.interval_burst
             
