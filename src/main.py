@@ -137,6 +137,12 @@ async def run_cron_job(job):
             return True
         except Exception as e:
             log.error(f"Cron job send_message failed: {e}")
+            # Queue for retry on next heartbeat
+            try:
+                from db.memory import queue_outgoing_message
+                queue_outgoing_message(chat_id, text.strip()[:4000])
+            except Exception as qe:
+                log.error(f"Failed to queue outgoing message: {qe}")
             return False
     
     # Call LLM with full context: recent chat history + explicit "scheduled reminder" instruction

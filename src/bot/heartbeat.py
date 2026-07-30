@@ -263,6 +263,25 @@ async def send_heartbeat(send_message_func=None):
     status_bar = get_status_bar()
     log.info(f"Heartbeat XP awarded. {status_bar}")
 
+    # 2b. Process outgoing message queue (retry failed cron sends)
+    try:
+        from db.memory import (
+            delete_outgoing_message,
+            get_outgoing_queue,
+            increment_outgoing_retry,
+        )
+        for msg_id, chat_id, text, created_at, retry_count in get_outgoing_queue():
+            try:
+                if send_message_func:
+                    await send_message_func(chat_id, text)
+                    delete_outgoing_message(msg_id)
+                    log.info(f"Retried queued message {msg_id} -> chat {chat_id}")
+            except Exception:
+                increment_outgoing_retry(msg_id)
+                log.warning(f"Queued message {msg_id} still failing, retry {retry_count + 1}/3")
+    except Exception as e:
+        log.error(f"Outgoing queue processing failed: {e}")
+
     # 3. Process pending queue
     await process_pending_tasks(send_message_func)
 

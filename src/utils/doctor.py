@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+import json
 import os
 import shlex
 import subprocess
 import sys
+from datetime import datetime
 
 
 def check(name, cmd):
@@ -18,77 +20,45 @@ def check(name, cmd):
     except Exception as e:
         return False, str(e)
 
-def main():
-    bot_name = os.environ.get("BOT_NAME", "Gotchi")
-    print(f"=== 🏥 {bot_name} Doctor ===")
-    all_ok = True
+
+def run_checks() -> dict:
+    """Run all health checks and return structured results."""
+    checks = {}
 
     # 1. Internet
     ok, out = check("Internet", "ping -c 1 google.com")
-    if ok:
-        print("[✅] Internet: OK")
-    else:
-        print(f"[❌] Internet: FAIL\n{out}")
-        all_ok = False
+    checks["internet"] = {"ok": ok, "output": out}
 
     # 2. Disk Space
+    disk_result = {"ok": False, "output": "", "used_pct": None}
     try:
         df_out = subprocess.check_output(["df", "-h", "/"], text=True, timeout=10)
         lines = df_out.strip().splitlines()
         out = lines[-1] if lines else ""
-        ok = True
+        used_pct = int(out.split()[-2].replace("%", ""))
+        disk_result = {"ok": True, "output": f"{used_pct}% used", "used_pct": used_pct}
     except Exception as e:
-        out = str(e)
-        ok = False
-    if ok:
-        try:
-            used_pct = int(out.split()[-2].replace("%", ""))
-            if used_pct < 90:
-                print(f"[✅] Disk: {used_pct}% used")
-            else:
-                print(f"[⚠️] Disk: {used_pct}% used (CRITICAL)")
-                all_ok = False
-        except Exception:
-            print(f"[❌] Disk: Failed to parse df output\n{out}")
-            all_ok = False
-    else:
-        print(f"[❌] Disk: FAIL\n{out}")
-        all_ok = False
+        disk_result = {"ok": False, "output": str(e), "used_pct": None}
+    checks["disk"] = disk_result
 
     # 3. Temperature
+    temp_result = {"ok": False, "output": "", "celsius": None}
     try:
         temp_raw = subprocess.check_output(["vcgencmd", "measure_temp"], text=True, timeout=5).strip()
-        ok, out = True, temp_raw
+        temp = float(temp_raw.replace("temp=", "").replace("'C", "").replace("°C", "").strip())
+        temp_result = {"ok": True, "output": f"{temp}°C", "celsius": temp}
     except Exception:
         try:
             with open("/sys/class/thermal/thermal_zone0/temp") as f:
                 temp_val = float(f.read().strip()) / 1000
-            ok, out = True, f"{temp_val}°C"
+            temp_result = {"ok": True, "output": f"{temp_val}°C", "celsius": temp_val}
         except Exception:
-            ok = False
-            out = ""
-    if ok:
-        try:
-            temp = float(out.replace("temp=", "").replace("'C", "").replace("°C", "").strip())
-            if temp < 70:
-                print(f"[✅] Temp: {temp}°C")
-            else:
-                print(f"[⚠️] Temp: {temp}°C (HOT)")
-                all_ok = False
-        except Exception:
-            print(f"[❌] Temp: Failed to parse temperature\n{out}")
-            all_ok = False
-    else:
-        print("[⚠️] Temp: Unavailable")
-        all_ok = False
+            temp_result = {"ok": False, "output": "", "celsius": None}
+    checks["temperature"] = temp_result
 
     # 4. Service Status
     ok, out = check('Service', 'systemctl is-active gotchi')
-    if out == 'active':
-        print("[✅] Service: Active")
-    else:
-        print(f"[❌] Service: {out}")
-        all_ok = False
+    checks["service"] = {"ok": ok, "output": out}
 
     # 5. Recent Errors
     try:
@@ -102,11 +72,76 @@ def main():
     except Exception:
         out = ""
         ok = False
-    if not out:
+    checks["logs"] = {"ok": ok, "output": out}
+
+    return checks
+
+
+def main():
+    bot_name = os.environ.get("BOT_NAME", "Gotchi")
+
+    if "--json" in sys.argv:
+        checks = run_checks()
+        all_ok = all(c["ok"] for c in checks.values())
+        print(json.dumps({
+            "status": "healthy" if all_ok else "issues",
+            "timestamp": datetime.now().isoformat(),
+            "checks": checks
+        }))
+        sys.exit(0 if all_ok else 1)
+        return
+
+    print(f"=== 🏥 {bot_name} Doctor ===")
+    all_ok = True
+
+    checks = run_checks()
+
+    # 1. Internet
+    c = checks["internet"]
+    if c["ok"]:
+        print("[✅] Internet: OK")
+    else:
+        print(f"[❌] Internet: FAIL\n{c['output']}")
+        all_ok = False
+
+    # 2. Disk Space
+    c = checks["disk"]
+    if c["ok"]:
+        if c["used_pct"] < 90:
+            print(f"[✅] Disk: {c['used_pct']}% used")
+        else:
+            print(f"[⚠️] Disk: {c['used_pct']}% used (CRITICAL)")
+            all_ok = False
+    else:
+        print(f"[❌] Disk: FAIL\n{c['output']}")
+        all_ok = False
+
+    # 3. Temperature
+    c = checks["temperature"]
+    if c["ok"]:
+        if c["celsius"] < 70:
+            print(f"[✅] Temp: {c['celsius']}°C")
+        else:
+            print(f"[⚠️] Temp: {c['celsius']}°C (HOT)")
+            all_ok = False
+    else:
+        print("[⚠️] Temp: Unavailable")
+        all_ok = False
+
+    # 4. Service Status
+    c = checks["service"]
+    if c["output"] == "active":
+        print("[✅] Service: Active")
+    else:
+        print(f"[❌] Service: {c['output']}")
+        all_ok = False
+
+    # 5. Recent Errors
+    c = checks["logs"]
+    if not c["output"]:
         print("[✅] Logs: No recent errors")
     else:
-        print(f"[⚠️] Logs (Recent Errors):\n{out}")
-        # Not marking as fail, just warning
+        print(f"[⚠️] Logs (Recent Errors):\n{c['output']}")
 
     print("==========================")
     if all_ok:
@@ -115,6 +150,7 @@ def main():
     else:
         print("Result: ISSUES DETECTED")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
